@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ShoppingBag, Search, Globe, Flame, SlidersHorizontal, ArrowDown, ExternalLink, RefreshCw, Sun, Moon } from 'lucide-react';
+import { ShoppingBag, Search, Globe, Flame, SlidersHorizontal, ArrowDown, ExternalLink, RefreshCw, Sun, Moon, Menu, X } from 'lucide-react';
 import { GHL_PRODUCTS } from './data';
 import { Product, CartItem, SortOption } from './types';
 import { ProductCard } from './components/ProductCard';
@@ -17,6 +17,8 @@ export default function App() {
   const [viewedProduct, setViewedProduct] = useState<Product | null>(null);
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
   const [isSearchVisible, setIsSearchVisible] = useState<boolean>(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
+  const [isHovered, setIsHovered] = useState<boolean>(false);
 
   // Theme state: day vs. night
   const [theme, setTheme] = useState<'day' | 'night'>(() => {
@@ -43,7 +45,15 @@ export default function App() {
   // Tactical Live Clock UTC Timer
   const [currentTime, setCurrentTime] = useState<Date>(new Date("2026-06-06T08:53:30Z"));
 
-
+  // Track scroll position for dynamic island header
+  const [isScrolled, setIsScrolled] = useState<boolean>(false);
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Initialize and update UTC time ticker
   useEffect(() => {
@@ -174,93 +184,273 @@ export default function App() {
         </div>
       </div>
 
-      {/* Main Elegant Header */}
-      <header id="store-main-header" className="sticky top-0 z-30 bg-brand-matte/95 backdrop-blur-md border-b border-white/10 py-5 px-4 md:px-8 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="flex flex-col">
-            <h1 className="font-display font-black text-lg sm:text-2xl tracking-tighter text-brand-offwhite uppercase hover:text-white/80 transition-colors cursor-pointer" onClick={() => { setSelectedCategory('ALL'); setSearchQuery(''); }}>
-              GO HARD LUXURY
-            </h1>
-            <span className="font-mono text-[7px] text-brand-lightgray uppercase tracking-[0.4em] leading-none font-bold">
-              ESTABLISHED IN 2019
-            </span>
+      {/* Main Elegant Header - Dynamic Island Capsule */}
+      <motion.header
+        id="store-main-header"
+        layout
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        className={`fixed left-1/2 -translate-x-1/2 z-40 border border-white/10 shadow-2xl transition-all duration-300 ease-out shadow-[0_0_25px_rgba(255,255,255,0.03)]
+          ${isMobileMenuOpen 
+            ? 'top-4 w-[92%] max-w-md py-6 px-6 rounded-3xl bg-brand-matte/95 flex flex-col gap-5' 
+            : isScrolled
+              ? isHovered && !isSearchVisible
+                ? 'top-4 w-[92%] max-w-4xl py-3 px-6 rounded-full bg-brand-matte/90 flex items-center justify-between'
+                : 'top-4 w-[75%] max-w-[290px] md:w-[60%] lg:w-[45%] md:max-w-xl py-2 px-4 md:px-5 rounded-full bg-brand-matte/90 flex items-center justify-between'
+              : isSearchVisible
+                ? 'top-16 w-[92%] max-w-4xl py-3 px-6 rounded-full bg-brand-matte/85 flex items-center justify-between'
+                : 'top-16 w-[94%] max-w-5xl py-4 px-8 rounded-full bg-brand-matte/70 flex items-center justify-between'
+          }`}
+      >
+        {isMobileMenuOpen ? (
+          // Mobile Menu Layout (Expanded Vertically)
+          <div className="flex flex-col w-full h-full gap-5">
+            {/* Top Row: Logo & Close */}
+            <div className="flex items-center justify-between w-full">
+              <span className="font-display font-black text-sm tracking-tighter text-brand-offwhite uppercase">
+                GO HARD LUXURY
+              </span>
+              <button 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center hover:bg-white/5 cursor-pointer text-brand-lightgray hover:text-brand-offwhite"
+              >
+                <X size={14} />
+              </button>
+            </div>
+
+            {/* Middle: Vertical Navigation Links */}
+            <div className="flex flex-col gap-3 py-2 border-y border-white/5">
+              {['ALL', 'POLOS', 'DENIM', 'TEES', 'ACCESSORIES'].map((cat, index) => (
+                <button
+                  key={cat}
+                  onClick={() => {
+                    setSelectedCategory(cat);
+                    scrollToCollection();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`text-left font-display font-black text-xl tracking-tight uppercase transition-all py-1 cursor-pointer hover:text-brand-neon ${
+                    selectedCategory === cat ? 'text-brand-neon translate-x-2' : 'text-brand-lightgray'
+                  }`}
+                  style={{ transitionDelay: `${index * 50}ms` }}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+
+            {/* Search Input inline in mobile menu */}
+            <div className="relative w-full">
+              <input
+                id="search-input-field"
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="SEARCH CATALOG..."
+                className="w-full bg-brand-darkgray border border-white/10 focus:border-white/20 px-4 py-2.5 pr-20 rounded-xl text-xs font-mono text-brand-offwhite placeholder-brand-lightgray/40 outline-none uppercase tracking-wider"
+              />
+              <div className="absolute right-3 top-2.5 flex items-center gap-2">
+                {searchQuery && (
+                  <span className="text-[8px] font-mono text-brand-neon bg-brand-darkgray px-1.5 py-0.5 rounded border border-white/10 uppercase">
+                    {filteredProducts.length}
+                  </span>
+                )}
+                {searchQuery && (
+                  <button
+                    id="search-clear-btn"
+                    onClick={() => setSearchQuery('')}
+                    className="text-[9px] font-mono text-brand-lightgray hover:text-brand-offwhite cursor-pointer font-bold"
+                  >
+                    CLEAR
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Bottom Row: Theme Toggle, Cart Button */}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={toggleTheme}
+                className="flex-1 py-2.5 border border-white/10 rounded-full flex items-center justify-center gap-2 bg-brand-darkgray/40 text-xs font-mono font-bold cursor-pointer text-brand-lightgray hover:text-brand-offwhite"
+              >
+                {theme === 'night' ? (
+                  <>
+                    <Sun size={13} className="text-brand-offwhite" />
+                    <span>DAY MODE</span>
+                  </>
+                ) : (
+                  <>
+                    <Moon size={13} className="text-brand-offwhite" />
+                    <span>NIGHT MODE</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  setIsCartOpen(true);
+                }}
+                className="flex-1 py-2.5 bg-brand-offwhite text-brand-matte rounded-full flex items-center justify-center gap-2 text-xs font-black uppercase tracking-wider cursor-pointer hover:opacity-90 shadow-md"
+              >
+                <ShoppingBag size={13} className="stroke-[3]" />
+                <span>BAG ({getCartTotalQty()})</span>
+              </button>
+            </div>
+
+            {/* Footer / Social Links */}
+            <div className="flex justify-between items-center text-[9px] font-mono text-brand-lightgray/60 pt-2 border-t border-white/5">
+              <a href="https://instagram.com/gohxrdluxury_" target="_blank" rel="noreferrer" className="hover:text-brand-neon">IG: @gohxrdluxury_</a>
+              <a href="https://www.tiktok.com/@gohardluxury" target="_blank" rel="noreferrer" className="hover:text-brand-neon">TT: @gohardluxury</a>
+              <span>© {new Date().getFullYear()} GHL</span>
+            </div>
           </div>
-        </div>
+        ) : (
+          // Horizontal Capsule Layout (Desktop / Mobile Closed)
+          <div className="flex items-center justify-between w-full h-full">
+            {/* Logo/Brand Name */}
+            <div className="flex items-center gap-2 shrink-0">
+              <div 
+                className={`flex flex-col cursor-pointer ${isSearchVisible ? 'hidden sm:flex' : 'flex'}`} 
+                onClick={() => { setSelectedCategory('ALL'); setSearchQuery(''); }}
+              >
+                <h1 className="font-display font-black text-sm tracking-tighter text-brand-offwhite uppercase hover:text-white/80 transition-colors">
+                  {isScrolled && !isHovered ? 'GHL' : 'GO HARD LUXURY'}
+                </h1>
+                {!isScrolled && (
+                  <span className="font-mono text-[6px] text-brand-lightgray uppercase tracking-[0.4em] leading-none font-bold hidden md:inline">
+                    ESTABLISHED IN 2019
+                  </span>
+                )}
+              </div>
+            </div>
 
-        {/* Categories desktop tabs links */}
-        <nav className="hidden md:flex items-center gap-12 text-[10px] uppercase tracking-[0.2em] font-black">
-          {['ALL', 'POLOS', 'DENIM', 'TEES', 'ACCESSORIES'].map((cat) => (
-            <button
-              id={`nav-tab-${cat}`}
-              key={cat}
-              onClick={() => {
-                setSelectedCategory(cat);
-                scrollToCollection();
-              }}
-              className={`pb-1 hover-line uppercase transition-all relative cursor-pointer ${
-                selectedCategory === cat ? 'text-brand-offwhite font-black underline underline-offset-4 decoration-2' : 'text-brand-lightgray hover:text-brand-offwhite'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </nav>
-
-        {/* Action interfaces */}
-        <div className="flex items-center gap-4">
-          {/* Custom Day and Night switch deck */}
-          <button
-            id="toggle-theme-btn"
-            onClick={toggleTheme}
-            className="p-2.5 transition-all cursor-pointer border bg-[#121212] border-white/10 text-brand-lightgray hover:text-brand-offwhite hover:border-white/30 flex items-center gap-1.5"
-            style={{ borderRadius: '0px' }}
-            title={`Switch to ${theme === 'night' ? 'day' : 'night'} display perspective`}
-          >
-            {theme === 'night' ? (
-              <>
-                <Sun size={13} className="text-brand-offwhite" />
-                <span className="font-mono text-[9px] font-black uppercase tracking-wider hidden sm:inline">DAY_MODE</span>
-              </>
-            ) : (
-              <>
-                <Moon size={13} className="text-brand-offwhite" />
-                <span className="font-mono text-[9px] font-black uppercase tracking-wider hidden sm:inline">NIGHT_MODE</span>
-              </>
+            {/* Navigation links (Desktop only, hidden when compact/scrolled & not hovered) */}
+            {(!isScrolled || isHovered) && !isSearchVisible && (
+              <nav className="hidden md:flex items-center gap-8 text-[10px] uppercase tracking-[0.2em] font-black">
+                {['ALL', 'POLOS', 'DENIM', 'TEES', 'ACCESSORIES'].map((cat) => (
+                  <button
+                    id={`nav-tab-${cat}`}
+                    key={cat}
+                    onClick={() => {
+                      setSelectedCategory(cat);
+                      scrollToCollection();
+                    }}
+                    className={`pb-0.5 hover-line uppercase transition-all relative cursor-pointer ${
+                      selectedCategory === cat ? 'text-brand-offwhite font-black underline underline-offset-4 decoration-2' : 'text-brand-lightgray hover:text-brand-offwhite'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </nav>
             )}
-          </button>
 
-          {/* Quick Search toggle */}
-          <button
-            id="toggle-search-btn"
-            onClick={() => setIsSearchVisible(prev => !prev)}
-            className={`p-2.5 transition-all cursor-pointer border ${
-              isSearchVisible 
-                ? 'bg-white text-black border-white' 
-                : 'bg-[#121212] border-white/10 text-brand-lightgray hover:text-brand-offwhite hover:border-white/30'
-            }`}
-            style={{ borderRadius: '0px' }}
-            title="Search collection"
-          >
-            <Search size={14} />
-          </button>
+            {/* Search Input inline in header (Desktop only or when search visible) */}
+            {isSearchVisible && (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex-1 max-w-md mx-2 sm:mx-6 relative flex items-center"
+              >
+                <input
+                  id="search-input-field"
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="SEARCH CATALOG..."
+                  className="w-full bg-brand-darkgray border border-white/10 focus:border-white/20 px-4 py-1.5 pr-20 rounded-full text-[10px] sm:text-xs font-mono text-brand-offwhite placeholder-brand-lightgray/40 outline-none uppercase tracking-wider"
+                  autoFocus
+                />
+                <div className="absolute right-3 flex items-center gap-2">
+                  {searchQuery && (
+                    <span className="text-[8px] font-mono text-brand-neon bg-brand-darkgray px-1.5 py-0.5 rounded border border-white/10 uppercase">
+                      {filteredProducts.length}
+                    </span>
+                  )}
+                  {searchQuery && (
+                    <button
+                      id="search-clear-btn"
+                      onClick={() => setSearchQuery('')}
+                      className="text-[9px] font-mono text-brand-lightgray hover:text-brand-offwhite cursor-pointer font-bold"
+                    >
+                      CLEAR
+                    </button>
+                  )}
+                </div>
+              </motion.div>
+            )}
 
+            {/* Action buttons (Right side) */}
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+              {/* Theme Toggle (Desktop only or when header is open/unscrolled) */}
+              {(!isScrolled || isHovered) && (
+                <button
+                  id="toggle-theme-btn"
+                  onClick={toggleTheme}
+                  className="w-8 h-8 transition-all cursor-pointer border bg-brand-darkgray/40 border-white/10 hover:border-white/30 text-brand-lightgray hover:text-brand-offwhite flex items-center justify-center rounded-full shrink-0 hidden md:flex"
+                  title={`Switch to ${theme === 'night' ? 'day' : 'night'} display perspective`}
+                >
+                  {theme === 'night' ? (
+                    <Sun size={13} className="text-brand-offwhite" />
+                  ) : (
+                    <Moon size={13} className="text-brand-offwhite" />
+                  )}
+                </button>
+              )}
 
+              {/* Quick Search Toggle (Desktop only or when header is open/unscrolled) */}
+              {(!isScrolled || isHovered) && (
+                <button
+                  id="toggle-search-btn"
+                  onClick={() => setIsSearchVisible(prev => !prev)}
+                  className={`w-8 h-8 transition-all cursor-pointer border rounded-full flex items-center justify-center shrink-0 hidden md:flex ${
+                    isSearchVisible 
+                      ? 'bg-brand-offwhite text-brand-matte border-brand-offwhite' 
+                      : 'bg-brand-darkgray/40 border-white/10 text-brand-lightgray hover:text-brand-offwhite hover:border-white/30'
+                  }`}
+                  title="Search collection"
+                >
+                  <Search size={13} />
+                </button>
+              )}
 
-          {/* Tactical bag counter */}
-          <button
-            id="toggle-cart-btn"
-            onClick={() => setIsCartOpen(true)}
-            className="bg-white text-black hover:bg-neutral-200 px-4 py-2 flex items-center gap-2 transition-all cursor-pointer active:scale-95 font-black text-xs uppercase tracking-widest"
-            style={{ borderRadius: '0px' }}
-          >
-            <ShoppingBag size={14} className="stroke-[3.5]" />
-            <span className="font-mono text-xs">{getCartTotalQty()}</span>
-          </button>
-        </div>
-      </header>
+              {/* Cart Button (Always visible on desktop, or on mobile when not compact) */}
+              <button
+                id="toggle-cart-btn"
+                onClick={() => setIsCartOpen(true)}
+                className={`bg-brand-offwhite text-brand-matte hover:opacity-90 px-3.5 py-1.5 flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 font-black text-[10px] uppercase tracking-wider rounded-full shadow-md shrink-0
+                  ${isScrolled && !isHovered ? 'hidden md:flex' : 'flex'}`}
+              >
+                <ShoppingBag size={12} className="stroke-[3]" />
+                <span className="font-mono text-[10px]">{getCartTotalQty()}</span>
+              </button>
+
+              {/* Mobile Search Toggle (Mobile scrolled/compact shortcut) */}
+              {isScrolled && !isHovered && (
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(true);
+                  }}
+                  className="w-7 h-7 bg-brand-darkgray/40 border border-white/10 hover:border-white/30 text-brand-lightgray hover:text-brand-offwhite flex items-center justify-center rounded-full shrink-0 md:hidden cursor-pointer"
+                >
+                  <Search size={11} />
+                </button>
+              )}
+
+              {/* Mobile Menu Toggle button */}
+              <button
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="w-8 h-8 transition-all cursor-pointer border bg-brand-darkgray/40 border-white/10 hover:border-white/30 text-brand-lightgray hover:text-brand-offwhite flex items-center justify-center rounded-full shrink-0 md:hidden"
+              >
+                <Menu size={13} />
+              </button>
+            </div>
+          </div>
+        )}
+      </motion.header>
 
       {/* Hero Presentation Drop Segment */}
-      <section id="hero-banner-section" className="relative h-[85vh] min-h-[480px] sm:min-h-[580px] flex flex-col justify-between items-stretch py-12 px-6 md:px-12 text-left overflow-hidden border-b border-white/10 z-10 bg-[#080808]">
+      <section id="hero-banner-section" className="relative h-[85vh] min-h-[480px] sm:min-h-[580px] flex flex-col justify-between items-stretch pt-28 pb-12 px-6 md:px-12 text-left overflow-hidden border-b border-white/10 z-10 bg-[#080808]">
         {/* Background Video */}
         <video
           autoPlay
@@ -330,43 +520,7 @@ export default function App() {
       </section>
 
       {/* Main product showcase rack */}
-      <main id="collection-rack" className="max-w-7xl mx-auto py-12 px-4 md:px-8 space-y-8">
-        {/* Dynamic Search view drawer when toggled active */}
-        <AnimatePresence>
-          {isSearchVisible && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden mb-4"
-            >
-              <div className="bg-brand-darkgray border border-brand-midgray/30 rounded-2xl p-4 flex flex-col md:flex-row gap-4 items-center">
-                <div className="flex-1 w-full relative">
-                  <input
-                    id="search-input-field"
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="ENTER COORDS TO QUERY RACK..."
-                    className="w-full bg-brand-matte border border-brand-midgray/60 focus:border-brand-neon px-4 py-3 text-xs font-mono text-brand-offwhite placeholder-brand-lightgray/35 outline-none rounded-xl uppercase tracking-wider"
-                  />
-                  {searchQuery && (
-                    <button
-                      id="search-clear-btn"
-                      onClick={() => setSearchQuery('')}
-                      className="absolute right-3.5 top-3.5 text-xs font-mono text-red-400 hover:text-white"
-                    >
-                      [CLEAR]
-                    </button>
-                  )}
-                </div>
-                <div className="text-xs font-mono text-brand-lightgray shrink-0">
-                  REF: {filteredProducts.length} SPECIMENS DETECTED
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+      <main id="collection-rack" className="max-w-7xl mx-auto py-12 px-4 md:px-8 space-y-8 scroll-mt-24">
 
         {/* Filters and sorting layout */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-4 border-b border-brand-midgray/15">
