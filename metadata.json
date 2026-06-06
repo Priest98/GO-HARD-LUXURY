@@ -1,0 +1,6 @@
+{
+  "name": "GO HARD LUXURY Store",
+  "description": "An experience of GO HARD LUXURY (GHL) streetwear official store, bringing high-fidelity grunge aesthetics, exclusive collections, and interactive shopping.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

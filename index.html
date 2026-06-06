@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GO HARD LUXURY - Official Collection</title>
+    <link rel="icon" type="image/png" href="/logo.png" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+
+    <!-- CDNs for GSAP + ScrollTrigger + Lenis -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
+    <script src="https://checkout.flutterwave.com/v3.js"></script>
+
+    <!-- Smooth Scrolling and Motion Animations Initializer -->
+    <script>
+      (function() {
+        // Safe registration of GSAP plugins when loaded
+        if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+          gsap.registerPlugin(ScrollTrigger);
+        }
+
+        // Wait for React to mount and elements to appear in the DOM
+        const checkInterval = setInterval(() => {
+          const headline = document.querySelector('h1.outline-text') || document.querySelector('h1');
+          const sections = document.querySelectorAll('section, main, footer');
+          
+          if (headline && sections.length > 0) {
+            clearInterval(checkInterval);
+            initAnimations();
+          }
+        }, 100);
+
+        function initAnimations() {
+          // Detect user reduced motion preferences
+          const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+          if (prefersReducedMotion) {
+            console.log('Lenis smooth scrolling and GSAP animations disabled (prefers-reduced-motion: active).');
+            return;
+          }
+
+          // Initialize Lenis smooth scroll
+          let lenis = null;
+          if (typeof Lenis !== 'undefined') {
+            lenis = new Lenis({
+              duration: 1.2,
+              easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+              smoothWheel: true,
+            });
+
+            // Connect Lenis to ScrollTrigger
+            lenis.on('scroll', ScrollTrigger.update);
+
+            gsap.ticker.add((time) => {
+              lenis.raf(time * 1000);
+            });
+
+            gsap.ticker.lagSmoothing(0);
+          }
+
+          // 1. Page load header and main headline slide‑up and fade‑in
+          const headline = document.querySelector('h1.outline-text');
+          const heroSub = document.querySelector('h2');
+          const titleTargets = [];
+          if (headline) titleTargets.push(headline);
+          if (heroSub) titleTargets.push(heroSub);
+
+          if (titleTargets.length > 0) {
+            gsap.from(titleTargets, {
+              opacity: 0,
+              y: 20,
+              duration: 1.0,
+              ease: "power2.out",
+              stagger: 0.15
+            });
+          }
+
+          // 2. Section entering ScrollTrigger animations for major content areas
+          const majorSections = document.querySelectorAll('section, main, footer');
+          majorSections.forEach((section) => {
+            gsap.from(section, {
+              scrollTrigger: {
+                trigger: section,
+                start: 'top 85%',
+                toggleActions: 'play none none none',
+                // Keep performance optimal
+                id: section.id || section.tagName
+              },
+              opacity: 0,
+              y: 30,
+              duration: 1.0,
+              ease: 'power2.out',
+              clearProps: 'transform,opacity'
+            });
+          });
+
+          // 3. Staggered fade‑in for cards/grid items when their container scrolls into view
+          const gridContainers = document.querySelectorAll('#products-interactive-grid');
+          gridContainers.forEach((grid) => {
+            const cards = grid.children;
+            if (cards.length > 0) {
+              gsap.from(cards, {
+                scrollTrigger: {
+                  trigger: grid,
+                  start: 'top 85%',
+                  toggleActions: 'play none none none'
+                },
+                opacity: 0,
+                y: 20,
+                duration: 0.8,
+                stagger: 0.1,
+                ease: 'power2.out',
+                clearProps: 'transform,opacity'
+              });
+            }
+          });
+
+          // Re-trigger scroll event to sync offsets on load
+          setTimeout(() => {
+            ScrollTrigger.refresh();
+          }, 300);
+        }
+      })();
+    </script>
+  </body>
+</html>
+
