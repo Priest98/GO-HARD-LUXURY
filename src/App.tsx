@@ -278,7 +278,7 @@ export default function App() {
         {/* Theme large transparent background heading text stroke - GO HARD LUXURY */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full text-center z-0 pointer-events-none select-none overflow-hidden">
           <h1 className="text-[25vw] md:text-[22vw] font-black tracking-tighter leading-[0.7] uppercase outline-text select-none">
-            GO HARD LUXURY
+            <span className="whitespace-nowrap">GO HARD</span> LUXURY
           </h1>
         </div>
 
