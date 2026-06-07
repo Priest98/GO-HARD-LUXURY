@@ -8,6 +8,8 @@ import {
   EyeOff, RefreshCw, Bell, AlertTriangle, ShieldCheck, Download
 } from 'lucide-react';
 import { Product, SortOption } from '../types';
+import { supabase, isSupabaseConfigured } from '../supabaseClient';
+
 
 interface AdminCMSProps {
   onCloseStore: () => void;
@@ -68,6 +70,115 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showForgotModal, setShowForgotModal] = useState<boolean>(false);
   const [forgotEmail, setForgotEmail] = useState<string>('');
+
+  // Media Storage State
+  const [mediaList, setMediaList] = useState<any[]>(() => {
+    const stored = localStorage.getItem('GHL_MEDIA_LIST');
+    if (stored) return JSON.parse(stored);
+    return [
+      { name: 'Lookbook Loop Video', type: 'video', size: '5.9MB', url: '/video/SaveClip.App_AQMNLLCOZx9fTFK3FwpUwBbLXY_YghRBoOy3hXzNcIETEuC6RS3rLLlRf25T3rHV7gddLaq6yVC83NKbvLi672p_CxBwfD3450dxLQs.mp4' },
+      { name: 'Visor Cap Front Vector', type: 'image', size: '124KB', url: '/images/visor-front.png' },
+      { name: 'Shortsleeve Polo Knit', type: 'image', size: '256KB', url: '/images/polo-knit.png' },
+      { name: 'Industrial Denim Blue', type: 'image', size: '312KB', url: '/images/denim-blue.png' }
+    ];
+  });
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Sync media list local storage
+  useEffect(() => {
+    localStorage.setItem('GHL_MEDIA_LIST', JSON.stringify(mediaList));
+  }, [mediaList]);
+
+  // Load session & dynamic records from Supabase
+  useEffect(() => {
+    if (!isSupabaseConfigured) return;
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session && session.user) {
+        setIsAuthenticated(true);
+        setAdminEmail(session.user.email || '');
+        const role = session.user.user_metadata?.role || 'Super Admin';
+        setAdminRole(role);
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session && session.user) {
+        setIsAuthenticated(true);
+        setAdminEmail(session.user.email || '');
+        const role = session.user.user_metadata?.role || 'Super Admin';
+        setAdminRole(role);
+        localStorage.setItem('GHL_ADMIN_AUTH', 'true');
+      } else {
+        setIsAuthenticated(false);
+        localStorage.removeItem('GHL_ADMIN_AUTH');
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Sync CMS records (Promo Codes, Subscribers, Audits, Media) from Supabase on Login
+  useEffect(() => {
+    async function loadCMSData() {
+      if (!isSupabaseConfigured || !isAuthenticated) return;
+
+      try {
+        // Fetch Promo Codes
+        const { data: dbPromos } = await supabase.from('promo_codes').select('*').order('created_at', { ascending: false });
+        if (dbPromos) {
+          const mapped = dbPromos.map((p: any) => ({
+            code: p.code,
+            discountPercentage: Number(p.discount_percentage),
+            description: p.description,
+            isActive: !!p.is_active,
+            usedCount: p.used_count || 0,
+            usageLimit: p.usage_limit,
+            expiryDate: p.expiry_date
+          }));
+          setPromoCodes(mapped);
+        }
+
+        // Fetch Subscribers
+        const { data: dbSubscribers } = await supabase.from('subscribers').select('*').order('created_at', { ascending: false });
+        if (dbSubscribers) {
+          setSubscribers(dbSubscribers);
+        }
+
+        // Fetch Audit Logs
+        const { data: dbLogs } = await supabase.from('audit_logs').select('*').order('timestamp', { ascending: false });
+        if (dbLogs) {
+          setAuditLogs(dbLogs.map((l: any) => ({
+            id: l.id,
+            action: l.action,
+            user: l.user,
+            role: l.role,
+            timestamp: l.timestamp.replace('T', ' ').substring(0, 19)
+          })));
+        }
+
+        // Fetch Media library
+        const { data: dbMedia, error: mediaError } = await supabase.storage.from('media').list();
+        if (!mediaError && dbMedia) {
+          const mapped = dbMedia.map(file => {
+            const { data: publicUrlData } = supabase.storage.from('media').getPublicUrl(file.name);
+            return {
+              name: file.name,
+              type: file.metadata?.mimetype?.startsWith('video') ? 'video' : 'image',
+              size: `${(file.metadata?.size / 1024).toFixed(1)}KB`,
+              url: publicUrlData.publicUrl
+            };
+          });
+          setMediaList(mapped);
+        }
+      } catch (err) {
+        console.error('Failed to sync CMS data from Supabase live database:', err);
+      }
+    }
+
+    loadCMSData();
+  }, [isAuthenticated]);
 
   // Dashboard Active Tab
   const [activeTab, setActiveTab] = useState<string>('overview');
@@ -154,35 +265,144 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
   }, [auditLogs]);
 
   // Handle Login
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (adminEmail === 'admin@gohardluxury.com' && adminPassword === 'admin123') {
-      setIsAuthenticated(true);
-      localStorage.setItem('GHL_ADMIN_AUTH', 'true');
-      setAuthError('');
-      addAuditLog(`Logged in successfully as ${adminRole}`);
+    setAuthError('');
+    if (isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: adminEmail,
+          password: adminPassword
+        });
+        if (error) {
+          // Fallback credentials check
+          if (adminEmail === 'admin@gohardluxury.com' && adminPassword === 'admin123') {
+            setIsAuthenticated(true);
+            localStorage.setItem('GHL_ADMIN_AUTH', 'true');
+            addAuditLog(`Logged in successfully as ${adminRole} (Local fallback)`);
+            return;
+          }
+          throw error;
+        }
+        if (data?.user) {
+          setIsAuthenticated(true);
+          const role = data.user.user_metadata?.role || adminRole;
+          setAdminRole(role);
+          addAuditLog(`Logged in successfully as ${role}`);
+        }
+      } catch (err: any) {
+        setAuthError(err.message || 'INVALID ADMINISTRATIVE COORDINATES (Email/Password mismatch).');
+      }
     } else {
-      setAuthError('INVALID ADMINISTRATIVE COORDINATES (Email/Password mismatch).');
+      if (adminEmail === 'admin@gohardluxury.com' && adminPassword === 'admin123') {
+        setIsAuthenticated(true);
+        localStorage.setItem('GHL_ADMIN_AUTH', 'true');
+        addAuditLog(`Logged in successfully as ${adminRole}`);
+      } else {
+        setAuthError('INVALID ADMINISTRATIVE COORDINATES (Email/Password mismatch).');
+      }
     }
   };
 
   // Handle Logout
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    if (isSupabaseConfigured) {
+      await supabase.auth.signOut();
+    }
     setIsAuthenticated(false);
     localStorage.removeItem('GHL_ADMIN_AUTH');
     addAuditLog('Logged out of system session');
   };
 
   // Add Audit Log helper
-  const addAuditLog = (action: string) => {
+  const addAuditLog = async (action: string) => {
+    const timestampStr = new Date().toISOString().replace('T', ' ').substring(0, 19);
     const newLog: AuditLog = {
       id: Date.now().toString(),
       action,
       user: adminEmail,
       role: adminRole,
-      timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19)
+      timestamp: timestampStr
     };
     setAuditLogs(prev => [newLog, ...prev]);
+
+    if (isSupabaseConfigured) {
+      try {
+        await supabase.from('audit_logs').insert({
+          action,
+          user: adminEmail,
+          role: adminRole
+        });
+      } catch (err) {
+        console.error('Failed to save audit log to Supabase:', err);
+      }
+    }
+  };
+
+  // Media Library Actions
+  const handleUploadFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (isSupabaseConfigured) {
+      try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+        
+        // Upload file to bucket 'media'
+        const { error } = await supabase.storage.from('media').upload(fileName, file);
+        if (error) throw error;
+
+        // Get public URL
+        const { data: publicUrlData } = supabase.storage.from('media').getPublicUrl(fileName);
+        const newMedia = {
+          name: fileName,
+          type: file.type.startsWith('video') ? 'video' : 'image',
+          size: `${(file.size / 1024).toFixed(1)}KB`,
+          url: publicUrlData.publicUrl
+        };
+        setMediaList(prev => [newMedia, ...prev]);
+        addAuditLog(`Uploaded media asset: ${fileName}`);
+        addNotification(`Asset ${fileName} uploaded successfully.`, 'success');
+      } catch (err: any) {
+        alert('Upload failed: ' + err.message);
+      }
+    } else {
+      // Mock local upload
+      const reader = new FileReader();
+      reader.onload = () => {
+        const newMedia = {
+          name: file.name,
+          type: file.type.startsWith('video') ? 'video' : 'image',
+          size: `${(file.size / 1024).toFixed(1)}KB`,
+          url: reader.result as string
+        };
+        setMediaList(prev => [newMedia, ...prev]);
+        addAuditLog(`Uploaded media mock: ${file.name}`);
+        addNotification(`Mock upload completed locally.`, 'success');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleDeleteMedia = async (name: string) => {
+    if (!confirm(`Are you sure you want to permanently delete media asset "${name}"?`)) return;
+
+    if (isSupabaseConfigured) {
+      try {
+        const { error } = await supabase.storage.from('media').remove([name]);
+        if (error) throw error;
+        setMediaList(prev => prev.filter(m => m.name !== name));
+        addAuditLog(`Deleted media asset: ${name}`);
+        addNotification(`Deleted media asset ${name}.`, 'warning');
+      } catch (err: any) {
+        alert('Failed to delete media asset: ' + err.message);
+      }
+    } else {
+      setMediaList(prev => prev.filter(m => m.name !== name));
+      addAuditLog(`Deleted media mock: ${name}`);
+      addNotification(`Deleted local media mock.`, 'warning');
+    }
   };
 
   // Add subscriber email helper (mock triggers)
@@ -203,26 +423,65 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
   };
 
   // Product Actions
-  const handleSaveProduct = (e: React.FormEvent) => {
+  const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!productForm.name || !productForm.id) {
       alert('Product Name and ID/Slug are required.');
       return;
     }
 
-    if (isCreatingProduct) {
-      // Check for duplicate ID
-      if (products.some(p => p.id === productForm.id)) {
-        alert('Product ID already exists. Please make it unique.');
+    if (isSupabaseConfigured) {
+      try {
+        const dbProductRow = {
+          id: productForm.id,
+          name: productForm.name,
+          price: productForm.price,
+          category: productForm.category,
+          description: productForm.description,
+          details: productForm.details,
+          sizes: productForm.sizes,
+          images: productForm.images,
+          sold_out: !!productForm.soldOut,
+          badge: productForm.badge,
+          quotes: productForm.quotes,
+          release_date: productForm.releaseDate
+        };
+
+        if (isCreatingProduct) {
+          if (products.some(p => p.id === productForm.id)) {
+            alert('Product ID already exists. Please make it unique.');
+            return;
+          }
+          const { error } = await supabase.from('products').insert(dbProductRow);
+          if (error) throw error;
+          setProducts(prev => [productForm, ...prev]);
+          addAuditLog(`Created product specimen: ${productForm.name} (${productForm.id})`);
+          addNotification(`Product "${productForm.name}" created successfully.`, 'success');
+        } else {
+          const { error } = await supabase.from('products').update(dbProductRow).eq('id', productForm.id);
+          if (error) throw error;
+          setProducts(prev => prev.map(p => p.id === productForm.id ? productForm : p));
+          addAuditLog(`Updated product coordinates: ${productForm.name} (${productForm.id})`);
+          addNotification(`Product "${productForm.name}" updated successfully.`, 'success');
+        }
+      } catch (err: any) {
+        alert('Failed to save product in database: ' + err.message);
         return;
       }
-      setProducts(prev => [productForm, ...prev]);
-      addAuditLog(`Created product specimen: ${productForm.name} (${productForm.id})`);
-      addNotification(`Product "${productForm.name}" created successfully.`, 'success');
     } else {
-      setProducts(prev => prev.map(p => p.id === productForm.id ? productForm : p));
-      addAuditLog(`Updated product coordinates: ${productForm.name} (${productForm.id})`);
-      addNotification(`Product "${productForm.name}" updated successfully.`, 'success');
+      if (isCreatingProduct) {
+        if (products.some(p => p.id === productForm.id)) {
+          alert('Product ID already exists. Please make it unique.');
+          return;
+        }
+        setProducts(prev => [productForm, ...prev]);
+        addAuditLog(`Created product specimen: ${productForm.name} (${productForm.id})`);
+        addNotification(`Product "${productForm.name}" created successfully.`, 'success');
+      } else {
+        setProducts(prev => prev.map(p => p.id === productForm.id ? productForm : p));
+        addAuditLog(`Updated product coordinates: ${productForm.name} (${productForm.id})`);
+        addNotification(`Product "${productForm.name}" updated successfully.`, 'success');
+      }
     }
     
     setIsCreatingProduct(false);
@@ -236,23 +495,61 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
     setEditingProduct(product);
   };
 
-  const handleDeleteProduct = (productId: string, productName: string) => {
+  const handleDeleteProduct = async (productId: string, productName: string) => {
     if (confirm(`Are you sure you want to permanently delete product "${productName}"?`)) {
-      setProducts(prev => prev.filter(p => p.id !== productId));
-      addAuditLog(`Deleted product specimen: ${productName} (${productId})`);
-      addNotification(`Product "${productName}" deleted.`, 'warning');
+      if (isSupabaseConfigured) {
+        try {
+          const { error } = await supabase.from('products').delete().eq('id', productId);
+          if (error) throw error;
+          setProducts(prev => prev.filter(p => p.id !== productId));
+          addAuditLog(`Deleted product specimen: ${productName} (${productId})`);
+          addNotification(`Product "${productName}" deleted.`, 'warning');
+        } catch (err: any) {
+          alert('Failed to delete product: ' + err.message);
+        }
+      } else {
+        setProducts(prev => prev.filter(p => p.id !== productId));
+        addAuditLog(`Deleted product specimen: ${productName} (${productId})`);
+        addNotification(`Product "${productName}" deleted.`, 'warning');
+      }
     }
   };
 
-  const handleDuplicateProduct = (product: Product) => {
+  const handleDuplicateProduct = async (product: Product) => {
     const duplicated = {
       ...product,
       id: `${product.id}-copy-${Math.floor(100 + Math.random() * 900)}`,
       name: `${product.name} (Copy)`
     };
-    setProducts(prev => [duplicated, ...prev]);
-    addAuditLog(`Duplicated product specimen: ${product.name} to ${duplicated.name}`);
-    addNotification(`Duplicated "${product.name}" as "${duplicated.name}".`, 'success');
+
+    if (isSupabaseConfigured) {
+      try {
+        const { error } = await supabase.from('products').insert({
+          id: duplicated.id,
+          name: duplicated.name,
+          price: duplicated.price,
+          category: duplicated.category,
+          description: duplicated.description,
+          details: duplicated.details,
+          sizes: duplicated.sizes,
+          images: duplicated.images,
+          sold_out: !!duplicated.soldOut,
+          badge: duplicated.badge,
+          quotes: duplicated.quotes,
+          release_date: duplicated.releaseDate
+        });
+        if (error) throw error;
+        setProducts(prev => [duplicated, ...prev]);
+        addAuditLog(`Duplicated product specimen: ${product.name} to ${duplicated.name}`);
+        addNotification(`Duplicated "${product.name}" as "${duplicated.name}".`, 'success');
+      } catch (err: any) {
+        alert('Failed to duplicate product: ' + err.message);
+      }
+    } else {
+      setProducts(prev => [duplicated, ...prev]);
+      addAuditLog(`Duplicated product specimen: ${product.name} to ${duplicated.name}`);
+      addNotification(`Duplicated "${product.name}" as "${duplicated.name}".`, 'success');
+    }
   };
 
   // Collection Actions
@@ -278,14 +575,26 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
   };
 
   // Order Actions
-  const handleUpdateOrderStatus = (orderId: string, newStatus: string) => {
-    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
-    addAuditLog(`Updated order status for ${orderId} to: ${newStatus}`);
-    addNotification(`Order ${orderId} updated to ${newStatus}.`, 'info');
+  const handleUpdateOrderStatus = async (orderId: string, newStatus: string) => {
+    if (isSupabaseConfigured) {
+      try {
+        const { error } = await supabase.from('orders').update({ status: newStatus }).eq('id', orderId);
+        if (error) throw error;
+        setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+        addAuditLog(`Updated order status for ${orderId} to: ${newStatus}`);
+        addNotification(`Order ${orderId} updated to ${newStatus}.`, 'info');
+      } catch (err: any) {
+        alert('Failed to update order status: ' + err.message);
+      }
+    } else {
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+      addAuditLog(`Updated order status for ${orderId} to: ${newStatus}`);
+      addNotification(`Order ${orderId} updated to ${newStatus}.`, 'info');
+    }
   };
 
   // Promo Code Actions
-  const handleCreatePromoCode = (code: string, discount: number, desc: string) => {
+  const handleCreatePromoCode = async (code: string, discount: number, desc: string) => {
     if (!code || isNaN(discount)) return;
     const cleanCode = code.trim().toUpperCase();
     if (promoCodes.some(p => p.code === cleanCode)) {
@@ -299,8 +608,26 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
       isActive: true,
       usedCount: 0
     };
-    setPromoCodes(prev => [newPromo, ...prev]);
-    addAuditLog(`Created promo code discount: ${cleanCode} (${discount}%)`);
+
+    if (isSupabaseConfigured) {
+      try {
+        const { error } = await supabase.from('promo_codes').insert({
+          code: newPromo.code,
+          discount_percentage: newPromo.discountPercentage,
+          description: newPromo.description,
+          is_active: newPromo.isActive,
+          used_count: newPromo.usedCount
+        });
+        if (error) throw error;
+        setPromoCodes(prev => [newPromo, ...prev]);
+        addAuditLog(`Created promo code discount: ${cleanCode} (${discount}%)`);
+      } catch (err: any) {
+        alert('Failed to create promo code: ' + err.message);
+      }
+    } else {
+      setPromoCodes(prev => [newPromo, ...prev]);
+      addAuditLog(`Created promo code discount: ${cleanCode} (${discount}%)`);
+    }
   };
 
   // Calculate Metrics
@@ -1148,11 +1475,33 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
                   </div>
 
                   <form 
-                    onSubmit={(e) => {
+                    onSubmit={async (e) => {
                       e.preventDefault();
                       setHomepageConfig(homepageConfig);
                       addAuditLog('Saved customized homepage content configurations');
                       addNotification('Homepage visual configs saved.', 'success');
+
+                      if (isSupabaseConfigured) {
+                        try {
+                          const { error } = await supabase
+                            .from('homepage_config')
+                            .update({
+                              announcement_text: homepageConfig.announcementText,
+                              announcement_enabled: !!homepageConfig.announcementEnabled,
+                              hero_headline: homepageConfig.heroHeadline,
+                              hero_subheadline: homepageConfig.heroSubheadline,
+                              hero_description: homepageConfig.heroDescription,
+                              hero_video_url: homepageConfig.heroVideoUrl,
+                              cta_text: homepageConfig.ctaText,
+                              featured_collection_category: homepageConfig.featuredCollectionCategory
+                            })
+                            .eq('id', 'singleton');
+                          if (error) throw error;
+                          console.log('Homepage configuration successfully saved to Supabase.');
+                        } catch (err: any) {
+                          alert('Failed to save configuration to live database: ' + err.message);
+                        }
+                      }
                     }}
                     className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs font-mono"
                   >
@@ -1387,43 +1736,81 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
               {activeTab === 'media' && (
                 <div className="bg-[#141414] border border-[#262626] p-6 rounded-xl space-y-6">
                   
-                  {/* File Upload drag card mock */}
-                  <div className="border border-dashed border-[#262626] rounded-xl p-8 text-center space-y-3.5 bg-[#0A0A0A]/50 relative hover:border-[#39FF88]/50 transition-colors cursor-pointer" onClick={() => alert('Drag & Drop Uploader Simulator:\nFile drops processed dynamically inside client-state.')}>
+                  {/* File Upload drag card */}
+                  <div 
+                    className="border border-dashed border-[#262626] rounded-xl p-8 text-center space-y-3.5 bg-[#0A0A0A]/50 relative hover:border-[#39FF88]/50 transition-colors cursor-pointer"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <input 
+                      type="file" 
+                      ref={fileInputRef} 
+                      onChange={handleUploadFile} 
+                      className="hidden" 
+                      accept="image/*,video/mp4" 
+                    />
                     <div className="text-zinc-500 font-mono text-xs uppercase font-bold">
-                      DRAG & DROP STREETWEAR MEDIA ARCHIVE FILES HERE
+                      CLICK OR DRAG STREETWEAR MEDIA ARCHIVE FILES TO UPLOAD
                     </div>
                     <p className="text-[10px] text-zinc-600 font-mono uppercase tracking-widest">
                       Accepts: JPEGs, PNGs, and compressed mp4 loops (Max 80MB)
                     </p>
-                    <button className="bg-white text-black px-4 py-2 font-mono text-[10px] font-black rounded-lg uppercase tracking-widest mx-auto block">
-                      CHOOSE FILES
+                    <button className="bg-white text-black px-4 py-2 font-mono text-[10px] font-black rounded-lg uppercase tracking-widest mx-auto block cursor-pointer">
+                      CHOOSE FILES_
                     </button>
                   </div>
 
                   {/* Media gallery grid */}
                   <div className="space-y-4">
                     <span className="font-display font-black text-xs uppercase text-zinc-400 tracking-wider block pb-2 border-b border-[#262626]">
-                      STORED MEDIA SPECIMENS
+                      STORED MEDIA SPECIMENS ({mediaList.length})
                     </span>
 
                     <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
-                      {[
-                        { label: 'Lookbook Loop Video', type: 'video', size: '5.9MB' },
-                        { label: 'Visor Cap Front Vector', type: 'image', size: '124KB' },
-                        { label: 'Shortsleeve Polo Knit', type: 'image', size: '256KB' },
-                        { label: 'Industrial Denim Blue', type: 'image', size: '312KB' }
-                      ].map((file, idx) => (
-                        <div key={idx} className="bg-[#0A0A0A] border border-[#262626] rounded-xl p-3 flex flex-col justify-between h-36 hover:border-zinc-700 transition-colors relative group">
-                          <div className="bg-zinc-900/40 rounded-lg flex-1 flex items-center justify-center text-zinc-600 group-hover:text-[#39FF88] transition-colors mb-2.5 border border-white/5">
-                            {file.type === 'video' ? <Video size={24} /> : <FolderOpen size={24} />}
+                      {mediaList.map((file, idx) => (
+                        <div key={idx} className="bg-[#0A0A0A] border border-[#262626] rounded-xl p-3 flex flex-col justify-between h-40 hover:border-zinc-700 transition-colors relative group">
+                          
+                          {/* Delete action overlay */}
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteMedia(file.name);
+                            }}
+                            className="absolute top-2 right-2 p-1.5 bg-red-950/80 border border-red-800 text-red-400 hover:bg-red-900 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity z-20 cursor-pointer"
+                            title="Delete file"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+
+                          {/* Image/Video preview context */}
+                          <div className="bg-zinc-900/40 rounded-lg flex-1 flex items-center justify-center text-zinc-600 group-hover:text-[#39FF88] transition-colors mb-2.5 border border-white/5 overflow-hidden h-24">
+                            {file.type === 'video' ? (
+                              <Video size={24} />
+                            ) : file.url.startsWith('data:') || file.url.startsWith('http') || file.url.startsWith('/') ? (
+                              <img src={file.url} alt={file.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <FolderOpen size={24} />
+                            )}
                           </div>
+                          
                           <div className="space-y-0.5">
-                            <span className="font-mono text-[10px] text-white block truncate uppercase font-bold">{file.label}</span>
-                            <div className="flex justify-between items-center text-[8px] font-mono text-zinc-500">
-                              <span>{file.type.toUpperCase()}</span>
+                            <span className="font-mono text-[9px] text-white block truncate uppercase font-bold" title={file.name}>
+                              {file.name}
+                            </span>
+                            <div className="flex justify-between items-center text-[7px] font-mono text-zinc-500">
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigator.clipboard.writeText(file.url);
+                                  alert('Public URL copied to clipboard!');
+                                }}
+                                className="hover:text-white transition-colors cursor-pointer text-[7px] uppercase font-bold"
+                              >
+                                [Copy Coords]
+                              </button>
                               <span>{file.size}</span>
                             </div>
                           </div>
+
                         </div>
                       ))}
                     </div>

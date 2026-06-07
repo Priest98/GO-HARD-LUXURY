@@ -7,6 +7,7 @@ import { ProductCard } from './components/ProductCard';
 import { ProductDetailModal } from './components/ProductDetailModal';
 import { CartSidebar } from './components/CartSidebar';
 import { AdminCMS } from './components/AdminCMS';
+import { supabase, isSupabaseConfigured } from './supabaseClient';
 
 export default function App() {
   // State elements - Persistent Products database
@@ -116,6 +117,93 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('GHL_HOMEPAGE_CONFIG', JSON.stringify(homepageConfig));
   }, [homepageConfig]);
+
+  // Sync state with Supabase live database
+  useEffect(() => {
+    async function loadData() {
+      if (!isSupabaseConfigured) return;
+
+      try {
+        // Fetch products
+        const { data: dbProducts, error: prodError } = await supabase
+          .from('products')
+          .select('*')
+          .order('release_date', { ascending: false });
+
+        if (prodError) throw prodError;
+
+        if (dbProducts && dbProducts.length > 0) {
+          const mapped = dbProducts.map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            price: Number(p.price),
+            category: p.category,
+            description: p.description || '',
+            details: p.details || [],
+            sizes: p.sizes || [],
+            images: p.images || [],
+            soldOut: !!p.sold_out,
+            badge: p.badge || '',
+            quotes: p.quotes || '',
+            releaseDate: p.release_date
+          }));
+          setProducts(mapped);
+          localStorage.setItem('GHL_PRODUCTS', JSON.stringify(mapped));
+        }
+
+        // Fetch homepage config
+        const { data: dbConfig, error: configError } = await supabase
+          .from('homepage_config')
+          .select('*')
+          .eq('id', 'singleton')
+          .maybeSingle();
+
+        if (configError) throw configError;
+
+        if (dbConfig) {
+          const mappedConfig = {
+            announcementText: dbConfig.announcement_text,
+            announcementEnabled: !!dbConfig.announcement_enabled,
+            heroHeadline: dbConfig.hero_headline,
+            heroSubheadline: dbConfig.hero_subheadline,
+            heroDescription: dbConfig.hero_description,
+            heroVideoUrl: dbConfig.hero_video_url,
+            ctaText: dbConfig.cta_text,
+            featuredCollectionCategory: dbConfig.featured_collection_category || 'ALL'
+          };
+          setHomepageConfig(mappedConfig);
+          localStorage.setItem('GHL_HOMEPAGE_CONFIG', JSON.stringify(mappedConfig));
+        }
+
+        // Fetch orders
+        const { data: dbOrders, error: orderError } = await supabase
+          .from('orders')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (orderError) throw orderError;
+
+        if (dbOrders) {
+          const mappedOrders = dbOrders.map((o: any) => ({
+            id: o.id,
+            date: o.date,
+            customerName: o.customer_name,
+            customerEmail: o.customer_email,
+            items: o.items,
+            totalAmount: Number(o.total_amount),
+            status: o.status,
+            paymentStatus: o.payment_status
+          }));
+          setOrders(mappedOrders);
+          localStorage.setItem('GHL_ORDERS', JSON.stringify(mappedOrders));
+        }
+      } catch (err) {
+        console.error('Failed to sync data from Supabase live backend:', err);
+      }
+    }
+
+    loadData();
+  }, []);
 
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -822,7 +910,7 @@ export default function App() {
         onUpdateQty={handleUpdateQty}
         onRemoveItem={handleRemoveItem}
         onClearCart={handleClearCart}
-        onOrderComplete={(orderData) => {
+        onOrderComplete={async (orderData) => {
           const newOrder = {
             id: `GHL-REG-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(100 + Math.random() * 900)}`,
             date: new Date().toISOString().replace('T', ' ').substring(0, 16),
@@ -831,6 +919,27 @@ export default function App() {
             paymentStatus: 'Paid'
           };
           setOrders(prev => [newOrder, ...prev]);
+
+          if (isSupabaseConfigured) {
+            try {
+              const { error } = await supabase
+                .from('orders')
+                .insert({
+                  id: newOrder.id,
+                  date: newOrder.date,
+                  customer_name: newOrder.customerName,
+                  customer_email: newOrder.customerEmail,
+                  items: newOrder.items,
+                  total_amount: newOrder.totalAmount,
+                  status: newOrder.status,
+                  payment_status: newOrder.paymentStatus
+                });
+              if (error) throw error;
+              console.log('Order successfully synced to Supabase:', newOrder.id);
+            } catch (err) {
+              console.error('Failed to sync checkout transaction to Supabase:', err);
+            }
+          }
         }}
       />
 
