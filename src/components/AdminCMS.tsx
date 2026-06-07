@@ -320,7 +320,7 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
 
       {/* LOGIN OVERLAY PANEL */}
       {!isAuthenticated && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0A0A0A] p-4 relative overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0A0A0A] p-4 overflow-hidden">
           {/* Logo element back */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full text-center z-0 pointer-events-none select-none opacity-[0.02] leading-none font-black text-[30vw] outline-text uppercase tracking-tighter">
             GHL
