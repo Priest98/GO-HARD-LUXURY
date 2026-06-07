@@ -223,3 +223,94 @@ select:-webkit-autofill:focus {
   -webkit-box-shadow: 0 0 0px 1000px var(--color-brand-matte) inset !important;
   transition: background-color 5000s ease-in-out 0s;
 }
+
+/* Align Admin Dashboard background colors with website brand system */
+.bg-\[\#0A0A0A\],
+.bg-\[\#0a0a0a\],
+.bg-\[\#0E0E0E\],
+.bg-\[\#0e0e0e\],
+.bg-\[\#0b0b0b\],
+.bg-\[\#0d0d0d\],
+.hover\:bg-\[\#0A0A0A\]\/40:hover,
+.hover\:bg-\[\#0a0a0a\]\/40:hover {
+  background-color: var(--color-brand-matte) !important;
+}
+
+.bg-\[\#141414\],
+.bg-\[\#141414\]\/40,
+.bg-\[\#141414\]\/60,
+.hover\:bg-\[\#141414\]\/20:hover {
+  background-color: var(--color-brand-darkgray) !important;
+}
+
+.border-\[\#262626\] {
+  border-color: var(--border-color-alpha) !important;
+}
+
+/* Align Admin Dashboard accent colors with website neon brand colors */
+.text-\[\#39FF88\],
+.text-\[\#39ff88\] {
+  color: var(--color-brand-neon) !important;
+}
+
+.bg-\[\#39FF88\],
+.bg-\[\#39ff88\] {
+  background-color: var(--color-brand-neon) !important;
+  color: var(--color-brand-matte) !important;
+}
+
+.bg-\[\#39FF88\]\/10,
+.bg-\[\#39ff88\]\/10 {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+:root.light .bg-\[\#39FF88\]\/10,
+:root.light .bg-\[\#39ff88\]\/10 {
+  background-color: rgba(21, 20, 17, 0.08) !important;
+}
+
+.bg-\[\#39FF88\]\/5,
+.bg-\[\#39ff88\]\/5 {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+}
+:root.light .bg-\[\#39FF88\]\/5,
+:root.light .bg-\[\#39ff88\]\/5 {
+  background-color: rgba(21, 20, 17, 0.03) !important;
+}
+
+.border-\[\#39FF88\]\/20,
+.border-\[\#39ff88\]\/20,
+.border-\[\#39FF88\]\/25,
+.border-\[\#39ff88\]\/25,
+.border-\[\#39FF88\]\/30,
+.border-\[\#39ff88\]\/30,
+.hover\:border-\[\#39FF88\]:hover,
+.hover\:border-\[\#39ff88\]:hover,
+.focus\:border-\[\#39FF88\]:focus,
+.focus\:border-\[\#39ff88\]:focus,
+.group-hover\:border-\[\#39FF88\]:hover,
+.group-hover\:border-\[\#39ff88\]:hover,
+.group-hover\:text-\[\#39FF88\]:hover,
+.group-hover\:text-\[\#39ff88\]:hover {
+  border-color: var(--color-brand-neon) !important;
+}
+
+.selection\:bg-\[\#39FF88\] *::selection,
+.selection\:bg-\[\#39FF88\]::selection {
+  background-color: var(--color-brand-neon) !important;
+  color: var(--color-brand-matte) !important;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--color-brand-neon) !important;
+}
+
+/* SVG Chart brand matching overrides */
+svg stop[stop-color="#39FF88"],
+svg stop[stop-color="#39ff88"] {
+  stop-color: var(--color-brand-neon) !important;
+}
+svg path[stroke="#39FF88"],
+svg path[stroke="#39ff88"] {
+  stroke: var(--color-brand-neon) !important;
+}
