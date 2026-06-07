@@ -14,6 +14,18 @@ interface CartSidebarProps {
   onUpdateQty: (productId: string, size: string, change: number) => void;
   onRemoveItem: (productId: string, size: string) => void;
   onClearCart: () => void;
+  onOrderComplete?: (orderData: {
+    customerName: string;
+    customerEmail: string;
+    items: {
+      productId: string;
+      productName: string;
+      size: string;
+      quantity: number;
+      price: number;
+    }[];
+    totalAmount: number;
+  }) => void;
 }
 
 export const CartSidebar: React.FC<CartSidebarProps> = ({
@@ -22,7 +34,8 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
   cartItems,
   onUpdateQty,
   onRemoveItem,
-  onClearCart
+  onClearCart,
+  onOrderComplete
 }) => {
   const [couponInput, setCouponInput] = useState<string>('');
   const [activeCoupon, setActiveCoupon] = useState<CouponCode | null>(null);
@@ -92,6 +105,20 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
             if (data.status === "successful" || data.charge_response_code === "00") {
               const randomID = `GHL-REG-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(100 + Math.random() * 900)}`;
               setOrderId(randomID);
+              if (onOrderComplete) {
+                onOrderComplete({
+                  customerName: shippingName,
+                  customerEmail: shippingEmail,
+                  items: cartItems.map(item => ({
+                    productId: item.product.id,
+                    productName: item.product.name,
+                    size: item.selectedSize,
+                    quantity: item.quantity,
+                    price: item.product.price
+                  })),
+                  totalAmount: grandTotal
+                });
+              }
               setIsSubmittingOrder(false);
               setCheckoutStep('complete');
             } else {
@@ -113,6 +140,20 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
       setTimeout(() => {
         const randomID = `GHL-REG-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(100 + Math.random() * 900)}`;
         setOrderId(randomID);
+        if (onOrderComplete) {
+          onOrderComplete({
+            customerName: shippingName,
+            customerEmail: shippingEmail,
+            items: cartItems.map(item => ({
+              productId: item.product.id,
+              productName: item.product.name,
+              size: item.selectedSize,
+              quantity: item.quantity,
+              price: item.product.price
+            })),
+            totalAmount: grandTotal
+          });
+        }
         setIsSubmittingOrder(false);
         setCheckoutStep('complete');
       }, 1500);

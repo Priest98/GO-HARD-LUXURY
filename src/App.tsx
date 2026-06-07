@@ -6,10 +6,117 @@ import { Product, CartItem, SortOption } from './types';
 import { ProductCard } from './components/ProductCard';
 import { ProductDetailModal } from './components/ProductDetailModal';
 import { CartSidebar } from './components/CartSidebar';
+import { AdminCMS } from './components/AdminCMS';
 
 export default function App() {
-  // State elements
-  const [products, setProducts] = useState<Product[]>(GHL_PRODUCTS);
+  // State elements - Persistent Products database
+  const [products, setProducts] = useState<Product[]>(() => {
+    const stored = localStorage.getItem('GHL_PRODUCTS');
+    if (stored) {
+      try {
+        return JSON.parse(stored);
+      } catch (e) {
+        console.error('Failed to parse stored products', e);
+      }
+    }
+    return GHL_PRODUCTS;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('GHL_PRODUCTS', JSON.stringify(products));
+  }, [products]);
+
+  // Admin Mode state
+  const [isAdminMode, setIsAdminMode] = useState<boolean>(() => window.location.hash === '#admin');
+  useEffect(() => {
+    const handleHashChange = () => {
+      setIsAdminMode(window.location.hash === '#admin');
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  // Persistent Orders state
+  const [orders, setOrders] = useState<any[]>(() => {
+    const stored = localStorage.getItem('GHL_ORDERS');
+    if (stored) {
+      try {
+        return JSON.parse(stored);
+      } catch (e) {
+        console.error('Failed to parse stored orders', e);
+      }
+    }
+    return [
+      {
+        id: 'GHL-REG-8472-105',
+        date: '2026-06-05 14:12',
+        customerName: 'Tunde Bello',
+        customerEmail: 'tunde@gmail.com',
+        items: [
+          { productId: 'ghl-silky-polo', productName: 'Ghl Silky Shortsleeve Polo', size: 'M', quantity: 2, price: 450000 }
+        ],
+        totalAmount: 900000,
+        status: 'Paid',
+        paymentStatus: 'Paid'
+      },
+      {
+        id: 'GHL-REG-9812-321',
+        date: '2026-06-06 18:34',
+        customerName: 'Chidi Okafor',
+        customerEmail: 'chidi.o@yahoo.com',
+        items: [
+          { productId: 'ghl-woven-polo', productName: 'Ghl Woven Shortsleeve Polo', size: 'L', quantity: 1, price: 480000 },
+          { productId: 'ghl-visor-cap', productName: 'Ghl Visor Cap', size: 'OS', quantity: 1, price: 120000 }
+        ],
+        totalAmount: 600000,
+        status: 'Delivered',
+        paymentStatus: 'Paid'
+      },
+      {
+        id: 'GHL-REG-1427-402',
+        date: '2026-06-07 11:22',
+        customerName: 'Amina Yusuf',
+        customerEmail: 'amina.y@gmail.com',
+        items: [
+          { productId: 'ghl-longsleeve-polo', productName: 'Ghl Longsleeve Polo', size: 'S', quantity: 1, price: 520000 }
+        ],
+        totalAmount: 520000,
+        status: 'Processing',
+        paymentStatus: 'Paid'
+      }
+    ];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('GHL_ORDERS', JSON.stringify(orders));
+  }, [orders]);
+
+  // Persistent Homepage Config state
+  const [homepageConfig, setHomepageConfig] = useState<any>(() => {
+    const stored = localStorage.getItem('GHL_HOMEPAGE_CONFIG');
+    if (stored) {
+      try {
+        return JSON.parse(stored);
+      } catch (e) {
+        console.error('Failed to parse stored homepage config', e);
+      }
+    }
+    return {
+      announcementText: "FREE SHIPPING ON ORDERS OVER ₦100,000 // CODE: GOHARD",
+      announcementEnabled: true,
+      heroHeadline: "GO HARD LUX.",
+      heroSubheadline: "FEATURED ARCHIVE_",
+      heroDescription: "Curating the intersection of street culture and technical precision. Designed for the unseen.",
+      heroVideoUrl: "/video/SaveClip.App_AQMNLLCOZx9fTFK3FwpUwBbLXY_YghRBoOy3hXzNcIETEuC6RS3rLLlRf25T3rHV7gddLaq6yVC83NKbvLi672p_CxBwfD3450dxLQs.mp4",
+      ctaText: "View Lookbook",
+      featuredCollectionCategory: "ALL"
+    };
+  });
+
+  useEffect(() => {
+    localStorage.setItem('GHL_HOMEPAGE_CONFIG', JSON.stringify(homepageConfig));
+  }, [homepageConfig]);
+
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [sortOption, setSortOption] = useState<SortOption>('newest');
@@ -164,6 +271,23 @@ export default function App() {
     return cartItems.reduce((sum, item) => sum + item.quantity, 0);
   };
 
+  if (isAdminMode) {
+    return (
+      <AdminCMS
+        onCloseStore={() => {
+          setIsAdminMode(false);
+          window.location.hash = '';
+        }}
+        products={products}
+        setProducts={setProducts}
+        homepageConfig={homepageConfig}
+        setHomepageConfig={setHomepageConfig}
+        orders={orders}
+        setOrders={setOrders}
+      />
+    );
+  }
+
   return (
     <div id="app-root-container" className="min-h-screen bg-brand-matte relative text-brand-offwhite selection:bg-brand-neon selection:text-brand-matte font-sans">
       {/* Structural Faint Background Grid Lines from Theme */}
@@ -175,7 +299,12 @@ export default function App() {
       </div>
 
       {/* Upper Tactical Ticker Bar */}
-      <div className="bg-brand-darkgray/90 text-[10px] uppercase font-mono py-2.5 px-4 md:px-8 border-b border-white/10 flex flex-wrap justify-end items-center gap-2 relative z-20">
+      <div className="bg-brand-darkgray/90 text-[10px] uppercase font-mono py-2.5 px-4 md:px-8 border-b border-white/10 flex justify-between items-center gap-2 relative z-20">
+        {homepageConfig.announcementEnabled ? (
+          <div className="text-brand-neon/80 font-black hidden sm:block animate-pulse tracking-wider">
+            {homepageConfig.announcementText}
+          </div>
+        ) : <div />}
         <div className="flex items-center gap-4 text-white">
           <div className="flex items-center gap-1">
             <Globe size={11} className="text-white/60" />
@@ -453,13 +582,14 @@ export default function App() {
       <section id="hero-banner-section" className="relative h-[85vh] min-h-[480px] sm:min-h-[580px] flex flex-col justify-between items-stretch pt-28 pb-12 px-6 md:px-12 text-left overflow-hidden border-b border-white/10 z-10 bg-[#080808]">
         {/* Background Video */}
         <video
+          key={homepageConfig.heroVideoUrl}
           autoPlay
           loop
           muted
           playsInline
           className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none opacity-40"
         >
-          <source src="/video/SaveClip.App_AQMNLLCOZx9fTFK3FwpUwBbLXY_YghRBoOy3hXzNcIETEuC6RS3rLLlRf25T3rHV7gddLaq6yVC83NKbvLi672p_CxBwfD3450dxLQs.mp4" type="video/mp4" />
+          <source src={homepageConfig.heroVideoUrl} type="video/mp4" />
         </video>
 
         {/* Ambient top dark shade overlay */}
@@ -475,9 +605,9 @@ export default function App() {
         {/* Top left grid reference info */}
         <div className="flex justify-between items-start z-10 w-full relative">
           <div className="max-w-md">
-            <span className="text-xs sm:text-sm md:text-base uppercase tracking-widest block font-black mb-2">FEATURED ARCHIVE_</span>
+            <span className="text-xs sm:text-sm md:text-base uppercase tracking-widest block font-black mb-2">{homepageConfig.heroSubheadline}</span>
             <p className="text-xs sm:text-sm leading-relaxed opacity-75">
-              Curating the intersection of street culture and technical precision. Designed for the unseen.
+              {homepageConfig.heroDescription}
             </p>
           </div>
         </div>
@@ -487,7 +617,7 @@ export default function App() {
           <h2
             className="font-display font-black text-5xl sm:text-8xl md:text-9xl tracking-tighter uppercase text-white leading-[0.8] mb-6"
           >
-            GO HARD LUX<span className="text-white">.</span>
+            {homepageConfig.heroHeadline}
           </h2>
           <p
             className="max-w-xl text-xs md:text-sm tracking-wide leading-relaxed opacity-70 mb-8"
@@ -513,7 +643,7 @@ export default function App() {
               className="bg-white text-black hover:bg-neutral-200 px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer w-full sm:w-auto text-center"
               style={{ borderRadius: '0px' }}
             >
-              View Lookbook
+              {homepageConfig.ctaText}
             </button>
           </div>
         </div>
@@ -666,11 +796,20 @@ export default function App() {
 
         <div className="max-w-7xl mx-auto mt-12 pt-8 border-t border-brand-midgray/15 flex flex-col md:flex-row justify-between items-center gap-4 text-brand-lightgray/55 text-[10px]">
           <span>© 2026 OFF THUG RACK DESIGN CO. ALL RIGHTS DISPATCHED FOR DEPLOYMENTS.</span>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-6">
             <a href="https://gohardluxury.com/#" target="_blank" rel="noreferrer" className="hover:text-brand-neon inline-flex items-center gap-1 cursor-pointer">
               <span>VISIT SOURCE SITE</span>
               <ExternalLink size={10} />
             </a>
+            <button 
+              onClick={() => {
+                setIsAdminMode(true);
+                window.location.hash = '#admin';
+              }} 
+              className="hover:text-brand-neon cursor-pointer font-bold tracking-widest uppercase text-[9px] flex items-center gap-1 bg-transparent border-none"
+            >
+              <span>[ADMIN PORTAL]</span>
+            </button>
           </div>
         </div>
       </footer>
@@ -683,6 +822,16 @@ export default function App() {
         onUpdateQty={handleUpdateQty}
         onRemoveItem={handleRemoveItem}
         onClearCart={handleClearCart}
+        onOrderComplete={(orderData) => {
+          const newOrder = {
+            id: `GHL-REG-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(100 + Math.random() * 900)}`,
+            date: new Date().toISOString().replace('T', ' ').substring(0, 16),
+            ...orderData,
+            status: 'Paid',
+            paymentStatus: 'Paid'
+          };
+          setOrders(prev => [newOrder, ...prev]);
+        }}
       />
 
       {/* Product Spec modal viewer details */}

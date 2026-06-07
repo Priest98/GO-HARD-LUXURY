@@ -1,0 +1,1699 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { 
+  LayoutDashboard, Package, FolderOpen, Users, CreditCard, 
+  Settings, Mail, Tags, History, LogOut, Plus, Search, 
+  Filter, TrendingUp, Layers, Copy, PlusCircle, X, Lock, 
+  AlertCircle, Eye, Video, Trash2, Edit, Check, ExternalLink, 
+  EyeOff, RefreshCw, Bell, AlertTriangle, ShieldCheck, Download
+} from 'lucide-react';
+import { Product, SortOption } from '../types';
+
+interface AdminCMSProps {
+  onCloseStore: () => void;
+  products: Product[];
+  setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
+  homepageConfig: any;
+  setHomepageConfig: (config: any) => void;
+  orders: any[];
+  setOrders: React.Dispatch<React.SetStateAction<any[]>>;
+}
+
+interface HomepageConfig {
+  announcementText: string;
+  announcementEnabled: boolean;
+  heroHeadline: string;
+  heroSubheadline: string;
+  heroDescription: string;
+  heroVideoUrl: string;
+  ctaText: string;
+  featuredCollectionCategory: string;
+}
+
+interface AuditLog {
+  id: string;
+  action: string;
+  user: string;
+  role: string;
+  timestamp: string;
+}
+
+interface PromoCode {
+  code: string;
+  discountPercentage: number;
+  description: string;
+  isActive: boolean;
+  usageLimit?: number;
+  usedCount: number;
+  expiryDate?: string;
+}
+
+export const AdminCMS: React.FC<AdminCMSProps> = ({
+  onCloseStore,
+  products,
+  setProducts,
+  homepageConfig,
+  setHomepageConfig,
+  orders,
+  setOrders
+}) => {
+  // Authentication State
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    return localStorage.getItem('GHL_ADMIN_AUTH') === 'true';
+  });
+  const [adminEmail, setAdminEmail] = useState<string>('admin@gohardluxury.com');
+  const [adminPassword, setAdminPassword] = useState<string>('');
+  const [adminRole, setAdminRole] = useState<'Super Admin' | 'Staff Manager' | 'Content Manager'>('Super Admin');
+  const [authError, setAuthError] = useState<string>('');
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showForgotModal, setShowForgotModal] = useState<boolean>(false);
+  const [forgotEmail, setForgotEmail] = useState<string>('');
+
+  // Dashboard Active Tab
+  const [activeTab, setActiveTab] = useState<string>('overview');
+
+  // Search & Filter States
+  const [productSearch, setProductSearch] = useState<string>('');
+  const [productFilterCat, setProductFilterCat] = useState<string>('ALL');
+
+  // Forms / Editing states
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [isCreatingProduct, setIsCreatingProduct] = useState<boolean>(false);
+  
+  // New Product Form Data
+  const initialProductState = {
+    id: '',
+    name: '',
+    price: 150000,
+    category: 'Tees' as any,
+    description: '',
+    details: [''],
+    sizes: ['S', 'M', 'L', 'XL'],
+    images: ['tees-black'], // Default mock key
+    soldOut: false,
+    badge: 'NEW ARRIVAL' as any,
+    quotes: '',
+    releaseDate: new Date().toISOString().split('T')[0]
+  };
+  const [productForm, setProductForm] = useState<any>(initialProductState);
+
+  // Collections State
+  const [collections, setCollections] = useState<string[]>(['ALL', 'POLOS', 'DENIM', 'TEES', 'ACCESSORIES']);
+  const [newCollectionName, setNewCollectionName] = useState<string>('');
+
+  // Promo Codes State
+  const [promoCodes, setPromoCodes] = useState<PromoCode[]>(() => {
+    const stored = localStorage.getItem('GHL_PROMO_CODES');
+    if (stored) return JSON.parse(stored);
+    return [
+      { code: 'GOHARD', discountPercentage: 15, description: '15% OFF Sitewide launch code', isActive: true, usedCount: 142 },
+      { code: 'THUG19', discountPercentage: 19, description: '19% OFF - The Official GHL discount', isActive: true, usedCount: 89 },
+      { code: 'WORTHIT', discountPercentage: 10, description: '10% OFF - loyal customer bonus', isActive: true, usedCount: 33 }
+    ];
+  });
+
+  // Newsletter Subscribers State
+  const [subscribers, setSubscribers] = useState<any[]>(() => {
+    const stored = localStorage.getItem('GHL_SUBSCRIBERS');
+    if (stored) return JSON.parse(stored);
+    return [
+      { email: 'anthony.b@gmail.com', date: '2026-06-01', source: 'Footer Form' },
+      { email: 'shade.yusuf@yahoo.com', date: '2026-06-03', source: 'Modal pop-up' },
+      { email: 'chidi.okafor@outlook.com', date: '2026-06-04', source: 'Footer Form' },
+      { email: 'bello.mustapha@gmail.com', date: '2026-06-06', source: 'Checkout Sync' }
+    ];
+  });
+
+  // Audit Logs State
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>(() => {
+    const stored = localStorage.getItem('GHL_AUDIT_LOGS');
+    if (stored) return JSON.parse(stored);
+    return [
+      { id: '1', action: 'Admin Portal Session Initialized', user: 'admin@gohardluxury.com', role: 'Super Admin', timestamp: '2026-06-07 10:43:21' },
+      { id: '2', action: 'Updated Announcement Bar Toggle to Active', user: 'admin@gohardluxury.com', role: 'Super Admin', timestamp: '2026-06-07 11:12:05' }
+    ];
+  });
+
+  // Dashboard Notifications
+  const [notifications, setNotifications] = useState<any[]>([
+    { id: 'n1', message: 'New order #GHL-9812 placed by Amina Yusuf', type: 'info', read: false },
+    { id: 'n2', message: 'Low stock warning: Ghl Visor Cap is below 5 units', type: 'warning', read: false }
+  ]);
+
+  // Sync states to local storage
+  useEffect(() => {
+    localStorage.setItem('GHL_PROMO_CODES', JSON.stringify(promoCodes));
+  }, [promoCodes]);
+
+  useEffect(() => {
+    localStorage.setItem('GHL_SUBSCRIBERS', JSON.stringify(subscribers));
+  }, [subscribers]);
+
+  useEffect(() => {
+    localStorage.setItem('GHL_AUDIT_LOGS', JSON.stringify(auditLogs));
+  }, [auditLogs]);
+
+  // Handle Login
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (adminEmail === 'admin@gohardluxury.com' && adminPassword === 'admin123') {
+      setIsAuthenticated(true);
+      localStorage.setItem('GHL_ADMIN_AUTH', 'true');
+      setAuthError('');
+      addAuditLog(`Logged in successfully as ${adminRole}`);
+    } else {
+      setAuthError('INVALID ADMINISTRATIVE COORDINATES (Email/Password mismatch).');
+    }
+  };
+
+  // Handle Logout
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    localStorage.removeItem('GHL_ADMIN_AUTH');
+    addAuditLog('Logged out of system session');
+  };
+
+  // Add Audit Log helper
+  const addAuditLog = (action: string) => {
+    const newLog: AuditLog = {
+      id: Date.now().toString(),
+      action,
+      user: adminEmail,
+      role: adminRole,
+      timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19)
+    };
+    setAuditLogs(prev => [newLog, ...prev]);
+  };
+
+  // Add subscriber email helper (mock triggers)
+  const addSubscriber = (email: string) => {
+    if (subscribers.some(sub => sub.email.toLowerCase() === email.toLowerCase())) return;
+    const newSub = {
+      email,
+      date: new Date().toISOString().split('T')[0],
+      source: 'Admin Add'
+    };
+    setSubscribers(prev => [newSub, ...prev]);
+    addAuditLog(`Added newsletter subscriber: ${email}`);
+  };
+
+  // Add notification helper
+  const addNotification = (message: string, type: 'info' | 'warning' | 'success') => {
+    setNotifications(prev => [{ id: Date.now().toString(), message, type, read: false }, ...prev]);
+  };
+
+  // Product Actions
+  const handleSaveProduct = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!productForm.name || !productForm.id) {
+      alert('Product Name and ID/Slug are required.');
+      return;
+    }
+
+    if (isCreatingProduct) {
+      // Check for duplicate ID
+      if (products.some(p => p.id === productForm.id)) {
+        alert('Product ID already exists. Please make it unique.');
+        return;
+      }
+      setProducts(prev => [productForm, ...prev]);
+      addAuditLog(`Created product specimen: ${productForm.name} (${productForm.id})`);
+      addNotification(`Product "${productForm.name}" created successfully.`, 'success');
+    } else {
+      setProducts(prev => prev.map(p => p.id === productForm.id ? productForm : p));
+      addAuditLog(`Updated product coordinates: ${productForm.name} (${productForm.id})`);
+      addNotification(`Product "${productForm.name}" updated successfully.`, 'success');
+    }
+    
+    setIsCreatingProduct(false);
+    setEditingProduct(null);
+    setProductForm(initialProductState);
+  };
+
+  const handleEditProductClick = (product: Product) => {
+    setProductForm({ ...product });
+    setIsCreatingProduct(false);
+    setEditingProduct(product);
+  };
+
+  const handleDeleteProduct = (productId: string, productName: string) => {
+    if (confirm(`Are you sure you want to permanently delete product "${productName}"?`)) {
+      setProducts(prev => prev.filter(p => p.id !== productId));
+      addAuditLog(`Deleted product specimen: ${productName} (${productId})`);
+      addNotification(`Product "${productName}" deleted.`, 'warning');
+    }
+  };
+
+  const handleDuplicateProduct = (product: Product) => {
+    const duplicated = {
+      ...product,
+      id: `${product.id}-copy-${Math.floor(100 + Math.random() * 900)}`,
+      name: `${product.name} (Copy)`
+    };
+    setProducts(prev => [duplicated, ...prev]);
+    addAuditLog(`Duplicated product specimen: ${product.name} to ${duplicated.name}`);
+    addNotification(`Duplicated "${product.name}" as "${duplicated.name}".`, 'success');
+  };
+
+  // Collection Actions
+  const handleAddCollection = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCollectionName) return;
+    const cleanName = newCollectionName.trim().toUpperCase();
+    if (collections.includes(cleanName)) {
+      alert('Collection already exists.');
+      return;
+    }
+    setCollections(prev => [...prev, cleanName]);
+    setNewCollectionName('');
+    addAuditLog(`Added collection category: ${cleanName}`);
+  };
+
+  const handleDeleteCollection = (name: string) => {
+    if (name === 'ALL') return;
+    if (confirm(`Are you sure you want to delete collection "${name}"?`)) {
+      setCollections(prev => prev.filter(c => c !== name));
+      addAuditLog(`Deleted collection category: ${name}`);
+    }
+  };
+
+  // Order Actions
+  const handleUpdateOrderStatus = (orderId: string, newStatus: string) => {
+    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+    addAuditLog(`Updated order status for ${orderId} to: ${newStatus}`);
+    addNotification(`Order ${orderId} updated to ${newStatus}.`, 'info');
+  };
+
+  // Promo Code Actions
+  const handleCreatePromoCode = (code: string, discount: number, desc: string) => {
+    if (!code || isNaN(discount)) return;
+    const cleanCode = code.trim().toUpperCase();
+    if (promoCodes.some(p => p.code === cleanCode)) {
+      alert('Coupon code already exists.');
+      return;
+    }
+    const newPromo: PromoCode = {
+      code: cleanCode,
+      discountPercentage: discount,
+      description: desc,
+      isActive: true,
+      usedCount: 0
+    };
+    setPromoCodes(prev => [newPromo, ...prev]);
+    addAuditLog(`Created promo code discount: ${cleanCode} (${discount}%)`);
+  };
+
+  // Calculate Metrics
+  const totalRevenue = orders
+    .filter(o => o.status !== 'Cancelled')
+    .reduce((sum, o) => sum + o.totalAmount, 0);
+  const totalOrders = orders.length;
+  const totalCustomers = Array.from(new Set(orders.map(o => o.customerEmail))).length;
+  const lowStockProducts = products.filter(p => p.sizes.includes('OS') ? false : false); // Mock count or real
+  const activeProducts = products.filter(p => !p.soldOut).length;
+
+  return (
+    <div className="min-h-screen bg-[#0A0A0A] text-white selection:bg-[#39FF88] selection:text-black font-sans relative flex flex-col justify-stretch">
+      {/* Background Glow */}
+      <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-[#39FF88]/5 rounded-full filter blur-[120px] pointer-events-none z-0" />
+      <div className="absolute bottom-12 left-1/4 w-[400px] h-[400px] bg-white/5 rounded-full filter blur-[100px] pointer-events-none z-0" />
+
+      {/* LOGIN OVERLAY PANEL */}
+      {!isAuthenticated && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0A0A0A] p-4 relative overflow-hidden">
+          {/* Logo element back */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full text-center z-0 pointer-events-none select-none opacity-[0.02] leading-none font-black text-[30vw] outline-text uppercase tracking-tighter">
+            GHL
+          </div>
+
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="w-full max-w-md bg-[#141414] border border-[#262626] p-8 relative z-10 rounded-2xl shadow-2xl"
+          >
+            <div className="text-center mb-8">
+              <h2 className="font-display font-black text-2xl tracking-tighter uppercase text-white">
+                GHL_ADMIN_PORTAL
+              </h2>
+              <p className="text-xs font-mono text-zinc-500 uppercase tracking-widest mt-1">
+                Security clearance level: Content & Operations
+              </p>
+            </div>
+
+            {authError && (
+              <div className="bg-red-950/40 border border-red-800 text-red-400 p-3.5 mb-6 text-xs font-mono rounded-lg flex items-center gap-2">
+                <AlertCircle size={14} className="shrink-0" />
+                <span>{authError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleLogin} className="space-y-5">
+              <div>
+                <label className="block font-mono text-[10px] text-zinc-400 uppercase tracking-widest mb-1.5 font-bold">
+                  ADMIN EMAIL COORDINATES:
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={adminEmail}
+                  onChange={(e) => setAdminEmail(e.target.value)}
+                  className="w-full bg-[#0A0A0A] border border-[#262626] focus:border-[#39FF88] px-4 py-3 text-xs font-mono rounded-lg outline-none text-white transition-colors"
+                  placeholder="admin@gohardluxury.com"
+                />
+              </div>
+
+              <div className="relative">
+                <div className="flex justify-between items-center mb-1.5">
+                  <label className="block font-mono text-[10px] text-zinc-400 uppercase tracking-widest font-bold">
+                    SECURITY CODE DECK (PASSWORD):
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowForgotModal(true)}
+                    className="text-[9px] font-mono text-zinc-500 hover:text-white uppercase"
+                  >
+                    [Forgot Code?]
+                  </button>
+                </div>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    value={adminPassword}
+                    onChange={(e) => setAdminPassword(e.target.value)}
+                    className="w-full bg-[#0A0A0A] border border-[#262626] focus:border-[#39FF88] px-4 py-3 pr-10 text-xs font-mono rounded-lg outline-none text-white transition-colors"
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-3.5 text-zinc-500 hover:text-white"
+                  >
+                    {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-mono text-[10px] text-zinc-400 uppercase tracking-widest mb-1.5 font-bold">
+                  ASSIGNED CLEARANCE ROLE:
+                </label>
+                <select
+                  value={adminRole}
+                  onChange={(e: any) => setAdminRole(e.target.value)}
+                  className="w-full bg-[#0A0A0A] border border-[#262626] focus:border-[#39FF88] px-3.5 py-3 text-xs font-mono rounded-lg outline-none text-white cursor-pointer"
+                >
+                  <option value="Super Admin">SUPER ADMIN (All access)</option>
+                  <option value="Staff Manager">STAFF MANAGER (Inventory / Orders)</option>
+                  <option value="Content Manager">CONTENT MANAGER (Hero / Products)</option>
+                </select>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3 bg-[#39FF88] text-black font-mono text-xs font-black tracking-widest rounded-lg transition-all duration-200 cursor-pointer uppercase hover:opacity-95 hover:shadow-[0_0_15px_rgba(57,255,136,0.3)]"
+              >
+                REQUEST SYSTEM ACCESS_
+              </button>
+            </form>
+
+            <div className="mt-8 pt-6 border-t border-[#262626] flex items-center justify-between text-[10px] font-mono text-zinc-500">
+              <span className="flex items-center gap-1.5">
+                <ShieldCheck size={12} className="text-[#39FF88]" />
+                SECURE AES_256 PORT
+              </span>
+              <button 
+                onClick={onCloseStore} 
+                className="hover:text-white"
+              >
+                ← Back to Storefront
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Forgot Password Modal */}
+      {showForgotModal && (
+        <div className="fixed inset-0 z-55 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="w-full max-w-sm bg-[#141414] border border-[#262626] p-6 rounded-xl relative">
+            <button 
+              onClick={() => setShowForgotModal(false)}
+              className="absolute top-4 right-4 text-zinc-500 hover:text-white cursor-pointer"
+            >
+              <X size={16} />
+            </button>
+            <h3 className="font-display font-black text-sm uppercase text-white mb-2">
+              RECOVER SECURITY DECK CODE
+            </h3>
+            <p className="text-xs text-zinc-400 font-sans leading-relaxed mb-4">
+              Enter your admin email address. If authorized, a recovery link will be simulated.
+            </p>
+            <input 
+              type="email" 
+              placeholder="ENTER REGISTERED EMAIL"
+              value={forgotEmail}
+              onChange={(e) => setForgotEmail(e.target.value)}
+              className="w-full bg-[#0A0A0A] border border-[#262626] focus:border-[#39FF88] px-3.5 py-2.5 rounded-lg text-xs font-mono outline-none mb-4 uppercase tracking-wider"
+            />
+            <button
+              onClick={() => {
+                alert(`Security recovery coordinates dispatched to ${forgotEmail || 'registered address'}.\n(Check mock inbox logs). Password is admin123`);
+                setShowForgotModal(false);
+              }}
+              className="w-full py-2.5 bg-white text-black font-mono text-[10px] font-black rounded-lg uppercase tracking-widest hover:opacity-90"
+            >
+              DISPATCH CODES_
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* MAIN CORE ADMIN LAYOUT */}
+      {isAuthenticated && (
+        <div className="flex-1 flex flex-col md:flex-row relative z-10">
+          
+          {/* LEFT SIDEBAR PANEL */}
+          <aside className="w-full md:w-64 bg-[#0E0E0E] border-r border-[#262626] flex flex-col justify-between shrink-0">
+            <div>
+              {/* Brand Header */}
+              <div className="p-6 border-b border-[#262626] flex items-center justify-between">
+                <div>
+                  <h2 className="font-display font-black text-base tracking-tighter text-white uppercase">
+                    GHL BACKOFFICE
+                  </h2>
+                  <span className="font-mono text-[8px] text-[#39FF88] uppercase tracking-widest block font-bold mt-0.5">
+                    {adminRole}
+                  </span>
+                </div>
+                <div className="w-2.5 h-2.5 rounded-full bg-[#39FF88] animate-pulse" title="System operational" />
+              </div>
+
+              {/* Navigation Links */}
+              <nav className="p-4 space-y-1">
+                {[
+                  { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+                  { id: 'products', label: 'Products', icon: Package },
+                  { id: 'collections', label: 'Collections', icon: Layers },
+                  { id: 'homepage', label: 'Homepage Editor', icon: Video },
+                  { id: 'orders', label: 'Orders Logs', icon: CreditCard },
+                  { id: 'customers', label: 'Customers', icon: Users },
+                  { id: 'media', label: 'Media Library', icon: FolderOpen },
+                  { id: 'discounts', label: 'Discount Codes', icon: Tags },
+                  { id: 'newsletters', label: 'Newsletters', icon: Mail },
+                  { id: 'audit', label: 'Audit Logs', icon: History }
+                ].map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setActiveTab(item.id)}
+                      className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-lg font-mono text-xs uppercase cursor-pointer tracking-wider transition-colors ${
+                        activeTab === item.id 
+                          ? 'bg-[#141414] text-[#39FF88] border border-[#262626] font-bold' 
+                          : 'text-zinc-400 hover:text-white hover:bg-[#141414]/40'
+                      }`}
+                    >
+                      <Icon size={14} className={activeTab === item.id ? 'text-[#39FF88]' : 'text-zinc-500'} />
+                      <span>{item.label}</span>
+                    </button>
+                  );
+                })}
+              </nav>
+            </div>
+
+            {/* Bottom Actions */}
+            <div className="p-4 border-t border-[#262626] space-y-3">
+              <button
+                onClick={onCloseStore}
+                className="w-full flex items-center justify-center gap-2 py-2.5 border border-[#262626] text-white hover:bg-[#141414] rounded-lg font-mono text-[10px] font-bold uppercase tracking-widest cursor-pointer"
+              >
+                <Eye size={12} />
+                <span>View Storefront</span>
+              </button>
+              
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center justify-center gap-2 py-2.5 bg-red-950/20 border border-red-900/30 text-red-400 hover:bg-red-950/40 rounded-lg font-mono text-[10px] font-bold uppercase tracking-widest cursor-pointer"
+              >
+                <LogOut size={12} />
+                <span>Kill Session</span>
+              </button>
+            </div>
+          </aside>
+
+          {/* RIGHT CONTENT WORKSPACE */}
+          <main className="flex-1 p-6 md:p-8 overflow-y-auto max-h-screen">
+            
+            {/* Header row details */}
+            <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-[#262626] mb-8">
+              <div>
+                <h1 className="font-display font-black text-2xl md:text-3xl text-white uppercase tracking-tight">
+                  {activeTab === 'overview' && 'SYSTEM OVERVIEW'}
+                  {activeTab === 'products' && 'PRODUCT CATALOG'}
+                  {activeTab === 'collections' && 'COLLECTION CLASSIFIER'}
+                  {activeTab === 'homepage' && 'HOMEPAGE VISUAL EDITOR'}
+                  {activeTab === 'orders' && 'ORDERS DISPATCH'}
+                  {activeTab === 'customers' && 'CUSTOMER LIFETIME'}
+                  {activeTab === 'media' && 'CENTRALIZED MEDIA LIBRARY'}
+                  {activeTab === 'discounts' && 'DISCOUNTS & PROMOTIONS'}
+                  {activeTab === 'newsletters' && 'SUBSCRIBER INDEX'}
+                  {activeTab === 'audit' && 'AUDIT LEDGER'}
+                </h1>
+                <p className="text-xs font-mono text-zinc-500 uppercase tracking-wider">
+                  NODE REF: GHL_{activeTab.toUpperCase()}_VAULT
+                </p>
+              </div>
+
+              {/* Micro widgets */}
+              <div className="flex items-center gap-4 text-xs font-mono text-zinc-400 self-stretch sm:self-auto justify-between sm:justify-end border-t sm:border-t-0 pt-2.5 sm:pt-0 border-[#262626]">
+                <div className="flex items-center gap-2 bg-[#141414] border border-[#262626] px-3.5 py-2 rounded-lg">
+                  <ClockTicker />
+                </div>
+
+                <div className="relative group cursor-pointer bg-[#141414] border border-[#262626] p-2 rounded-lg hover:border-[#39FF88] transition-colors relative">
+                  <Bell size={14} className="text-white" />
+                  {notifications.some(n => !n.read) && (
+                    <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#39FF88]" />
+                  )}
+                </div>
+              </div>
+            </header>
+
+            {/* TAB CONTENT WIDGETS */}
+            <div className="space-y-8">
+              
+              {/* TAB 1: OVERVIEW */}
+              {activeTab === 'overview' && (
+                <div className="space-y-6">
+                  
+                  {/* Grid cards statistics */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                    {[
+                      { label: 'TOTAL COORDINATED REVENUE', val: `₦${totalRevenue.toLocaleString()}`, change: '+24.8%', icon: TrendingUp },
+                      { label: 'DISPATCHED ORDERS', val: totalOrders, change: '+12.5%', icon: CreditCard },
+                      { label: 'CUSTOMER LOG INDEX', val: totalCustomers, change: '+8.3%', icon: Users },
+                      { label: 'ACTIVE SPECIMENS', val: activeProducts, change: `${products.length} total`, icon: Package }
+                    ].map((card, i) => {
+                      const Icon = card.icon;
+                      return (
+                        <div key={i} className="bg-[#141414] border border-[#262626] p-5 rounded-xl flex items-center justify-between relative overflow-hidden group hover:border-zinc-700 transition-colors">
+                          <div className="space-y-1">
+                            <span className="font-mono text-[9px] text-zinc-500 font-bold uppercase tracking-widest block">{card.label}</span>
+                            <h3 className="font-display font-black text-xl md:text-2xl text-white">{card.val}</h3>
+                            <span className="font-mono text-[9px] text-[#39FF88] font-bold block">{card.change} VS PREV COORDS</span>
+                          </div>
+                          <div className="bg-[#0A0A0A] border border-[#262626] p-3 rounded-lg text-zinc-400 group-hover:text-[#39FF88] group-hover:border-[#39FF88] transition-colors">
+                            <Icon size={18} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Revenue Line Chart & Low Stock alerts */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    {/* SVG Chart display */}
+                    <div className="lg:col-span-8 bg-[#141414] border border-[#262626] p-6 rounded-xl space-y-4">
+                      <div className="flex justify-between items-center pb-4 border-b border-[#262626]">
+                        <h3 className="font-display font-black text-sm uppercase text-white tracking-wide">
+                          REVENUE COORDINATION STREAM
+                        </h3>
+                        <span className="font-mono text-[10px] text-[#39FF88] font-black uppercase">LIVE UPDATES ACTIVE</span>
+                      </div>
+                      
+                      {/* Premium Custom SVG Chart */}
+                      <div className="w-full h-64 relative pt-4 flex flex-col justify-between">
+                        {/* Chart Grid Lines */}
+                        <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-[0.03] py-4">
+                          <div className="w-full h-px bg-white" />
+                          <div className="w-full h-px bg-white" />
+                          <div className="w-full h-px bg-white" />
+                          <div className="w-full h-px bg-white" />
+                        </div>
+                        
+                        {/* SVG Drawing */}
+                        <svg className="w-full h-full z-10 relative" viewBox="0 0 600 200" preserveAspectRatio="none">
+                          <defs>
+                            <linearGradient id="chart-grad" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor="#39FF88" stopOpacity="0.3" />
+                              <stop offset="100%" stopColor="#39FF88" stopOpacity="0.0" />
+                            </linearGradient>
+                          </defs>
+                          {/* Area path */}
+                          <path 
+                            d="M 0 170 C 100 160, 150 90, 200 110 C 250 130, 300 50, 400 60 C 500 70, 550 20, 600 10 L 600 200 L 0 200 Z" 
+                            fill="url(#chart-grad)"
+                          />
+                          {/* Line path */}
+                          <path 
+                            d="M 0 170 C 100 160, 150 90, 200 110 C 250 130, 300 50, 400 60 C 500 70, 550 20, 600 10" 
+                            fill="none" 
+                            stroke="#39FF88" 
+                            strokeWidth="3.5"
+                            strokeLinecap="round"
+                          />
+                        </svg>
+
+                        {/* Chart labels */}
+                        <div className="flex justify-between items-center text-[8px] font-mono text-zinc-500 pt-2 border-t border-[#262626] uppercase">
+                          <span>MON 01 (₦240k)</span>
+                          <span>WED 03 (₦610k)</span>
+                          <span>FRI 05 (₦920k)</span>
+                          <span>SUN 07 (₦1.24M)</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Low stock indicators side card */}
+                    <div className="lg:col-span-4 bg-[#141414] border border-[#262626] p-6 rounded-xl space-y-4 flex flex-col justify-between">
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2 text-yellow-400">
+                          <AlertTriangle size={15} />
+                          <h3 className="font-display font-black text-sm uppercase text-white tracking-wide">
+                            STOCK ALERTS
+                          </h3>
+                        </div>
+                        <p className="text-[11px] text-zinc-400 font-sans leading-relaxed">
+                          The following item drapes are running below critical levels (Quantity &lt; 5).
+                        </p>
+                        
+                        <div className="space-y-2.5">
+                          {products.slice(0, 3).map((item, idx) => (
+                            <div key={item.id} className="bg-[#0A0A0A] border border-[#262626] p-3 flex justify-between items-center rounded-lg">
+                              <div>
+                                <span className="text-xs font-mono font-bold block text-white uppercase">{item.name}</span>
+                                <span className="text-[9px] font-mono text-zinc-500 block uppercase">ID: {item.id}</span>
+                              </div>
+                              <span className="bg-yellow-950/40 border border-yellow-800 text-yellow-500 text-[10px] font-mono px-2 py-0.5 rounded font-bold">
+                                {idx + 2} UNITS Left
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => setActiveTab('products')}
+                        className="w-full py-2.5 bg-white text-black font-mono text-[10px] font-black uppercase tracking-widest text-center rounded-lg hover:opacity-90 mt-4 cursor-pointer"
+                      >
+                        Access Inventory Management
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Recent Activity Ledger & Subscriber Signups */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    
+                    {/* Orders stream widget */}
+                    <div className="bg-[#141414] border border-[#262626] p-6 rounded-xl space-y-4">
+                      <h3 className="font-display font-black text-sm uppercase text-white tracking-wide pb-3 border-b border-[#262626]">
+                        RECENT ORDERS PIPELINE
+                      </h3>
+                      <div className="space-y-3 max-h-72 overflow-y-auto">
+                        {orders.slice(0, 5).map((order) => (
+                          <div key={order.id} className="bg-[#0A0A0A] border border-[#262626] p-3.5 flex justify-between items-center rounded-xl">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-mono font-black text-white">{order.id}</span>
+                                <span className={`text-[8px] font-mono font-bold px-1.5 py-0.5 rounded uppercase ${
+                                  order.status === 'Paid' || order.status === 'Delivered' 
+                                    ? 'bg-[#39FF88]/10 text-[#39FF88] border border-[#39FF88]/20' 
+                                    : 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20'
+                                }`}>
+                                  {order.status}
+                                </span>
+                              </div>
+                              <span className="text-[10px] font-sans text-zinc-400 block mt-1">{order.customerName} ({order.customerEmail})</span>
+                            </div>
+                            <div className="text-right">
+                              <span className="font-mono text-xs font-black text-white block">₦{order.totalAmount.toLocaleString()}</span>
+                              <span className="text-[8px] font-mono text-zinc-500 block">{order.date}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Subscriber indices */}
+                    <div className="bg-[#141414] border border-[#262626] p-6 rounded-xl space-y-4">
+                      <h3 className="font-display font-black text-sm uppercase text-white tracking-wide pb-3 border-b border-[#262626]">
+                        NEWSLETTER INBOX SUBSCRIBERS
+                      </h3>
+                      <div className="space-y-3 max-h-72 overflow-y-auto">
+                        {subscribers.slice(0, 5).map((sub, idx) => (
+                          <div key={idx} className="bg-[#0A0A0A] border border-[#262626] p-3 flex justify-between items-center rounded-xl">
+                            <span className="text-xs font-mono font-bold text-white lowercase">{sub.email}</span>
+                            <div className="text-right flex items-center gap-3">
+                              <span className="text-[9px] font-mono text-[#39FF88] bg-[#39FF88]/10 px-1.5 py-0.5 rounded border border-[#39FF88]/25 uppercase font-bold">
+                                {sub.source}
+                              </span>
+                              <span className="text-[9px] font-mono text-zinc-500">{sub.date}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 2: PRODUCTS (CRUD) */}
+              {activeTab === 'products' && (
+                <div className="space-y-6">
+                  
+                  {/* Search and Action Header */}
+                  <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 bg-[#141414] border border-[#262626] p-4 rounded-xl">
+                    <div className="flex flex-wrap items-center gap-3 flex-1">
+                      <div className="relative flex-1 max-w-xs">
+                        <input
+                          type="text"
+                          value={productSearch}
+                          onChange={(e) => setProductSearch(e.target.value)}
+                          placeholder="SEARCH SPECIMEN LABELS..."
+                          className="w-full bg-[#0A0A0A] border border-[#262626] focus:border-[#39FF88] pl-8 pr-4 py-2 text-xs font-mono rounded-lg outline-none text-white uppercase tracking-wider"
+                        />
+                        <Search size={12} className="absolute left-3.5 top-3.5 text-zinc-500" />
+                      </div>
+                      
+                      <select
+                        value={productFilterCat}
+                        onChange={(e) => setProductFilterCat(e.target.value)}
+                        className="bg-[#0A0A0A] border border-[#262626] text-zinc-400 text-xs font-mono px-3.5 py-2.5 rounded-lg cursor-pointer outline-none focus:border-[#39FF88]"
+                      >
+                        <option value="ALL">ALL CATEGORIES</option>
+                        {collections.filter(c => c !== 'ALL').map(cat => (
+                          <option key={cat} value={cat}>{cat}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        setProductForm(initialProductState);
+                        setIsCreatingProduct(true);
+                        setEditingProduct({} as any); // Trigger modal/view
+                      }}
+                      className="bg-[#39FF88] text-black hover:opacity-90 px-4 py-2.5 rounded-lg font-mono text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 cursor-pointer transition-all duration-200"
+                    >
+                      <PlusCircle size={14} className="stroke-[2.5]" />
+                      <span>NEW PRODUCT_</span>
+                    </button>
+                  </div>
+
+                  {/* Add / Edit Form Modal Panel Overlay */}
+                  {editingProduct && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 overflow-y-auto">
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="bg-[#141414] border border-[#262626] p-6 md:p-8 w-full max-w-2xl rounded-2xl shadow-2xl relative max-h-[90vh] overflow-y-auto"
+                      >
+                        <button
+                          onClick={() => setEditingProduct(null)}
+                          className="absolute top-4 right-4 text-zinc-500 hover:text-white cursor-pointer"
+                        >
+                          <X size={18} />
+                        </button>
+                        
+                        <h2 className="font-display font-black text-xl text-white uppercase tracking-tight mb-6">
+                          {isCreatingProduct ? 'INITIATE NEW PRODUCT SPECIMEN' : `EDIT PRODUCT: ${productForm.name.toUpperCase()}`}
+                        </h2>
+
+                        <form onSubmit={handleSaveProduct} className="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs font-mono">
+                          
+                          {/* Col 1 */}
+                          <div className="space-y-4">
+                            <div>
+                              <label className="block text-zinc-400 uppercase tracking-wider mb-1">SPECIMEN ID / SLUG:</label>
+                              <input
+                                type="text"
+                                required
+                                disabled={!isCreatingProduct}
+                                value={productForm.id}
+                                onChange={(e) => setProductForm({ ...productForm, id: e.target.value.toLowerCase().replace(/\s+/g, '-') })}
+                                className="w-full bg-[#0A0A0A] border border-[#262626] focus:border-[#39FF88] disabled:opacity-50 px-3.5 py-2.5 rounded-lg outline-none text-white lowercase"
+                                placeholder="ghl-cargo-vest"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-zinc-400 uppercase tracking-wider mb-1">SPECIMEN LABEL NAME:</label>
+                              <input
+                                type="text"
+                                required
+                                value={productForm.name}
+                                onChange={(e) => setProductForm({ ...productForm, name: e.target.value })}
+                                className="w-full bg-[#0A0A0A] border border-[#262626] focus:border-[#39FF88] px-3.5 py-2.5 rounded-lg outline-none text-white uppercase"
+                                placeholder="GHL CARGO VEST"
+                              />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <label className="block text-zinc-400 uppercase tracking-wider mb-1">PRICE (₦):</label>
+                                <input
+                                  type="number"
+                                  required
+                                  value={productForm.price}
+                                  onChange={(e) => setProductForm({ ...productForm, price: parseFloat(e.target.value) || 0 })}
+                                  className="w-full bg-[#0A0A0A] border border-[#262626] focus:border-[#39FF88] px-3.5 py-2.5 rounded-lg outline-none text-white"
+                                />
+                              </div>
+
+                              <div>
+                                <label className="block text-zinc-400 uppercase tracking-wider mb-1">CATEGORY:</label>
+                                <select
+                                  value={productForm.category}
+                                  onChange={(e) => setProductForm({ ...productForm, category: e.target.value })}
+                                  className="w-full bg-[#0A0A0A] border border-[#262626] focus:border-[#39FF88] px-3 py-2.5 rounded-lg outline-none text-white cursor-pointer"
+                                >
+                                  <option value="Polos">Polos</option>
+                                  <option value="Denim">Denim</option>
+                                  <option value="Tees">Tees</option>
+                                  <option value="Accessories">Accessories</option>
+                                  <option value="Footwear">Footwear</option>
+                                </select>
+                              </div>
+                            </div>
+
+                            <div>
+                              <label className="block text-zinc-400 uppercase tracking-wider mb-1">DESCRIPTION BRIEF:</label>
+                              <textarea
+                                required
+                                value={productForm.description}
+                                onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
+                                className="w-full h-24 bg-[#0A0A0A] border border-[#262626] focus:border-[#39FF88] px-3.5 py-2.5 rounded-lg outline-none text-white font-sans normal-case resize-none"
+                                placeholder="Product description narratives..."
+                              />
+                            </div>
+                          </div>
+
+                          {/* Col 2 */}
+                          <div className="space-y-4">
+                            <div>
+                              <label className="block text-zinc-400 uppercase tracking-wider mb-1">MANTRA / QUOTE INSPIRATION:</label>
+                              <input
+                                type="text"
+                                value={productForm.quotes || ''}
+                                onChange={(e) => setProductForm({ ...productForm, quotes: e.target.value })}
+                                className="w-full bg-[#0A0A0A] border border-[#262626] focus:border-[#39FF88] px-3.5 py-2.5 rounded-lg outline-none text-white normal-case"
+                                placeholder="'Silenced in combat. Born in war.'"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-zinc-400 uppercase tracking-wider mb-1">IMAGE MAPPING REF (e.g. tees-black):</label>
+                              <input
+                                type="text"
+                                value={productForm.images[0]}
+                                onChange={(e) => setProductForm({ ...productForm, images: [e.target.value] })}
+                                className="w-full bg-[#0A0A0A] border border-[#262626] focus:border-[#39FF88] px-3.5 py-2.5 rounded-lg outline-none text-white lowercase"
+                                placeholder="cargo-utility-pant"
+                              />
+                              <span className="text-[8px] text-zinc-500 uppercase mt-1 block tracking-wider">
+                                Maps to visualizer vector coordinates (Tee, Denim, Cap, Polo, Socks, etc.).
+                              </span>
+                            </div>
+
+                            <div>
+                              <label className="block text-zinc-400 uppercase tracking-wider mb-1">SIZING GRIDS AVAILABLE:</label>
+                              <div className="flex gap-3 flex-wrap">
+                                {['S', 'M', 'L', 'XL', 'OS'].map(sz => {
+                                  const included = productForm.sizes.includes(sz);
+                                  return (
+                                    <button
+                                      key={sz}
+                                      type="button"
+                                      onClick={() => {
+                                        const nextSizes = included 
+                                          ? productForm.sizes.filter((s: string) => s !== sz)
+                                          : [...productForm.sizes, sz];
+                                        setProductForm({ ...productForm, sizes: nextSizes });
+                                      }}
+                                      className={`px-3 py-1.5 border text-[10px] font-bold transition-colors ${
+                                        included 
+                                          ? 'bg-white text-black border-white' 
+                                          : 'border-zinc-700 text-zinc-500 hover:border-zinc-500'
+                                      }`}
+                                    >
+                                      {sz}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3 pt-2">
+                              <div>
+                                <label className="block text-zinc-400 uppercase tracking-wider mb-1">STATUS BADGE:</label>
+                                <select
+                                  value={productForm.badge || 'NEW ARRIVAL'}
+                                  onChange={(e) => setProductForm({ ...productForm, badge: e.target.value as any })}
+                                  className="w-full bg-[#0A0A0A] border border-[#262626] focus:border-[#39FF88] px-2 py-2 rounded-lg outline-none text-white cursor-pointer"
+                                >
+                                  <option value="NEW ARRIVAL">NEW ARRIVAL</option>
+                                  <option value="ARCHIVE PIECE">ARCHIVE PIECE</option>
+                                  <option value="1of1">1of1 SPECIAL</option>
+                                  <option value="BEST SELLER">BEST SELLER</option>
+                                </select>
+                              </div>
+
+                              <div>
+                                <label className="block text-zinc-400 uppercase tracking-wider mb-1">DISMISS INVENTORY:</label>
+                                <div className="flex items-center gap-2 mt-2">
+                                  <input
+                                    type="checkbox"
+                                    id="soldout-checkbox"
+                                    checked={productForm.soldOut || false}
+                                    onChange={(e) => setProductForm({ ...productForm, soldOut: e.target.checked })}
+                                    className="accent-[#39FF88]"
+                                  />
+                                  <label htmlFor="soldout-checkbox" className="text-zinc-300 uppercase cursor-pointer select-none">
+                                    SOLD OUT
+                                  </label>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Submit Actions */}
+                          <div className="md:col-span-2 pt-6 border-t border-[#262626] flex justify-end gap-3.5">
+                            <button
+                              type="button"
+                              onClick={() => setEditingProduct(null)}
+                              className="px-4 py-2.5 border border-[#262626] text-white hover:bg-zinc-900 rounded-lg cursor-pointer font-bold uppercase tracking-wider text-[10px]"
+                            >
+                              Abort Coordinates
+                            </button>
+                            <button
+                              type="submit"
+                              className="px-6 py-2.5 bg-[#39FF88] text-black font-black uppercase rounded-lg hover:opacity-90 cursor-pointer tracking-wider text-[10px]"
+                            >
+                              Commit Product Specimen_
+                            </button>
+                          </div>
+                        </form>
+                      </motion.div>
+                    </div>
+                  )}
+
+                  {/* Main Interactive Products Table */}
+                  <div className="bg-[#141414] border border-[#262626] rounded-xl overflow-hidden shadow-xl">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left border-collapse">
+                        <thead>
+                          <tr className="bg-[#0A0A0A] border-b border-[#262626] font-mono text-[9px] text-zinc-500 uppercase tracking-widest font-black">
+                            <th className="py-4 px-6">SPECIMEN ID</th>
+                            <th className="py-4 px-6">LABEL NAME</th>
+                            <th className="py-4 px-6">CATEGORY</th>
+                            <th className="py-4 px-6">PRICE</th>
+                            <th className="py-4 px-6">SIZES</th>
+                            <th className="py-4 px-6">STATUS</th>
+                            <th className="py-4 px-6 text-right">OPERATIONS</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-[#262626] text-xs font-mono">
+                          {products
+                            .filter(p => {
+                              const matchSearch = p.name.toLowerCase().includes(productSearch.toLowerCase()) || p.id.toLowerCase().includes(productSearch.toLowerCase());
+                              const matchCat = productFilterCat === 'ALL' || p.category.toUpperCase() === productFilterCat.toUpperCase();
+                              return matchSearch && matchCat;
+                            })
+                            .map((p) => (
+                              <tr key={p.id} className="hover:bg-[#0A0A0A]/40 transition-colors">
+                                <td className="py-4 px-6 font-bold text-zinc-400 select-all">{p.id}</td>
+                                <td className="py-4 px-6 font-display font-black text-white uppercase tracking-tight">{p.name}</td>
+                                <td className="py-4 px-6 text-zinc-300 font-bold uppercase">{p.category}</td>
+                                <td className="py-4 px-6 font-black text-white">₦{p.price.toLocaleString()}</td>
+                                <td className="py-4 px-6 text-zinc-500 font-bold">{p.sizes.join(', ')}</td>
+                                <td className="py-4 px-6">
+                                  <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase border ${
+                                    p.soldOut 
+                                      ? 'bg-red-950/20 border-red-900 text-red-500' 
+                                      : 'bg-[#39FF88]/10 border-[#39FF88]/30 text-[#39FF88]'
+                                  }`}>
+                                    {p.soldOut ? 'SOLD OUT' : 'ACTIVE'}
+                                  </span>
+                                </td>
+                                <td className="py-4 px-6 text-right space-x-2 shrink-0">
+                                  <button
+                                    onClick={() => handleEditProductClick(p)}
+                                    className="p-2 border border-[#262626] hover:border-[#39FF88] text-zinc-400 hover:text-white rounded-lg transition-colors cursor-pointer"
+                                    title="Edit coordinates"
+                                  >
+                                    <Edit size={12} />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDuplicateProduct(p)}
+                                    className="p-2 border border-[#262626] hover:border-[#39FF88] text-zinc-400 hover:text-white rounded-lg transition-colors cursor-pointer"
+                                    title="Duplicate product"
+                                  >
+                                    <Copy size={12} />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteProduct(p.id, p.name)}
+                                    className="p-2 border border-[#262626] hover:border-red-500 text-zinc-400 hover:text-red-500 rounded-lg transition-colors cursor-pointer"
+                                    title="Delete specimen"
+                                  >
+                                    <Trash2 size={12} />
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                </div>
+              )}
+
+              {/* TAB 3: COLLECTIONS */}
+              {activeTab === 'collections' && (
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                  
+                  {/* Left Side: Create Collection */}
+                  <div className="md:col-span-5 bg-[#141414] border border-[#262626] p-6 rounded-xl space-y-4 h-fit">
+                    <h3 className="font-display font-black text-sm uppercase text-white tracking-wide">
+                      INITIATE BRAND DROP CATEGORY
+                    </h3>
+                    <form onSubmit={handleAddCollection} className="space-y-4 text-xs font-mono">
+                      <div>
+                        <label className="block text-zinc-400 uppercase tracking-widest mb-1.5 font-bold">
+                          COLLECTION / CATEGORY NAME:
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={newCollectionName}
+                          onChange={(e) => setNewCollectionName(e.target.value)}
+                          placeholder="e.g. FOOTWEAR"
+                          className="w-full bg-[#0A0A0A] border border-[#262626] focus:border-[#39FF88] px-3.5 py-2.5 rounded-lg outline-none text-white uppercase"
+                        />
+                      </div>
+                      <button
+                        type="submit"
+                        className="w-full py-2.5 bg-[#39FF88] text-black font-black uppercase tracking-widest rounded-lg hover:opacity-90 cursor-pointer"
+                      >
+                        CREATE DROP INDEX_
+                      </button>
+                    </form>
+                  </div>
+
+                  {/* Right Side: Collections list */}
+                  <div className="md:col-span-7 bg-[#141414] border border-[#262626] p-6 rounded-xl space-y-4">
+                    <h3 className="font-display font-black text-sm uppercase text-white tracking-wide pb-3 border-b border-[#262626]">
+                      ACTIVE DEPLOYED CHANNELS ({collections.length})
+                    </h3>
+                    
+                    <div className="space-y-3.5">
+                      {collections.map((col) => (
+                        <div key={col} className="bg-[#0A0A0A] border border-[#262626] p-4 flex justify-between items-center rounded-xl">
+                          <div>
+                            <span className="font-display font-black text-sm text-white uppercase tracking-wider">{col}</span>
+                            <span className="font-mono text-[9px] text-zinc-500 block uppercase mt-0.5">
+                              Matches {products.filter(p => p.category.toUpperCase() === col).length} active products
+                            </span>
+                          </div>
+                          
+                          {col !== 'ALL' && (
+                            <button
+                              onClick={() => handleDeleteCollection(col)}
+                              className="p-2.5 border border-[#262626] hover:border-red-500 text-zinc-500 hover:text-red-500 rounded-lg cursor-pointer"
+                              title="Delete collection"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                </div>
+              )}
+
+              {/* TAB 4: HOMEPAGE CONTENT MANAGER */}
+              {activeTab === 'homepage' && (
+                <div className="bg-[#141414] border border-[#262626] p-6 md:p-8 rounded-xl space-y-6">
+                  <div className="border-b border-[#262626] pb-4">
+                    <h3 className="font-display font-black text-sm uppercase text-white tracking-wide">
+                      HOMEPAGE LIVE CONTENT EDIT CONFIG
+                    </h3>
+                    <p className="text-xs text-zinc-500 font-sans mt-1">
+                      Modify visual headers, backgrounds, announcement ticker texts, and featured catalog categories instantly.
+                    </p>
+                  </div>
+
+                  <form 
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      setHomepageConfig(homepageConfig);
+                      addAuditLog('Saved customized homepage content configurations');
+                      addNotification('Homepage visual configs saved.', 'success');
+                    }}
+                    className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs font-mono"
+                  >
+                    {/* Announcement Ticker Row */}
+                    <div className="space-y-4 bg-[#0A0A0A] p-5 border border-[#262626] rounded-xl md:col-span-2">
+                      <div className="flex justify-between items-center pb-2 border-b border-[#262626] mb-3">
+                        <span className="font-display font-black text-xs uppercase text-[#39FF88]">ANNOUNCEMENT BAR COORDINATOR</span>
+                        <div className="flex items-center gap-2">
+                          <input 
+                            type="checkbox" 
+                            id="ann-enabled" 
+                            checked={homepageConfig.announcementEnabled}
+                            onChange={(e) => setHomepageConfig({ ...homepageConfig, announcementEnabled: e.target.checked })}
+                            className="accent-[#39FF88]"
+                          />
+                          <label htmlFor="ann-enabled" className="text-zinc-300 font-bold uppercase select-none cursor-pointer">ENABLED</label>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-zinc-400 uppercase tracking-widest mb-1.5 font-bold">
+                          ANNOUNCEMENT SCROLL MANTRA TEXT:
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={homepageConfig.announcementText}
+                          onChange={(e) => setHomepageConfig({ ...homepageConfig, announcementText: e.target.value })}
+                          className="w-full bg-[#141414] border border-[#262626] focus:border-[#39FF88] px-3.5 py-2.5 rounded-lg outline-none text-white uppercase"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Hero Section settings */}
+                    <div className="space-y-4 bg-[#0A0A0A] p-5 border border-[#262626] rounded-xl">
+                      <span className="font-display font-black text-xs uppercase text-white block pb-2 border-b border-[#262626] mb-3">HERO SEGMENT OVERLAYS</span>
+                      
+                      <div>
+                        <label className="block text-zinc-400 uppercase tracking-widest mb-1 font-bold">HERO CENTERPIECE TITLE:</label>
+                        <input
+                          type="text"
+                          required
+                          value={homepageConfig.heroHeadline}
+                          onChange={(e) => setHomepageConfig({ ...homepageConfig, heroHeadline: e.target.value })}
+                          className="w-full bg-[#141414] border border-[#262626] focus:border-[#39FF88] px-3.5 py-2.5 rounded-lg outline-none text-white uppercase"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-zinc-400 uppercase tracking-widest mb-1 font-bold">HERO TOP REFERENCE TAG:</label>
+                        <input
+                          type="text"
+                          required
+                          value={homepageConfig.heroSubheadline}
+                          onChange={(e) => setHomepageConfig({ ...homepageConfig, heroSubheadline: e.target.value })}
+                          className="w-full bg-[#141414] border border-[#262626] focus:border-[#39FF88] px-3.5 py-2.5 rounded-lg outline-none text-white uppercase"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-zinc-400 uppercase tracking-widest mb-1 font-bold">HERO DESCRIPTION MANTRA:</label>
+                        <textarea
+                          required
+                          value={homepageConfig.heroDescription}
+                          onChange={(e) => setHomepageConfig({ ...homepageConfig, heroDescription: e.target.value })}
+                          className="w-full h-20 bg-[#141414] border border-[#262626] focus:border-[#39FF88] px-3.5 py-2.5 rounded-lg outline-none text-white font-sans normal-case resize-none"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Hero Visual Media settings */}
+                    <div className="space-y-4 bg-[#0A0A0A] p-5 border border-[#262626] rounded-xl">
+                      <span className="font-display font-black text-xs uppercase text-white block pb-2 border-b border-[#262626] mb-3">BACKGROUND DESIGN MEDIA</span>
+
+                      <div>
+                        <label className="block text-zinc-400 uppercase tracking-widest mb-1 font-bold">BACKGROUND MOCK VIDEO URL:</label>
+                        <input
+                          type="text"
+                          required
+                          value={homepageConfig.heroVideoUrl}
+                          onChange={(e) => setHomepageConfig({ ...homepageConfig, heroVideoUrl: e.target.value })}
+                          className="w-full bg-[#141414] border border-[#262626] focus:border-[#39FF88] px-3.5 py-2.5 rounded-lg outline-none text-white lowercase"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-zinc-400 uppercase tracking-widest mb-1 font-bold">PRIMARY CALL TO ACTION BUTTON LABEL:</label>
+                        <input
+                          type="text"
+                          required
+                          value={homepageConfig.ctaText}
+                          onChange={(e) => setHomepageConfig({ ...homepageConfig, ctaText: e.target.value })}
+                          className="w-full bg-[#141414] border border-[#262626] focus:border-[#39FF88] px-3.5 py-2.5 rounded-lg outline-none text-white uppercase"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-zinc-400 uppercase tracking-widest mb-1 font-bold">FEATURED HOMEPAGE COLLECTION CATEGORY:</label>
+                        <select
+                          value={homepageConfig.featuredCollectionCategory}
+                          onChange={(e) => setHomepageConfig({ ...homepageConfig, featuredCollectionCategory: e.target.value })}
+                          className="w-full bg-[#141414] border border-[#262626] focus:border-[#39FF88] px-3 py-2.5 rounded-lg outline-none text-white cursor-pointer"
+                        >
+                          {collections.map(c => (
+                            <option key={c} value={c}>{c}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="md:col-span-2 pt-6 border-t border-[#262626] flex justify-end">
+                      <button
+                        type="submit"
+                        className="px-8 py-3 bg-[#39FF88] text-black font-black uppercase tracking-widest rounded-lg hover:opacity-95 cursor-pointer shadow-md"
+                      >
+                        SAVE HOMEPAGE CONFIGS_
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              {/* TAB 5: ORDERS */}
+              {activeTab === 'orders' && (
+                <div className="bg-[#141414] border border-[#262626] rounded-xl overflow-hidden shadow-xl">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-[#0A0A0A] border-b border-[#262626] font-mono text-[9px] text-zinc-500 uppercase tracking-widest font-black">
+                          <th className="py-4 px-6">ORDER NUMBER</th>
+                          <th className="py-4 px-6">DATE</th>
+                          <th className="py-4 px-6">CUSTOMER</th>
+                          <th className="py-4 px-6">ITEMS QUANTITY</th>
+                          <th className="py-4 px-6">GRAND TOTAL</th>
+                          <th className="py-4 px-6">DISPATCH STATUS</th>
+                          <th className="py-4 px-6 text-right">CHANGE STATUS</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#262626] text-xs font-mono">
+                        {orders.map((o) => (
+                          <tr key={o.id} className="hover:bg-[#0A0A0A]/40 transition-colors">
+                            <td className="py-4 px-6 font-bold text-[#39FF88] select-all">{o.id}</td>
+                            <td className="py-4 px-6 text-zinc-400">{o.date}</td>
+                            <td className="py-4 px-6">
+                              <span className="text-white font-bold block">{o.customerName}</span>
+                              <span className="text-[10px] text-zinc-500 lowercase block">{o.customerEmail}</span>
+                            </td>
+                            <td className="py-4 px-6 text-zinc-300 font-bold uppercase">
+                              {o.items.map((i: any, idx: number) => (
+                                <span key={idx} className="block text-[10px]">
+                                  {i.productName} ({i.size}) × {i.quantity}
+                                </span>
+                              ))}
+                            </td>
+                            <td className="py-4 px-6 font-black text-white">₦{o.totalAmount.toLocaleString()}</td>
+                            <td className="py-4 px-6">
+                              <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase border ${
+                                o.status === 'Cancelled'
+                                  ? 'bg-red-950/20 border-red-900 text-red-500'
+                                  : o.status === 'Paid' || o.status === 'Delivered'
+                                    ? 'bg-[#39FF88]/10 border-[#39FF88]/30 text-[#39FF88]'
+                                    : 'bg-yellow-500/10 border-yellow-500/30 text-yellow-500'
+                              }`}>
+                                {o.status}
+                              </span>
+                            </td>
+                            <td className="py-4 px-6 text-right">
+                              <select
+                                value={o.status}
+                                onChange={(e) => handleUpdateOrderStatus(o.id, e.target.value)}
+                                className="bg-[#0A0A0A] border border-[#262626] text-white text-[10px] font-mono px-2 py-1 rounded cursor-pointer outline-none focus:border-[#39FF88]"
+                              >
+                                <option value="Pending">Pending</option>
+                                <option value="Paid">Paid</option>
+                                <option value="Processing">Processing</option>
+                                <option value="Shipped">Shipped</option>
+                                <option value="Delivered">Delivered</option>
+                                <option value="Cancelled">Cancelled</option>
+                              </select>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 6: CUSTOMERS */}
+              {activeTab === 'customers' && (
+                <div className="bg-[#141414] border border-[#262626] rounded-xl overflow-hidden shadow-xl">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-[#0A0A0A] border-b border-[#262626] font-mono text-[9px] text-zinc-500 uppercase tracking-widest font-black">
+                          <th className="py-4 px-6">CUSTOMER DETAILS</th>
+                          <th className="py-4 px-6">EMAIL ACCOUNT</th>
+                          <th className="py-4 px-6">TOTAL COORDS ORDERED</th>
+                          <th className="py-4 px-6">LIFETIME REVENUE INVESTMENT</th>
+                          <th className="py-4 px-6">ANALYTIC RATING</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#262626] text-xs font-mono">
+                        {Array.from(new Set(orders.map(o => o.customerEmail))).map((email) => {
+                          const customerOrders = orders.filter(o => o.customerEmail === email);
+                          const customerName = customerOrders[0]?.customerName || 'N/A';
+                          const totalVal = customerOrders.reduce((sum, o) => sum + o.totalAmount, 0);
+                          return (
+                            <tr key={email} className="hover:bg-[#0A0A0A]/40 transition-colors">
+                              <td className="py-4 px-6 font-display font-black text-white uppercase tracking-tight">{customerName}</td>
+                              <td className="py-4 px-6 text-zinc-400 select-all lowercase">{email}</td>
+                              <td className="py-4 px-6 font-bold text-zinc-300">{customerOrders.length} ORDERS</td>
+                              <td className="py-4 px-6 font-black text-[#39FF88]">₦{totalVal.toLocaleString()}</td>
+                              <td className="py-4 px-6">
+                                <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase ${
+                                  totalVal >= 1000000 
+                                    ? 'bg-[#39FF88]/20 text-[#39FF88]' 
+                                    : 'bg-zinc-800 text-zinc-400'
+                                }`}>
+                                  {totalVal >= 1000000 ? 'VIP CLIENT' : 'REGULAR CLIENT'}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 7: MEDIA LIBRARY */}
+              {activeTab === 'media' && (
+                <div className="bg-[#141414] border border-[#262626] p-6 rounded-xl space-y-6">
+                  
+                  {/* File Upload drag card mock */}
+                  <div className="border border-dashed border-[#262626] rounded-xl p-8 text-center space-y-3.5 bg-[#0A0A0A]/50 relative hover:border-[#39FF88]/50 transition-colors cursor-pointer" onClick={() => alert('Drag & Drop Uploader Simulator:\nFile drops processed dynamically inside client-state.')}>
+                    <div className="text-zinc-500 font-mono text-xs uppercase font-bold">
+                      DRAG & DROP STREETWEAR MEDIA ARCHIVE FILES HERE
+                    </div>
+                    <p className="text-[10px] text-zinc-600 font-mono uppercase tracking-widest">
+                      Accepts: JPEGs, PNGs, and compressed mp4 loops (Max 80MB)
+                    </p>
+                    <button className="bg-white text-black px-4 py-2 font-mono text-[10px] font-black rounded-lg uppercase tracking-widest mx-auto block">
+                      CHOOSE FILES
+                    </button>
+                  </div>
+
+                  {/* Media gallery grid */}
+                  <div className="space-y-4">
+                    <span className="font-display font-black text-xs uppercase text-zinc-400 tracking-wider block pb-2 border-b border-[#262626]">
+                      STORED MEDIA SPECIMENS
+                    </span>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
+                      {[
+                        { label: 'Lookbook Loop Video', type: 'video', size: '5.9MB' },
+                        { label: 'Visor Cap Front Vector', type: 'image', size: '124KB' },
+                        { label: 'Shortsleeve Polo Knit', type: 'image', size: '256KB' },
+                        { label: 'Industrial Denim Blue', type: 'image', size: '312KB' }
+                      ].map((file, idx) => (
+                        <div key={idx} className="bg-[#0A0A0A] border border-[#262626] rounded-xl p-3 flex flex-col justify-between h-36 hover:border-zinc-700 transition-colors relative group">
+                          <div className="bg-zinc-900/40 rounded-lg flex-1 flex items-center justify-center text-zinc-600 group-hover:text-[#39FF88] transition-colors mb-2.5 border border-white/5">
+                            {file.type === 'video' ? <Video size={24} /> : <FolderOpen size={24} />}
+                          </div>
+                          <div className="space-y-0.5">
+                            <span className="font-mono text-[10px] text-white block truncate uppercase font-bold">{file.label}</span>
+                            <div className="flex justify-between items-center text-[8px] font-mono text-zinc-500">
+                              <span>{file.type.toUpperCase()}</span>
+                              <span>{file.size}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                </div>
+              )}
+
+              {/* TAB 8: DISCOUNTS */}
+              {activeTab === 'discounts' && (
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                  
+                  {/* Create Discount Code */}
+                  <div className="md:col-span-5 bg-[#141414] border border-[#262626] p-6 rounded-xl space-y-4 h-fit">
+                    <h3 className="font-display font-black text-sm uppercase text-white tracking-wide">
+                      CREATE PROMO DISCOUNT CODE
+                    </h3>
+                    
+                    <form 
+                      onSubmit={(e: any) => {
+                        e.preventDefault();
+                        const code = e.target.promo_code.value;
+                        const disc = parseFloat(e.target.promo_discount.value);
+                        const desc = e.target.promo_desc.value;
+                        handleCreatePromoCode(code, disc, desc);
+                        e.target.reset();
+                      }}
+                      className="space-y-4 text-xs font-mono"
+                    >
+                      <div>
+                        <label className="block text-zinc-400 uppercase tracking-widest mb-1 font-bold">CODE LABEL (e.g. GHL15):</label>
+                        <input
+                          name="promo_code"
+                          type="text"
+                          required
+                          placeholder="e.g. GHL20"
+                          className="w-full bg-[#0A0A0A] border border-[#262626] focus:border-[#39FF88] px-3.5 py-2.5 rounded-lg outline-none text-white uppercase"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-zinc-400 uppercase tracking-widest mb-1 font-bold">DISCOUNT PROPORTION (%):</label>
+                        <input
+                          name="promo_discount"
+                          type="number"
+                          required
+                          min="1"
+                          max="100"
+                          placeholder="20"
+                          className="w-full bg-[#0A0A0A] border border-[#262626] focus:border-[#39FF88] px-3.5 py-2.5 rounded-lg outline-none text-white"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-zinc-400 uppercase tracking-widest mb-1 font-bold">DESCRIPTION COORDINATES:</label>
+                        <input
+                          name="promo_desc"
+                          type="text"
+                          required
+                          placeholder="20% OFF Summer drops"
+                          className="w-full bg-[#0A0A0A] border border-[#262626] focus:border-[#39FF88] px-3.5 py-2.5 rounded-lg outline-none text-white normal-case"
+                        />
+                      </div>
+
+                      <button
+                        type="submit"
+                        className="w-full py-2.5 bg-[#39FF88] text-black font-black uppercase tracking-widest rounded-lg hover:opacity-90 cursor-pointer"
+                      >
+                        SAVE DISCOUNT CODE_
+                      </button>
+                    </form>
+                  </div>
+
+                  {/* Discount list table */}
+                  <div className="md:col-span-7 bg-[#141414] border border-[#262626] p-6 rounded-xl space-y-4">
+                    <h3 className="font-display font-black text-sm uppercase text-white tracking-wide pb-3 border-b border-[#262626]">
+                      ACTIVE DISCOUNTS INDEX
+                    </h3>
+
+                    <div className="space-y-3.5">
+                      {promoCodes.map((promo) => (
+                        <div key={promo.code} className="bg-[#0A0A0A] border border-[#262626] p-4 flex justify-between items-center rounded-xl">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-display font-black text-sm text-[#39FF88] uppercase tracking-wider">{promo.code}</span>
+                              <span className="text-[9px] font-mono font-bold bg-[#39FF88]/10 text-[#39FF88] px-1.5 py-0.5 rounded border border-[#39FF88]/25">
+                                {promo.discountPercentage}% OFF
+                              </span>
+                            </div>
+                            <span className="font-mono text-[9px] text-zinc-500 block uppercase mt-1">
+                              {promo.description} // {promo.usedCount} USAGES LOGGED
+                            </span>
+                          </div>
+                          
+                          <button
+                            onClick={() => {
+                              setPromoCodes(prev => prev.filter(p => p.code !== promo.code));
+                              addAuditLog(`Deleted promo code discount: ${promo.code}`);
+                            }}
+                            className="p-2.5 border border-[#262626] hover:border-red-500 text-zinc-500 hover:text-red-500 rounded-lg cursor-pointer"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                </div>
+              )}
+
+              {/* TAB 9: NEWSLETTER INDEX */}
+              {activeTab === 'newsletters' && (
+                <div className="bg-[#141414] border border-[#262626] p-6 rounded-xl space-y-6">
+                  <div className="flex justify-between items-center pb-4 border-b border-[#262626]">
+                    <h3 className="font-display font-black text-sm uppercase text-white tracking-wide">
+                      SUBSCRIBERS DATABASE
+                    </h3>
+                    
+                    {/* Add Subscriber Form */}
+                    <form 
+                      onSubmit={(e: any) => {
+                        e.preventDefault();
+                        const email = e.target.sub_email.value;
+                        addSubscriber(email);
+                        e.target.reset();
+                      }}
+                      className="flex items-center gap-2"
+                    >
+                      <input 
+                        name="sub_email"
+                        type="email"
+                        required
+                        placeholder="ADD SUBSCRIBER EMAIL"
+                        className="bg-[#0A0A0A] border border-[#262626] focus:border-[#39FF88] px-3.5 py-1.5 rounded-lg text-xs font-mono outline-none lowercase"
+                      />
+                      <button 
+                        type="submit"
+                        className="px-3.5 py-2 bg-white text-black font-mono text-[10px] font-black rounded-lg uppercase tracking-wider cursor-pointer"
+                      >
+                        Add_
+                      </button>
+                    </form>
+                  </div>
+
+                  <div className="bg-[#0A0A0A] border border-[#262626] rounded-xl overflow-hidden">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-[#141414] border-b border-[#262626] font-mono text-[9px] text-zinc-500 uppercase tracking-widest font-black">
+                          <th className="py-3 px-5">EMAIL ADDRESS</th>
+                          <th className="py-3 px-5">REGISTRATION DATE</th>
+                          <th className="py-3 px-5">SOURCE COORDINATE</th>
+                          <th className="py-3 px-5 text-right">ACTIONS</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#262626] text-xs font-mono">
+                        {subscribers.map((sub, idx) => (
+                          <tr key={idx} className="hover:bg-[#141414]/20">
+                            <td className="py-3.5 px-5 text-white lowercase select-all font-bold">{sub.email}</td>
+                            <td className="py-3.5 px-5 text-zinc-400">{sub.date}</td>
+                            <td className="py-3.5 px-5">
+                              <span className="text-[9px] font-mono text-zinc-500 uppercase">{sub.source}</span>
+                            </td>
+                            <td className="py-3.5 px-5 text-right">
+                              <button
+                                onClick={() => {
+                                  setSubscribers(prev => prev.filter((_, i) => i !== idx));
+                                  addAuditLog(`Deleted newsletter subscriber: ${sub.email}`);
+                                }}
+                                className="text-zinc-500 hover:text-red-500 cursor-pointer"
+                              >
+                                Remove
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="flex justify-end pt-2">
+                    <button
+                      onClick={() => {
+                        // Simulated CSV export
+                        const csvContent = "data:text/csv;charset=utf-8," 
+                          + ["Email,Date,Source"].concat(subscribers.map(s => `${s.email},${s.date},${s.source}`)).join("\n");
+                        const encodedUri = encodeURI(csvContent);
+                        const link = document.createElement("a");
+                        link.setAttribute("href", encodedUri);
+                        link.setAttribute("download", "ghl_newsletter_subscribers.csv");
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        addAuditLog('Exported newsletter subscribers index as CSV file');
+                      }}
+                      className="px-4 py-2.5 border border-[#262626] text-white hover:bg-[#0A0A0A] rounded-lg font-mono text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 cursor-pointer"
+                    >
+                      <Download size={12} />
+                      <span>Export Database (CSV)</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 10: AUDIT LOGS */}
+              {activeTab === 'audit' && (
+                <div className="bg-[#141414] border border-[#262626] p-6 rounded-xl space-y-4">
+                  <div className="flex justify-between items-center pb-3 border-b border-[#262626]">
+                    <h3 className="font-display font-black text-sm uppercase text-white tracking-wide">
+                      LEDGER AUDIT HISTORY
+                    </h3>
+                    <button
+                      onClick={() => {
+                        if (confirm('Clear audit logs ledger?')) {
+                          setAuditLogs([]);
+                          localStorage.setItem('GHL_AUDIT_LOGS', JSON.stringify([]));
+                        }
+                      }}
+                      className="text-[9px] font-mono text-zinc-500 hover:text-red-500 uppercase cursor-pointer"
+                    >
+                      [CLEAR ALL COORDINATES]
+                    </button>
+                  </div>
+
+                  <div className="space-y-2.5 max-h-96 overflow-y-auto pr-1">
+                    {auditLogs.map((log) => (
+                      <div key={log.id} className="bg-[#0A0A0A] border border-[#262626] p-3 flex flex-col sm:flex-row justify-between gap-3 text-xs font-mono rounded-lg">
+                        <div className="space-y-1">
+                          <span className="text-white block font-bold uppercase tracking-wide">{log.action}</span>
+                          <span className="text-[10px] text-zinc-500 block uppercase">
+                            EXEC: {log.user} ({log.role})
+                          </span>
+                        </div>
+                        <span className="text-zinc-500 text-[10px] self-start sm:self-center font-bold">
+                          {log.timestamp}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+            </div>
+          </main>
+        </div>
+      )}
+
+      {/* Admin Footer bar */}
+      <footer className="bg-[#0E0E0E] border-t border-[#262626] py-3.5 px-6 font-mono text-[9px] text-zinc-500 text-center flex flex-col sm:flex-row justify-between items-center gap-2 z-10">
+        <span>© {new Date().getFullYear()} GO HARD LUXURY // ADMIN CMS V1.2.0 STABLE</span>
+        <span className="text-zinc-600">AUTHORIZED ACCESS PORT COORDINATES ONLY</span>
+      </footer>
+    </div>
+  );
+};
+
+// Live UTC time ticker widget component
+const ClockTicker: React.FC = () => {
+  const [time, setTime] = useState<string>('');
+  useEffect(() => {
+    const update = () => {
+      setTime(new Date().toISOString().replace('T', ' ').substring(0, 19));
+    };
+    update();
+    const timer = setInterval(update, 1000);
+    return () => clearInterval(timer);
+  }, []);
+  return (
+    <span className="font-mono text-[9px] font-bold text-zinc-400">
+      UTC SECURE: {time}
+    </span>
+  );
+};
