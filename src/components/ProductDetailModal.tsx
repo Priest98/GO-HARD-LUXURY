@@ -289,6 +289,14 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 </div>
               </div>
             )}
+
+            {/* Mobile Close / Back to Collection button */}
+            <button
+              onClick={onClose}
+              className="mt-8 w-full py-3.5 bg-transparent border border-white/10 hover:border-white/30 text-white font-mono text-xs font-bold tracking-widest transition-all duration-200 cursor-pointer uppercase flex items-center justify-center gap-2 md:hidden"
+            >
+              <span>← BACK TO COLLECTION</span>
+            </button>
           </div>
         </motion.div>
       </div>
