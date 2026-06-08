@@ -920,7 +920,16 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
               </div>
 
               {/* Micro widgets */}
-              <div className="flex items-center gap-4 text-xs font-mono text-zinc-400 self-stretch sm:self-auto justify-between sm:justify-end border-t sm:border-t-0 pt-2.5 sm:pt-0 border-[#262626]">
+              <div className="flex flex-wrap items-center gap-3 text-xs font-mono text-zinc-400 self-stretch sm:self-auto justify-between sm:justify-end border-t sm:border-t-0 pt-2.5 sm:pt-0 border-[#262626]">
+                <div className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg border text-[9px] font-bold tracking-widest uppercase ${
+                  isSupabaseConfigured 
+                    ? 'bg-[#39FF88]/10 border-[#39FF88]/30 text-[#39FF88]' 
+                    : 'bg-yellow-500/10 border-yellow-500/30 text-yellow-500'
+                }`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${isSupabaseConfigured ? 'bg-[#39FF88]' : 'bg-yellow-500 animate-pulse'}`} />
+                  <span>{isSupabaseConfigured ? 'DB: Live Sync' : 'DB: Local Offline'}</span>
+                </div>
+
                 <div className="flex items-center gap-2 bg-[#141414] border border-[#262626] px-3.5 py-2 rounded-lg">
                   <ClockTicker />
                 </div>
