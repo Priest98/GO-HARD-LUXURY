@@ -94,25 +94,46 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
   useEffect(() => {
     if (!isSupabaseConfigured) return;
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const loadUserSessionAndRole = async (session: any) => {
       if (session && session.user) {
         setIsAuthenticated(true);
         setAdminEmail(session.user.email || '');
-        const role = session.user.user_metadata?.role || 'Super Admin';
-        setAdminRole(role);
+        
+        try {
+          const { data, error } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', session.user.id)
+            .maybeSingle();
+          
+          if (data && data.role && !error) {
+            setAdminRole(data.role);
+          } else {
+            // Default metadata role if available, otherwise fallback to Super Admin
+            const role = session.user.user_metadata?.role || 'Super Admin';
+            setAdminRole(role);
+          }
+        } catch (err) {
+          console.error('Failed to resolve database user role:', err);
+          const role = session.user.user_metadata?.role || 'Super Admin';
+          setAdminRole(role);
+        }
+      } else {
+        setIsAuthenticated(false);
+        localStorage.removeItem('GHL_ADMIN_AUTH');
+      }
+    };
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        loadUserSessionAndRole(session);
       }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session && session.user) {
-        setIsAuthenticated(true);
-        setAdminEmail(session.user.email || '');
-        const role = session.user.user_metadata?.role || 'Super Admin';
-        setAdminRole(role);
+      loadUserSessionAndRole(session);
+      if (session) {
         localStorage.setItem('GHL_ADMIN_AUTH', 'true');
-      } else {
-        setIsAuthenticated(false);
-        localStorage.removeItem('GHL_ADMIN_AUTH');
       }
     });
 
@@ -274,9 +295,12 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
           email: adminEmail,
           password: adminPassword
         });
+        const fallbackEmail = import.meta.env.VITE_LOCAL_ADMIN_EMAIL || 'admin@gohardluxury.com';
+        const fallbackPassword = import.meta.env.VITE_LOCAL_ADMIN_PASSWORD || 'admin123';
+
         if (error) {
           // Fallback credentials check
-          if (adminEmail === 'admin@gohardluxury.com' && adminPassword === 'admin123') {
+          if (adminEmail === fallbackEmail && adminPassword === fallbackPassword) {
             setIsAuthenticated(true);
             localStorage.setItem('GHL_ADMIN_AUTH', 'true');
             addAuditLog(`Logged in successfully as ${adminRole} (Local fallback)`);
@@ -294,7 +318,10 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
         setAuthError(err.message || 'INVALID ADMINISTRATIVE COORDINATES (Email/Password mismatch).');
       }
     } else {
-      if (adminEmail === 'admin@gohardluxury.com' && adminPassword === 'admin123') {
+      const fallbackEmail = import.meta.env.VITE_LOCAL_ADMIN_EMAIL || 'admin@gohardluxury.com';
+      const fallbackPassword = import.meta.env.VITE_LOCAL_ADMIN_PASSWORD || 'admin123';
+
+      if (adminEmail === fallbackEmail && adminPassword === fallbackPassword) {
         setIsAuthenticated(true);
         localStorage.setItem('GHL_ADMIN_AUTH', 'true');
         addAuditLog(`Logged in successfully as ${adminRole}`);
@@ -1230,17 +1257,62 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
                               />
                             </div>
 
-                            <div>
-                              <label className="block text-zinc-400 uppercase tracking-wider mb-1">IMAGE MAPPING REF (e.g. tees-black):</label>
-                              <input
-                                type="text"
-                                value={productForm.images[0]}
-                                onChange={(e) => setProductForm({ ...productForm, images: [e.target.value] })}
-                                className="w-full bg-[#0A0A0A] border border-[#262626] focus:border-[#39FF88] px-3.5 py-2.5 rounded-lg outline-none text-white lowercase"
-                                placeholder="cargo-utility-pant"
-                              />
+                             <div>
+                              <label className="block text-zinc-400 uppercase tracking-wider mb-1">PRODUCT CATALOG IMAGE:</label>
+                              <div className="flex gap-2">
+                                <input
+                                  type="text"
+                                  value={productForm.images[0] || ''}
+                                  onChange={(e) => setProductForm({ ...productForm, images: [e.target.value] })}
+                                  className="flex-1 bg-[#0A0A0A] border border-[#262626] focus:border-[#39FF88] px-3.5 py-2.5 rounded-lg outline-none text-white"
+                                  placeholder="Enter image URL or upload file"
+                                />
+                                <input 
+                                  type="file"
+                                  id="product-image-uploader"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+                                    
+                                    if (isSupabaseConfigured) {
+                                      try {
+                                        const fileExt = file.name.split('.').pop();
+                                        const fileName = `product-${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+                                        
+                                        // Upload to Supabase Storage
+                                        const { error } = await supabase.storage.from('media').upload(fileName, file);
+                                        if (error) throw error;
+                                        
+                                        const { data: publicUrlData } = supabase.storage.from('media').getPublicUrl(fileName);
+                                        setProductForm({ ...productForm, images: [publicUrlData.publicUrl] });
+                                        addAuditLog(`Uploaded product image: ${fileName}`);
+                                        addNotification(`Product image uploaded.`, 'success');
+                                      } catch (err: any) {
+                                        alert('Upload failed: ' + err.message);
+                                      }
+                                    } else {
+                                      // Local fallback (Base64)
+                                      const reader = new FileReader();
+                                      reader.onload = () => {
+                                        setProductForm({ ...productForm, images: [reader.result as string] });
+                                        addNotification(`Local mock image uploaded.`, 'success');
+                                      };
+                                      reader.readAsDataURL(file);
+                                    }
+                                  }}
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => document.getElementById('product-image-uploader')?.click()}
+                                  className="bg-white text-black px-4 py-2 font-mono text-[10px] font-black rounded-lg uppercase tracking-widest hover:opacity-90 cursor-pointer shrink-0"
+                                >
+                                  Upload_
+                                </button>
+                              </div>
                               <span className="text-[8px] text-zinc-500 uppercase mt-1 block tracking-wider">
-                                Maps to visualizer vector coordinates (Tee, Denim, Cap, Polo, Socks, etc.).
+                                Enter a public URL/reference or click "Upload" to upload an image directly to your Supabase bucket.
                               </span>
                             </div>
 
