@@ -234,13 +234,14 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-soft-tee',
-    name: 'Ghl Compact Soft Tee',
-    price: 400000,
+    name: 'GHL COLOR TEES',
+    price: 81000,
+    formerPrice: 90000,
     category: 'Tees',
-    description: 'Ultimate minimal daily essential. Features organic combed ultra-soft compact lightweight cotton with high stitch density and center-neck micro branding embroidery.',
+    description: 'Premium garment-dyed organic combed cotton tee, available in a variety of curated street hues. Features high stitch density and center-neck micro branding embroidery.',
     details: [
       '100% GOTS certified organic compact cotton',
-      'Extremely soft luxury hand-feel surface finish',
+      'Garment-dyed for individually unique vintage color hues',
       '1x1 micro ribbing neck with tiny high-gloss signature embroidery',
       'Internal back-neck comfort label cover',
       'Casual, everyday standard true-to-size length'
