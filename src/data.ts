@@ -254,8 +254,9 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-denim-archive',
-    name: 'Ghl Denim Distressed',
-    price: 600000,
+    name: 'LONG JEAN 👖',
+    price: 96000,
+    formerPrice: 112000,
     category: 'Denim',
     description: 'Archival five-pocket classic relaxed denim pant. Highlighted by intensive heavy wear-line stonewashing and hand-scraped faded detailing.',
     details: [
@@ -288,27 +289,12 @@ export const GHL_PRODUCTS: Product[] = [
     images: ['archive-tee26'],
     releaseDate: '2026-04-05'
   },
-  {
-    id: 'ghl-belt-archive',
-    name: 'Ghl Tactical Webbing Belt',
-    price: 120000,
-    category: 'Accessories',
-    description: 'High-tensile heavy canvas military style webbing belt. Features durable custom steel seatbelt-lock buckle style with matte black branding.',
-    details: [
-      'Military-spec thick nylon webbing canvas',
-      'Matte black finished seatbelt release mechanism',
-      'Laser-etched high contrast GHL logos on buckle front',
-      'Metal-tipped tail end cap forbids fraying',
-      'Fully adjustable 1.5-inch width, fits waist sizes up to 42'
-    ],
-    sizes: ['OS'],
-    images: ['archive-belt'],
-    releaseDate: '2026-03-15'
-  },
+
   {
     id: 'ghl-stoned-pant-archive',
-    name: 'Ghl Stoned Cargo Utility Pant',
-    price: 620000,
+    name: 'LONG JEAN 👖',
+    price: 96000,
+    formerPrice: 112000,
     category: 'Denim',
     description: 'Archival heavyweight cotton cargo pants. Tailored with dual bellows zip-pockets, hand stonewash, and military-style adjustable ankle drawcords.',
     details: [
