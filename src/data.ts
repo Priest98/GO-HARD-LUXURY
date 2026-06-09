@@ -3,8 +3,8 @@ import { Product, CouponCode } from './types';
 export const GHL_PRODUCTS: Product[] = [
   {
     id: 'ghl-visor-cap',
-    name: 'Ghl Visor Cap',
-    price: 120000,
+    name: 'Hat 👒',
+    price: 46000,
     category: 'Accessories',
     description: 'Off Thug official visor cap. Low profile shape, custom embroidered front logo, adjustable dual-color tactical clasp on the rear strap.',
     details: [
