@@ -153,16 +153,17 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-athletics-19',
-    name: 'Athletics 19 Puff Tee',
-    price: 420000,
+    name: 'GHL Braz Jersey',
+    price: 47000,
+    formerPrice: 59000,
     category: 'Tees',
-    description: 'Heavyweight vintage washed cotton standard tee. Incorporates our signature high-density puff print 3D graphics on front chest with boxy collegiate fit structure.',
+    description: 'Heavyweight premium styled streetwear braz jersey with technical mesh paneling and signature typography puff details.',
     details: [
-      '280GSM Pre-shrunk compact ring-spun cotton',
-      'Original puff ink raised collegiate typography print',
-      'Thick 1.2-inch ribbed neckline',
-      'Reinforced shoulder-to-shoulder binder tape',
-      'Double layer garment wash for aged fade look'
+      'Polyester technical knit breathable jersey fabric',
+      'Original GHL collegiate graphic detail print',
+      'V-neck collar rib styling',
+      'Reinforced athletic hem lines',
+      'Contrast side tape accents'
     ],
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
     images: ['athletics-tee'],
@@ -244,7 +245,7 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-denim-archive',
-    name: 'Ghl Denim Distressed (Archive)',
+    name: 'Ghl Denim Distressed',
     price: 600000,
     category: 'Denim',
     description: 'Archival five-pocket classic relaxed denim pant. Highlighted by intensive heavy wear-line stonewashing and hand-scraped faded detailing.',
@@ -257,15 +258,14 @@ export const GHL_PRODUCTS: Product[] = [
     ],
     sizes: ['30', '32', '34', '36'],
     images: ['archive-denim'],
-    badge: 'ARCHIVE PIECE',
-    soldOut: true,
     releaseDate: '2026-04-10',
     quotes: 'Locked in the Vault. Vintage GHL.'
   },
   {
     id: 'ghl-tee26-archive',
-    name: 'Ghl Tee Pattern #26 (Archive)',
-    price: 400000,
+    name: 'GHL 26 Jerseys',
+    price: 71600,
+    formerPrice: 80000,
     category: 'Tees',
     description: 'Archival organic cotton graphics tee, featuring large high-definition distressed screenprint graphic block number 26 across the rear shoulders.',
     details: [
@@ -277,10 +277,7 @@ export const GHL_PRODUCTS: Product[] = [
     ],
     sizes: ['S', 'M', 'L', 'XL'],
     images: ['archive-tee26'],
-    badge: 'ARCHIVE PIECE',
-    soldOut: true,
-    releaseDate: '2026-04-05',
-    quotes: 'Archived. No restocks.'
+    releaseDate: '2026-04-05'
   },
   {
     id: 'ghl-belt-archive',
@@ -297,8 +294,6 @@ export const GHL_PRODUCTS: Product[] = [
     ],
     sizes: ['OS'],
     images: ['archive-belt'],
-    badge: 'ARCHIVE PIECE',
-    soldOut: true,
     releaseDate: '2026-03-15'
   },
   {
@@ -316,8 +311,6 @@ export const GHL_PRODUCTS: Product[] = [
     ],
     sizes: ['30', '32', '34', '36'],
     images: ['archive-stoned-pant'],
-    badge: 'ARCHIVE PIECE',
-    soldOut: true,
     releaseDate: '2026-03-10',
     quotes: 'Constructed to withstand any environment.'
   }

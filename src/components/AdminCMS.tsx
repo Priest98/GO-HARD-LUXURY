@@ -5,7 +5,8 @@ import {
   Settings, Mail, Tags, History, LogOut, Plus, Search, 
   Filter, TrendingUp, Layers, Copy, PlusCircle, X, Lock, 
   AlertCircle, Eye, Video, Trash2, Edit, Check, ExternalLink, 
-  EyeOff, RefreshCw, Bell, AlertTriangle, ShieldCheck, Download
+  EyeOff, RefreshCw, Bell, AlertTriangle, ShieldCheck, Download,
+  Laptop, Smartphone
 } from 'lucide-react';
 import { Product, SortOption } from '../types';
 import { supabase, isSupabaseConfigured } from '../supabaseClient';
@@ -208,6 +209,43 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
   const [productSearch, setProductSearch] = useState<string>('');
   const [productFilterCat, setProductFilterCat] = useState<string>('ALL');
 
+  // Image Source dropdown states
+  const [showImageDropdown, setShowImageDropdown] = useState<boolean>(false);
+  const [showMobileUplinkModal, setShowMobileUplinkModal] = useState<boolean>(false);
+  const [showMediaLibraryModal, setShowMediaLibraryModal] = useState<boolean>(false);
+  const [mobileSessionId, setMobileSessionId] = useState<string>(() => Math.random().toString(36).substring(2, 12));
+
+  // Listen to mobile upload uplink broadcasts
+  useEffect(() => {
+    if (!showMobileUplinkModal) return;
+
+    const channel = supabase.channel(`mobile-upload-${mobileSessionId}`, {
+      config: {
+        broadcast: { ack: false }
+      }
+    });
+
+    channel.on('broadcast', { event: 'upload-success' }, ({ payload }) => {
+      console.log('Mobile image uplink payload received:', payload);
+      if (payload && payload.imageUrl) {
+        setProductForm(prev => ({ ...prev, images: [payload.imageUrl] }));
+        addNotification('SPECIMEN IMAGE SUCCESSFULLY LINKED FROM MOBILE!', 'success');
+        addAuditLog(`Received mobile image uplink: ${payload.imageUrl.substring(0, 50)}...`);
+        setShowMobileUplinkModal(false);
+      }
+    });
+
+    channel.subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        console.log(`Subscribed to uplink channel mobile-upload-${mobileSessionId}`);
+      }
+    });
+
+    return () => {
+      channel.unsubscribe();
+    };
+  }, [showMobileUplinkModal, mobileSessionId]);
+
   // Forms / Editing states
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isCreatingProduct, setIsCreatingProduct] = useState<boolean>(false);
@@ -225,7 +263,8 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
     soldOut: false,
     badge: 'NEW ARRIVAL' as any,
     quotes: '',
-    releaseDate: new Date().toISOString().split('T')[0]
+    releaseDate: new Date().toISOString().split('T')[0],
+    formerPrice: undefined
   };
   const [productForm, setProductForm] = useState<any>(initialProductState);
 
@@ -463,6 +502,7 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
           id: productForm.id,
           name: productForm.name,
           price: productForm.price,
+          former_price: productForm.formerPrice,
           category: productForm.category,
           description: productForm.description,
           details: productForm.details,
@@ -555,6 +595,7 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
           id: duplicated.id,
           name: duplicated.name,
           price: duplicated.price,
+          former_price: duplicated.formerPrice,
           category: duplicated.category,
           description: duplicated.description,
           details: duplicated.details,
@@ -665,6 +706,67 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
   const totalCustomers = Array.from(new Set(orders.map(o => o.customerEmail))).length;
   const lowStockProducts = products.filter(p => p.sizes.includes('OS') ? false : false); // Mock count or real
   const activeProducts = products.filter(p => !p.soldOut).length;
+
+  // Real visitor counter read from localStorage
+  const visitorCount = parseInt(localStorage.getItem('GHL_VISITOR_COUNT') || '0');
+
+  // Total quantity of items sold across all orders
+  const totalProductsSold = orders
+    .filter(o => o.status !== 'Cancelled')
+    .reduce((sum, o) => {
+      const itemsCount = o.items ? o.items.reduce((acc: number, item: any) => acc + (item.quantity || 0), 0) : 0;
+      return sum + itemsCount;
+    }, 0);
+
+  // Generate a dynamic SVG path for products sold
+  const getSalesChartPath = () => {
+    if (orders.length === 0) {
+      return {
+        path: "M 0 170 L 600 170",
+        areaPath: "M 0 170 L 600 170 L 600 200 L 0 200 Z",
+        points: []
+      };
+    }
+    
+    // Sort orders by date (oldest first for line chart)
+    const sortedOrders = [...orders].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    
+    // Calculate running sold count
+    let runningTotal = 0;
+    const dataPoints = sortedOrders.map((o) => {
+      const qty = o.items ? o.items.reduce((acc: number, item: any) => acc + (item.quantity || 0), 0) : 0;
+      runningTotal += qty;
+      return runningTotal;
+    });
+
+    const maxVal = Math.max(...dataPoints, 5);
+    const minVal = 0;
+    const range = maxVal - minVal;
+
+    // Map to SVG coordinates (600x150, padding at top 20, bottom 170)
+    const points = dataPoints.map((val, idx) => {
+      const x = sortedOrders.length > 1 ? (idx / (sortedOrders.length - 1)) * 600 : 300;
+      const y = 170 - ((val - minVal) / range) * 130;
+      return { x, y, val };
+    });
+
+    let path = `M 0 170`;
+    if (points.length > 0) {
+      path = `M ${points[0].x} ${points[0].y}`;
+      for (let i = 1; i < points.length; i++) {
+        path += ` L ${points[i].x} ${points[i].y}`;
+      }
+    }
+    
+    const startX = points[0]?.x || 0;
+    const endX = points[points.length - 1]?.x || 600;
+    
+    const areaPath = `${path} L ${endX} 200 L ${startX} 200 Z`;
+
+    return { path, areaPath, points };
+  };
+
+  const chartData = getSalesChartPath();
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white selection:bg-[#39FF88] selection:text-black font-sans relative flex flex-col justify-stretch">
@@ -953,10 +1055,10 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
                   {/* Grid cards statistics */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                     {[
-                      { label: 'TOTAL COORDINATED REVENUE', val: `₦${totalRevenue.toLocaleString()}`, change: '+24.8%', icon: TrendingUp },
-                      { label: 'DISPATCHED ORDERS', val: totalOrders, change: '+12.5%', icon: CreditCard },
-                      { label: 'CUSTOMER LOG INDEX', val: totalCustomers, change: '+8.3%', icon: Users },
-                      { label: 'ACTIVE SPECIMENS', val: activeProducts, change: `${products.length} total`, icon: Package }
+                      { label: 'NUMBER OF SALES', val: totalOrders, change: 'Total Completed', icon: CreditCard },
+                      { label: 'PRODUCTS AVAILABLE', val: activeProducts, change: `${products.length} catalog items`, icon: Package },
+                      { label: 'PRODUCT UNITS SOLD', val: totalProductsSold, change: 'Units Dispatched', icon: TrendingUp },
+                      { label: 'VISITORS LOGGED', val: visitorCount, change: 'Simulated Count', icon: Users }
                     ].map((card, i) => {
                       const Icon = card.icon;
                       return (
@@ -974,13 +1076,13 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
                     })}
                   </div>
 
-                  {/* Revenue Line Chart & Low Stock alerts */}
+                  {/* Revenue Line Chart */}
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                     {/* SVG Chart display */}
-                    <div className="lg:col-span-8 bg-[#141414] border border-[#262626] p-6 rounded-xl space-y-4">
+                    <div className="lg:col-span-12 bg-[#141414] border border-[#262626] p-6 rounded-xl space-y-4">
                       <div className="flex justify-between items-center pb-4 border-b border-[#262626]">
                         <h3 className="font-display font-black text-sm uppercase text-white tracking-wide">
-                          REVENUE COORDINATION STREAM
+                          PRODUCT UNITS SOLD STREAM
                         </h3>
                         <span className="font-mono text-[10px] text-[#39FF88] font-black uppercase">LIVE UPDATES ACTIVE</span>
                       </div>
@@ -1005,12 +1107,12 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
                           </defs>
                           {/* Area path */}
                           <path 
-                            d="M 0 170 C 100 160, 150 90, 200 110 C 250 130, 300 50, 400 60 C 500 70, 550 20, 600 10 L 600 200 L 0 200 Z" 
+                            d={chartData.areaPath} 
                             fill="url(#chart-grad)"
                           />
                           {/* Line path */}
                           <path 
-                            d="M 0 170 C 100 160, 150 90, 200 110 C 250 130, 300 50, 400 60 C 500 70, 550 20, 600 10" 
+                            d={chartData.path} 
                             fill="none" 
                             stroke="#39FF88" 
                             strokeWidth="3.5"
@@ -1020,48 +1122,21 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
 
                         {/* Chart labels */}
                         <div className="flex justify-between items-center text-[8px] font-mono text-zinc-500 pt-2 border-t border-[#262626] uppercase">
-                          <span>MON 01 (₦240k)</span>
-                          <span>WED 03 (₦610k)</span>
-                          <span>FRI 05 (₦920k)</span>
-                          <span>SUN 07 (₦1.24M)</span>
+                          {orders.length === 0 ? (
+                            <>
+                              <span>Start (0 Units)</span>
+                              <span>Active Tracking Period</span>
+                              <span>Current (0 Units)</span>
+                            </>
+                          ) : (
+                            <>
+                              <span>{orders[orders.length - 1]?.date || 'Start'}</span>
+                              <span>Cumulative Sales Trend</span>
+                              <span>{orders[0]?.date || 'Current'} ({chartData.points[chartData.points.length - 1]?.val || 0} Units)</span>
+                            </>
+                          )}
                         </div>
                       </div>
-                    </div>
-
-                    {/* Low stock indicators side card */}
-                    <div className="lg:col-span-4 bg-[#141414] border border-[#262626] p-6 rounded-xl space-y-4 flex flex-col justify-between">
-                      <div className="space-y-4">
-                        <div className="flex items-center gap-2 text-yellow-400">
-                          <AlertTriangle size={15} />
-                          <h3 className="font-display font-black text-sm uppercase text-white tracking-wide">
-                            STOCK ALERTS
-                          </h3>
-                        </div>
-                        <p className="text-[11px] text-zinc-400 font-sans leading-relaxed">
-                          The following item drapes are running below critical levels (Quantity &lt; 5).
-                        </p>
-                        
-                        <div className="space-y-2.5">
-                          {products.slice(0, 3).map((item, idx) => (
-                            <div key={item.id} className="bg-[#0A0A0A] border border-[#262626] p-3 flex justify-between items-center rounded-lg">
-                              <div>
-                                <span className="text-xs font-mono font-bold block text-white uppercase">{item.name}</span>
-                                <span className="text-[9px] font-mono text-zinc-500 block uppercase">ID: {item.id}</span>
-                              </div>
-                              <span className="bg-yellow-950/40 border border-yellow-800 text-yellow-500 text-[10px] font-mono px-2 py-0.5 rounded font-bold">
-                                {idx + 2} UNITS Left
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      <button
-                        onClick={() => setActiveTab('products')}
-                        className="w-full py-2.5 bg-white text-black font-mono text-[10px] font-black uppercase tracking-widest text-center rounded-lg hover:opacity-90 mt-4 cursor-pointer"
-                      >
-                        Access Inventory Management
-                      </button>
                     </div>
                   </div>
 
@@ -1213,7 +1288,7 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
                               />
                             </div>
 
-                            <div className="grid grid-cols-2 gap-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                               <div>
                                 <label className="block text-zinc-400 uppercase tracking-wider mb-1">PRICE (₦):</label>
                                 <input
@@ -1222,6 +1297,17 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
                                   value={productForm.price}
                                   onChange={(e) => setProductForm({ ...productForm, price: parseFloat(e.target.value) || 0 })}
                                   className="w-full bg-[#0A0A0A] border border-[#262626] focus:border-[#39FF88] px-3.5 py-2.5 rounded-lg outline-none text-white"
+                                />
+                              </div>
+
+                              <div>
+                                <label className="block text-zinc-400 uppercase tracking-wider mb-1">FORMER PRICE (₦):</label>
+                                <input
+                                  type="number"
+                                  value={productForm.formerPrice || ''}
+                                  onChange={(e) => setProductForm({ ...productForm, formerPrice: e.target.value ? parseFloat(e.target.value) : undefined })}
+                                  className="w-full bg-[#0A0A0A] border border-[#262626] focus:border-[#39FF88] px-3.5 py-2.5 rounded-lg outline-none text-white"
+                                  placeholder="None"
                                 />
                               </div>
 
@@ -1265,65 +1351,110 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
                                 placeholder="'Silenced in combat. Born in war.'"
                               />
                             </div>
+                            <div>
+                               <label className="block text-zinc-400 uppercase tracking-wider mb-1">PRODUCT CATALOG IMAGE:</label>
+                               
+                               <div className="flex gap-2 relative">
+                                 <input
+                                   type="text"
+                                   value={productForm.images[0] || ''}
+                                   onChange={(e) => setProductForm({ ...productForm, images: [e.target.value] })}
+                                   className="flex-1 bg-[#0A0A0A] border border-[#262626] focus:border-[#39FF88] px-3.5 py-2.5 rounded-lg outline-none text-white text-xs font-mono"
+                                   placeholder="Enter image URL or choose source..."
+                                 />
+                                 
+                                 <input 
+                                   type="file"
+                                   id="product-image-uploader-laptop"
+                                   accept="image/*"
+                                   className="hidden"
+                                   onChange={async (e) => {
+                                     const file = e.target.files?.[0];
+                                     if (!file) return;
+                                     
+                                     if (isSupabaseConfigured) {
+                                       try {
+                                         const fileExt = file.name.split('.').pop();
+                                         const fileName = `product-${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+                                         
+                                         // Upload to Supabase Storage
+                                         const { error } = await supabase.storage.from('media').upload(fileName, file);
+                                         if (error) throw error;
+                                         
+                                         const { data: publicUrlData } = supabase.storage.from('media').getPublicUrl(fileName);
+                                         setProductForm({ ...productForm, images: [publicUrlData.publicUrl] });
+                                         addAuditLog(`Uploaded product image: ${fileName}`);
+                                         addNotification(`Product image uploaded.`, 'success');
+                                       } catch (err: any) {
+                                         alert('Upload failed: ' + err.message);
+                                       }
+                                     } else {
+                                       // Local fallback (Base64)
+                                       const reader = new FileReader();
+                                       reader.onload = () => {
+                                         setProductForm({ ...productForm, images: [reader.result as string] });
+                                         addNotification(`Local mock image uploaded.`, 'success');
+                                       };
+                                       reader.readAsDataURL(file);
+                                     }
+                                   }}
+                                 />
 
-                             <div>
-                              <label className="block text-zinc-400 uppercase tracking-wider mb-1">PRODUCT CATALOG IMAGE:</label>
-                              <div className="flex gap-2">
-                                <input
-                                  type="text"
-                                  value={productForm.images[0] || ''}
-                                  onChange={(e) => setProductForm({ ...productForm, images: [e.target.value] })}
-                                  className="flex-1 bg-[#0A0A0A] border border-[#262626] focus:border-[#39FF88] px-3.5 py-2.5 rounded-lg outline-none text-white"
-                                  placeholder="Enter image URL or upload file"
-                                />
-                                <input 
-                                  type="file"
-                                  id="product-image-uploader"
-                                  accept="image/*"
-                                  className="hidden"
-                                  onChange={async (e) => {
-                                    const file = e.target.files?.[0];
-                                    if (!file) return;
-                                    
-                                    if (isSupabaseConfigured) {
-                                      try {
-                                        const fileExt = file.name.split('.').pop();
-                                        const fileName = `product-${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
-                                        
-                                        // Upload to Supabase Storage
-                                        const { error } = await supabase.storage.from('media').upload(fileName, file);
-                                        if (error) throw error;
-                                        
-                                        const { data: publicUrlData } = supabase.storage.from('media').getPublicUrl(fileName);
-                                        setProductForm({ ...productForm, images: [publicUrlData.publicUrl] });
-                                        addAuditLog(`Uploaded product image: ${fileName}`);
-                                        addNotification(`Product image uploaded.`, 'success');
-                                      } catch (err: any) {
-                                        alert('Upload failed: ' + err.message);
-                                      }
-                                    } else {
-                                      // Local fallback (Base64)
-                                      const reader = new FileReader();
-                                      reader.onload = () => {
-                                        setProductForm({ ...productForm, images: [reader.result as string] });
-                                        addNotification(`Local mock image uploaded.`, 'success');
-                                      };
-                                      reader.readAsDataURL(file);
-                                    }
-                                  }}
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => document.getElementById('product-image-uploader')?.click()}
-                                  className="bg-white text-black px-4 py-2 font-mono text-[10px] font-black rounded-lg uppercase tracking-widest hover:opacity-90 cursor-pointer shrink-0"
-                                >
-                                  Upload_
-                                </button>
-                              </div>
-                              <span className="text-[8px] text-zinc-500 uppercase mt-1 block tracking-wider">
-                                Enter a public URL/reference or click "Upload" to upload an image directly to your Supabase bucket.
-                              </span>
-                            </div>
+                                 <div className="relative">
+                                   <button
+                                     type="button"
+                                     onClick={() => setShowImageDropdown(!showImageDropdown)}
+                                     className="bg-white text-black px-4 py-3 font-mono text-[10px] font-black rounded-lg uppercase tracking-widest hover:opacity-90 cursor-pointer shrink-0 flex items-center gap-1.5 h-full"
+                                   >
+                                     <span>Add Image</span>
+                                     <span className="text-[7px]">▼</span>
+                                   </button>
+                                   
+                                   {showImageDropdown && (
+                                     <div className="absolute right-0 mt-2 w-52 bg-[#141414] border border-[#262626] rounded-xl shadow-2xl z-30 p-1.5 font-mono text-[9px] uppercase tracking-wider">
+                                       <button
+                                         type="button"
+                                         onClick={() => {
+                                           setShowImageDropdown(false);
+                                           document.getElementById('product-image-uploader-laptop')?.click();
+                                         }}
+                                         className="w-full text-left px-3 py-2 text-zinc-300 hover:text-white hover:bg-[#262626] rounded-lg transition-colors flex items-center gap-2"
+                                       >
+                                         <Laptop size={12} className="text-[#39FF88]" />
+                                         <span>Upload from Laptop</span>
+                                       </button>
+                                       <button
+                                         type="button"
+                                         onClick={() => {
+                                           setShowImageDropdown(false);
+                                           // Reset session ID and open mobile uplink modal
+                                           setMobileSessionId(Math.random().toString(36).substring(2, 12));
+                                           setShowMobileUplinkModal(true);
+                                         }}
+                                         className="w-full text-left px-3 py-2 text-zinc-300 hover:text-white hover:bg-[#262626] rounded-lg transition-colors flex items-center gap-2"
+                                       >
+                                         <Smartphone size={12} className="text-[#39FF88]" />
+                                         <span>Mobile Camera Uplink</span>
+                                       </button>
+                                       <button
+                                         type="button"
+                                         onClick={() => {
+                                           setShowImageDropdown(false);
+                                           setShowMediaLibraryModal(true);
+                                         }}
+                                         className="w-full text-left px-3 py-2 text-zinc-300 hover:text-white hover:bg-[#262626] rounded-lg transition-colors flex items-center gap-2"
+                                       >
+                                         <FolderOpen size={12} className="text-[#39FF88]" />
+                                         <span>From Media Library</span>
+                                       </button>
+                                     </div>
+                                   )}
+                                 </div>
+                               </div>
+                               <span className="text-[8px] text-zinc-500 uppercase mt-1.5 block tracking-wider font-mono">
+                                 Select source from dropdown to add images from Laptop or Mobile camera.
+                               </span>
+                             </div>
 
                             <div>
                               <label className="block text-zinc-400 uppercase tracking-wider mb-1">SIZING GRIDS AVAILABLE:</label>
@@ -2144,6 +2275,102 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
         <span>© {new Date().getFullYear()} GO HARD LUXURY // ADMIN CMS V1.2.0 STABLE</span>
         <span className="text-zinc-600">AUTHORIZED ACCESS PORT COORDINATES ONLY</span>
       </footer>
+      {/* Mobile Uplink Modal */}
+      {showMobileUplinkModal && (
+        <div className="fixed inset-0 z-55 flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
+          <div className="w-full max-w-sm bg-[#141414] border border-[#262626] p-6 rounded-2xl relative text-center space-y-5 shadow-2xl">
+            <button 
+              onClick={() => setShowMobileUplinkModal(false)}
+              className="absolute top-4 right-4 text-zinc-500 hover:text-white cursor-pointer"
+            >
+              <X size={16} />
+            </button>
+            
+            <div className="space-y-1">
+              <h3 className="font-display font-black text-sm uppercase text-white tracking-wider">
+                MOBILE UPLINK RADAR
+              </h3>
+              <p className="text-[10px] text-zinc-400 font-sans leading-relaxed">
+                Scan this QR code with your phone camera to initialize secure mobile transmission channel.
+              </p>
+            </div>
+
+            <div className="bg-white p-3 rounded-xl mx-auto w-fit border border-[#262626]">
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&color=000000&bgcolor=ffffff&data=${encodeURIComponent(
+                  `${window.location.origin}${window.location.pathname}#mobile-upload?session=${mobileSessionId}`
+                )}`}
+                alt="Scan Uplink QR"
+                className="w-40 h-40"
+              />
+            </div>
+
+            <div className="bg-[#0A0A0A] border border-[#262626] p-3 rounded-lg text-left space-y-1">
+              <span className="text-[8px] font-mono text-zinc-500 uppercase tracking-widest block font-bold">Manual Link Coordinates:</span>
+              <span className="text-[8px] font-mono text-zinc-400 break-all block select-all">
+                {`${window.location.origin}${window.location.pathname}#mobile-upload?session=${mobileSessionId}`}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-center gap-2 text-[9px] font-mono text-[#39FF88] uppercase tracking-widest font-black animate-pulse">
+              <span className="w-2 h-2 rounded-full bg-[#39FF88] animate-ping" />
+              <span>Awaiting mobile broadcast...</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Media Library Selection Modal */}
+      {showMediaLibraryModal && (
+        <div className="fixed inset-0 z-55 flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
+          <div className="w-full max-w-lg bg-[#141414] border border-[#262626] p-6 rounded-2xl relative shadow-2xl space-y-4">
+            <button 
+              onClick={() => setShowMediaLibraryModal(false)}
+              className="absolute top-4 right-4 text-zinc-500 hover:text-white cursor-pointer"
+            >
+              <X size={16} />
+            </button>
+            
+            <div>
+              <h3 className="font-display font-black text-sm uppercase text-white tracking-wider">
+                CHOOSE FROM STORED MEDIA
+              </h3>
+              <p className="text-[10px] text-zinc-400 font-sans mt-0.5">
+                Select an image file from the centralized vault to associate with this product.
+              </p>
+            </div>
+
+            <div className="border-t border-[#262626] pt-4">
+              {mediaList.filter(m => m.type === 'image').length === 0 ? (
+                <div className="text-center py-12 font-mono text-[10px] text-zinc-500 uppercase">
+                  No images stored in library. Use Laptop or Mobile upload first.
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 max-h-[300px] overflow-y-auto pr-1">
+                  {mediaList.filter(m => m.type === 'image').map((file, idx) => (
+                    <div 
+                      key={idx} 
+                      onClick={() => {
+                        setProductForm(prev => ({ ...prev, images: [file.url] }));
+                        setShowMediaLibraryModal(false);
+                        addNotification(`Selected image: ${file.name}`, 'success');
+                      }}
+                      className="border border-[#262626] hover:border-[#39FF88] bg-[#0A0A0A] p-2 rounded-xl cursor-pointer transition-all duration-200 relative group flex flex-col justify-between"
+                    >
+                      <div className="aspect-square bg-zinc-900 rounded-lg overflow-hidden flex items-center justify-center mb-1.5 border border-white/5">
+                        <img src={file.url} alt={file.name} className="w-full h-full object-cover" />
+                      </div>
+                      <span className="text-[8px] font-mono text-zinc-400 truncate block text-center uppercase font-bold" title={file.name}>
+                        {file.name}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -7,6 +7,7 @@ import { ProductCard } from './components/ProductCard';
 import { ProductDetailModal } from './components/ProductDetailModal';
 import { CartSidebar } from './components/CartSidebar';
 import { AdminCMS } from './components/AdminCMS';
+import { MobileUploadUplink } from './components/MobileUploadUplink';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 
 export default function App() {
@@ -29,9 +30,12 @@ export default function App() {
 
   // Admin Mode state
   const [isAdminMode, setIsAdminMode] = useState<boolean>(() => window.location.hash === '#admin');
+  const [isMobileUploadMode, setIsMobileUploadMode] = useState<boolean>(() => window.location.hash.startsWith('#mobile-upload'));
+  
   useEffect(() => {
     const handleHashChange = () => {
       setIsAdminMode(window.location.hash === '#admin');
+      setIsMobileUploadMode(window.location.hash.startsWith('#mobile-upload'));
     };
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
@@ -42,50 +46,16 @@ export default function App() {
     const stored = localStorage.getItem('GHL_ORDERS');
     if (stored) {
       try {
-        return JSON.parse(stored);
+        const parsed = JSON.parse(stored);
+        const hasMock = parsed.some((o: any) => o.id && o.id.startsWith('GHL-REG-'));
+        if (!hasMock) {
+          return parsed;
+        }
       } catch (e) {
         console.error('Failed to parse stored orders', e);
       }
     }
-    return [
-      {
-        id: 'GHL-REG-8472-105',
-        date: '2026-06-05 14:12',
-        customerName: 'Tunde Bello',
-        customerEmail: 'tunde@gmail.com',
-        items: [
-          { productId: 'ghl-silky-polo', productName: 'Ghl Silky Shortsleeve Polo', size: 'M', quantity: 2, price: 450000 }
-        ],
-        totalAmount: 900000,
-        status: 'Paid',
-        paymentStatus: 'Paid'
-      },
-      {
-        id: 'GHL-REG-9812-321',
-        date: '2026-06-06 18:34',
-        customerName: 'Chidi Okafor',
-        customerEmail: 'chidi.o@yahoo.com',
-        items: [
-          { productId: 'ghl-woven-polo', productName: 'Ghl Woven Shortsleeve Polo', size: 'L', quantity: 1, price: 480000 },
-          { productId: 'ghl-visor-cap', productName: 'Ghl Visor Cap', size: 'OS', quantity: 1, price: 120000 }
-        ],
-        totalAmount: 600000,
-        status: 'Delivered',
-        paymentStatus: 'Paid'
-      },
-      {
-        id: 'GHL-REG-1427-402',
-        date: '2026-06-07 11:22',
-        customerName: 'Amina Yusuf',
-        customerEmail: 'amina.y@gmail.com',
-        items: [
-          { productId: 'ghl-longsleeve-polo', productName: 'Ghl Longsleeve Polo', size: 'S', quantity: 1, price: 520000 }
-        ],
-        totalAmount: 520000,
-        status: 'Processing',
-        paymentStatus: 'Paid'
-      }
-    ];
+    return [];
   });
 
   useEffect(() => {
@@ -145,7 +115,8 @@ export default function App() {
             soldOut: !!p.sold_out,
             badge: p.badge || '',
             quotes: p.quotes || '',
-            releaseDate: p.release_date
+            releaseDate: p.release_date,
+            formerPrice: p.former_price ? Number(p.former_price) : undefined
           }));
           setProducts(mapped);
           localStorage.setItem('GHL_PRODUCTS', JSON.stringify(mapped));
@@ -236,6 +207,12 @@ export default function App() {
   const toggleTheme = () => {
     setTheme(prev => (prev === 'night' ? 'day' : 'night'));
   };
+
+  // Increment visitor counter on storefront load
+  useEffect(() => {
+    const count = parseInt(localStorage.getItem('GHL_VISITOR_COUNT') || '142');
+    localStorage.setItem('GHL_VISITOR_COUNT', (count + 1).toString());
+  }, []);
 
   // Tactical Live Clock UTC Timer
   const [currentTime, setCurrentTime] = useState<Date>(new Date("2026-06-06T08:53:30Z"));
@@ -358,6 +335,10 @@ export default function App() {
   const getCartTotalQty = () => {
     return cartItems.reduce((sum, item) => sum + item.quantity, 0);
   };
+
+  if (isMobileUploadMode) {
+    return <MobileUploadUplink />;
+  }
 
   if (isAdminMode) {
     return (
@@ -703,12 +684,12 @@ export default function App() {
         {/* Medium centered message title with extremely bold font sizing style */}
         <div className="my-auto z-10 relative flex flex-col items-center text-center">
           <h2
-            className="font-display font-black text-5xl sm:text-8xl md:text-9xl tracking-tighter uppercase text-white leading-[0.8] mb-6"
+            className="font-luxury font-extrabold text-5xl sm:text-8xl md:text-9xl tracking-tight uppercase text-white leading-none mb-6"
           >
             {homepageConfig.heroHeadline}
           </h2>
           <p
-            className="max-w-xl text-xs md:text-sm tracking-wide leading-relaxed opacity-70 mb-8"
+            className="max-w-xl text-sm md:text-base font-luxury italic tracking-wide leading-relaxed text-zinc-300 opacity-90 mb-8"
           >
             "Remember one thing. Through every dark night, there's a bright day after."
           </p>

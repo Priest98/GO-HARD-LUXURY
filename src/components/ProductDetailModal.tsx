@@ -115,12 +115,17 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               <span className="font-mono font-black text-xl text-white">
                 ₦{product.price.toLocaleString()}
               </span>
-              <span className="text-[9px] font-mono text-[#8e8e93] font-bold tracking-widest">NGN / TAX INCLUDED</span>
+              {product.formerPrice && (
+                <span className="font-mono text-sm text-[#8e8e93] line-through">
+                  ₦{product.formerPrice.toLocaleString()}
+                </span>
+              )}
+              <span className="text-[9px] font-mono text-[#8e8e93] font-bold tracking-widest ml-auto">NGN / TAX INCLUDED</span>
             </div>
 
             {/* Quote design panel */}
             {product.quotes && (
-              <blockquote className="border-l-2 border-white bg-white/5 pl-4 py-3 mb-6 text-xs font-mono font-bold uppercase tracking-wider text-white/90">
+              <blockquote className="border-l-2 border-white pl-4 py-1 mb-6 text-sm font-luxury italic text-zinc-200">
                 "{product.quotes}"
               </blockquote>
             )}

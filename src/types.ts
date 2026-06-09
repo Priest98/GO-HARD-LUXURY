@@ -11,6 +11,7 @@ export interface Product {
   badge?: 'NEW ARRIVAL' | 'ARCHIVE PIECE' | '1of1' | 'BEST SELLER';
   quotes?: string;
   releaseDate: string;
+  formerPrice?: number;
 }
 
 export interface CartItem {

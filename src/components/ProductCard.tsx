@@ -108,9 +108,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               {product.name}
             </h3>
           </div>
-          <span className="font-mono text-xs font-black text-white bg-white/5 border border-white/10 px-2 py-1 shrink-0">
-            ₦{product.price.toLocaleString()}
-          </span>
+          <div className="flex flex-col items-end shrink-0">
+            <span className="font-mono text-xs font-black text-white bg-white/5 border border-white/10 px-2 py-1">
+              ₦{product.price.toLocaleString()}
+            </span>
+            {product.formerPrice && (
+              <span className="font-mono text-[9px] text-[#8e8e93] line-through mt-0.5">
+                ₦{product.formerPrice.toLocaleString()}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Item core quote preview or quick size label display */}
