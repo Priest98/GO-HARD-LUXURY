@@ -221,26 +221,18 @@ export const ProductVisualizer: React.FC<VisualizerProps> = ({
 
       case 'ghl-analog-glasses':
         return (
-          <g transform="translate(10, 10) scale(1)">
-            {/* Right sunglasses frame rim */}
-            <rect x="65" y="105" width="55" height="35" rx="10" fill="#1C1C1E" stroke="#8E8E93" strokeWidth="2.5" />
-            {/* Left sunglasses frame rim */}
-            <rect x="140" y="105" width="55" height="35" rx="10" fill="#1C1C1E" stroke="#8E8E93" strokeWidth="2.5" />
-            {/* Tinted Lenses with gradient look via multi layer paths */}
-            <rect x="70" y="110" width="45" height="25" rx="6" fill="#111" />
-            <path d="M 70,110 L 105,135 L 75,135 Z" fill="#D9FE00" opacity="0.2" /> {/* Lens flare */}
-            <rect x="145" y="110" width="45" height="25" rx="6" fill="#111" />
-            <path d="M 145,110 L 180,135 L 150,135 Z" fill="#D9FE00" opacity="0.2" />
-            {/* Frame bridge bridge */}
-            <path d="M 120,115 C 125,110 135,110 140,115" fill="none" stroke="#8E8E93" strokeWidth="3" />
-            {/* Acetate Ear stems starting from corners */}
-            <path d="M 65,115 Q 40,112 35,128" fill="none" stroke="#8E8E93" strokeWidth="3" />
-            <path d="M 195,115 Q 220,112 225,128" fill="none" stroke="#8E8E93" strokeWidth="3" />
-            {/* Little metallic round hinge rivets */}
-            <circle cx="60" cy="115" r="1.5" fill="#D9FE00" />
-            <circle cx="200" cy="115" r="1.5" fill="#D9FE00" />
-            {/* OFT text on lens border */}
-            <text x="175" y="117" fill="#8E8E93" fontFamily="var(--font-mono)" fontSize="5">GHL</text>
+          <g transform="translate(10, 10) scale(0.9)">
+            {/* Structured high panel flat brim Snapback cap in charcoal grey */}
+            <path d="M 60,110 C 60,50 100,45 140,45 C 180,45 220,50 220,110 Z" fill="#2C2C2E" stroke="#8E8E93" strokeWidth="2.5" />
+            {/* Flat brim standing out straight */}
+            <path d="M 50,110 L 15,110 C 13,124 45,123 60,118" fill="#1A1A1C" stroke="#8E8E93" strokeWidth="2" />
+            {/* Front embroidery styling */}
+            <text x="108" y="85" fill="#D9FE00" fontFamily="var(--font-luxury)" fontSize="14" fontWeight="black">GHL</text>
+            <text x="102" y="96" fill="#8E8E93" fontFamily="var(--font-mono)" fontSize="5.5" letterSpacing="0.5">OFFICIAL CAP</text>
+            {/* Top crown button */}
+            <ellipse cx="140" cy="45" rx="5" ry="2.5" fill="#D9FE00" stroke="#111" />
+            {/* Inner neon brim glow indicator */}
+            <path d="M 15,110 C 35,113 50,111 60,114" fill="none" stroke="#D9FE00" strokeWidth="1.5" />
           </g>
         );
 

@@ -139,16 +139,17 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-analog-glasses',
-    name: 'Ghl Analog Glasses',
-    price: 120000,
-    category: 'Eyewear',
-    description: 'High-end rectangular street sunglasses. Tinted polycarbonate UV-protection lenses encased in polished acetate arms with embedded metal monogram.',
+    name: 'Hat 👒',
+    price: 46000,
+    formerPrice: 58000,
+    category: 'Accessories',
+    description: 'Premium high-profile structured snapback cap. Crafted with premium wool-blend fabrication, detailed front branding embroidery, and traditional adjustable snapback closure.',
     details: [
-      'Optical-grade hand-carved acetate frame',
-      'Anti-glare UV400 protective dark tint lens',
-      'Cast metal geometric GHL logo embedded in hinges',
-      'Industrial reinforced dual-screw hardware',
-      'Includes faux-leather brand protective sleeve'
+      'Premium wool-blend structured crown paneling',
+      'Detailed front signature embroidery design',
+      'Flat brim silhouette with contrast green under-brim',
+      'Classic adjustable 7-hole snap closure',
+      'Finished interior custom logo branding tape'
     ],
     sizes: ['OS'],
     images: ['analog-glasses'],
@@ -271,8 +272,9 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-tee26-archive',
-    name: 'Ghl Tee Pattern 26',
-    price: 400000,
+    name: 'GHL 26 Jerseys',
+    price: 71600,
+    formerPrice: 80000,
     category: 'Tees',
     description: 'Archival organic cotton graphics tee, featuring large high-definition distressed screenprint graphic block number 26 across the rear shoulders.',
     details: [
