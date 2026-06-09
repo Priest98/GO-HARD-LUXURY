@@ -2,7 +2,7 @@ export interface Product {
   id: string;
   name: string;
   price: number;
-  category: 'Polos' | 'Denim' | 'Tees' | 'Accessories' | 'Footwear' | 'Eyewear';
+  category: 'Polos' | 'Denim' | 'Tees' | 'Accessories' | 'Footwear' | 'Eyewear' | 'Tracksuits';
   description: string;
   details: string[];
   sizes: string[];

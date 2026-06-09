@@ -42,16 +42,17 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-woven-polo',
-    name: 'Ghl Woven Shortsleeve Polo',
-    price: 480000,
-    category: 'Polos',
-    description: 'Heavyweight woven waffle-knit textured shortsleeve polo. Features tactical rib-neck styling and industrial branded custom snap flat-front buttons.',
+    name: 'UP&DOWN ✨',
+    price: 160000,
+    formerPrice: 180000,
+    category: 'Tracksuits',
+    description: 'Premium technical streetwear tracksuit set featuring matching zip-up jacket and relaxed utility track pants. Finished with signature GHL metal custom hardware and dynamic piping details.',
     details: [
-      '100% Compact combed cotton structured waffle',
-      'Aged gunmetal branded snap button closure',
-      'Ribbed sleeve cuffs with contrast dual tipping',
-      'Preshrunk vintage garments dye washed',
-      'Double-stitched seams for durability'
+      'Heavyweight double-knit performance interlock fabric',
+      'Matching full-zip jacket and relaxed utility track pants',
+      'Custom GHL engraved metal zip-pullers & hardware',
+      'Contrasting side piping lines and ribbed elastic hems',
+      'Secure zip-pockets for modern utility'
     ],
     sizes: ['S', 'M', 'L', 'XL'],
     images: ['woven-shortsleeve'],
@@ -60,13 +61,14 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-longsleeve-polo',
-    name: 'Ghl Longsleeve Polo',
-    price: 520000,
-    category: 'Polos',
-    description: 'Streetwear-contoured premium longsleeve knit polo. Interlock structural drape featuring high-rib elastic cuffs and a minimalist raw-carve placket.',
+    name: 'GHL LS Tees',
+    price: 96000,
+    formerPrice: 110000,
+    category: 'Tees',
+    description: 'Streetwear-contoured premium longsleeve knit tee. Interlock structural drape featuring high-rib elastic cuffs and a minimalist raw-cut hem.',
     details: [
       '85% Combed cotton, 15% Polyester interlock',
-      'Invisible hidden-button aesthetic placket',
+      'Ribbed crewneck collar styling',
       'Reinforced rear shoulder taping for structure',
       '3-inch secure stretch-rib wrists',
       'Embroidered mini tonal signature on left cuff'
@@ -118,10 +120,11 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-slides',
-    name: 'Ghl High-Foam Slides',
-    price: 400000,
+    name: 'Slippers ✨',
+    price: 81000,
+    formerPrice: 96000,
     category: 'Footwear',
-    description: 'Ergonomic light-foam comfort slide. Thick double-cushioned textured footbed with oversized debossed signature GHL branding block across upper band.',
+    description: 'Ergonomic light-foam comfort slippers. Thick double-cushioned textured footbed with oversized debossed signature GHL branding block across upper band.',
     details: [
       'Flexible waterproof EVA injected foam',
       'Anatomical contouring for natural stance',
@@ -195,17 +198,16 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-crowned-chaos',
-    name: 'GHL LS Tees',
-    price: 96000,
-    formerPrice: 110000,
-    category: 'Tees',
-    description: 'Striking contrast sleeve panel-blocked heavyweight knit longsleeve tee. Hand-printed "CROWNED BY CHAOS" stencil print detailing down sleeves.',
+    name: 'Crowned by Chaos Longsleeve',
+    price: 550000,
+    category: 'Polos',
+    description: 'Striking contrast sleeve panel-blocked heavyweight knit longsleeve polo. Hand-printed "CROWNED BY CHAOS" stencil print detailing down sleeves.',
     details: [
-      '100% Premium combed cotton jersey structure',
+      '100% Cotton double knitted pique structure',
       'Oversized fit with extended block shoulder seam',
       'Heavy oil-based ink stencil typography prints on both arms',
-      'Clean ribbed crewneck collar',
-      'Double needle stitched cuffs and heavyweight side-slits'
+      'Enamelled metal zip hardware placket',
+      'Ribbed collar and heavyweight side-slits'
     ],
     sizes: ['S', 'M', 'L', 'XL'],
     images: ['crowned-chaos-polo'],

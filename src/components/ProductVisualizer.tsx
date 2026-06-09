@@ -97,26 +97,32 @@ export const ProductVisualizer: React.FC<VisualizerProps> = ({
       case 'ghl-woven-polo':
         return (
           <g transform="translate(10, 10) scale(0.9)">
-            {/* Body */}
-            <path d="M 70,80 L 100,60 L 130,70 L 140,75 L 150,75 L 160,70 L 190,60 L 220,80 L 205,115 L 185,110 L 185,210 L 105,210 L 105,110 L 85,115 Z" fill="#252529" stroke="#8E8E93" strokeWidth="2.5" />
-            {/* Rib collar */}
-            <path d="M 130,70 C 130,70 135,82 145,82 C 155,82 160,70 160,70" fill="none" stroke="#8E8E93" strokeWidth="3" />
-            {/* Snap button strip */}
-            <rect x="142" y="76" width="6" height="42" fill="#1C1C1E" stroke="#555" strokeWidth="1" />
-            <circle cx="145" cy="85" r="2" fill="#D9FE00" />
-            <circle cx="145" cy="98" r="2" fill="#8E8E93" />
-            <circle cx="145" cy="111" r="2" fill="#8E8E93" />
-            {/* Textured custom Waffle grid dots simulating waffle texture */}
-            <g opacity="0.15" stroke="#FFFFFF" strokeWidth="1">
-              <line x1="115" y1="120" x2="175" y2="120" strokeDasharray="1,4" />
-              <line x1="115" y1="130" x2="175" y2="130" strokeDasharray="1,4" />
-              <line x1="115" y1="140" x2="175" y2="140" strokeDasharray="1,4" />
-              <line x1="115" y1="150" x2="175" y2="150" strokeDasharray="1,4" />
-              <line x1="115" y1="160" x2="175" y2="160" strokeDasharray="1,4" />
-              <line x1="115" y1="170" x2="175" y2="170" strokeDasharray="1,4" />
-              <line x1="115" y1="180" x2="175" y2="180" strokeDasharray="1,4" />
-              <line x1="115" y1="190" x2="175" y2="190" strokeDasharray="1,4" />
-            </g>
+            {/* TRACK JACKET (TOP) */}
+            {/* Jacket Body */}
+            <path d="M 80,75 L 105,58 L 125,66 L 140,66 L 160,58 L 185,75 L 175,100 L 160,96 L 160,140 L 105,140 L 105,96 L 90,100 Z" fill="#1C1C1E" stroke="#8E8E93" strokeWidth="2" />
+            {/* Jacket Sleeves */}
+            <path d="M 90,100 L 70,135 L 82,140 L 105,108" fill="#1C1C1E" stroke="#8E8E93" strokeWidth="2" />
+            <path d="M 175,100 L 195,135 L 183,140 L 160,108" fill="#1C1C1E" stroke="#8E8E93" strokeWidth="2" />
+            {/* Contrast neon sleeve stripes */}
+            <path d="M 83,82 L 75,125" stroke="#D9FE00" strokeWidth="1.5" />
+            <path d="M 182,82 L 190,125" stroke="#D9FE00" strokeWidth="1.5" />
+            {/* Center Zip */}
+            <line x1="132" y1="66" x2="132" y2="140" stroke="#8E8E93" strokeWidth="1.5" />
+            <rect x="130" y="75" width="4" height="8" rx="1" fill="#D9FE00" />
+            {/* Jacket collar detail */}
+            <path d="M 125,66 Q 132,74 140,66" fill="none" stroke="#8E8E93" strokeWidth="2" />
+
+            {/* TRACK PANTS (BOTTOM) */}
+            {/* Pants legs */}
+            <path d="M 110,148 L 110,215 L 128,215 L 132,170 L 137,170 L 141,215 L 159,215 L 159,148 Z" fill="#1C1C1E" stroke="#8E8E93" strokeWidth="2" />
+            {/* Waistband */}
+            <rect x="110" y="145" width="49" height="6" rx="1" fill="#2C2C2E" stroke="#8E8E93" strokeWidth="1" />
+            {/* Drawstrings */}
+            <line x1="132" y1="151" x2="130" y2="163" stroke="#D9FE00" strokeWidth="1.5" strokeLinecap="round" />
+            <line x1="137" y1="151" x2="139" y2="163" stroke="#D9FE00" strokeWidth="1.5" strokeLinecap="round" />
+            {/* Contrast neon side stripes on pants */}
+            <line x1="113" y1="151" x2="113" y2="213" stroke="#D9FE00" strokeWidth="1.5" />
+            <line x1="156" y1="151" x2="156" y2="213" stroke="#D9FE00" strokeWidth="1.5" />
           </g>
         );
 
@@ -292,8 +298,9 @@ export const ProductVisualizer: React.FC<VisualizerProps> = ({
             <g transform="translate(230, 120) rotate(65)">
               <text x="0" y="0" fill="#D9FE00" fontFamily="var(--font-display)" fontSize="7" fontWeight="bold" letterSpacing="1">CROWNED</text>
             </g>
-            {/* Crewneck collar line */}
-            <path d="M 130,70 Q 145,82 160,70" fill="none" stroke="#8E8E93" strokeWidth="2.5" />
+            {/* Placket zipper */}
+            <line x1="145" y1="75" x2="145" y2="105" stroke="#D9FE00" strokeWidth="2" />
+            <circle cx="145" cy="103" r="3" fill="#8E8E93" />
           </g>
         );
 
