@@ -194,16 +194,17 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-crowned-chaos',
-    name: 'Crowned by Chaos Longsleeve',
-    price: 550000,
-    category: 'Polos',
-    description: 'Striking contrast sleeve panel-blocked heavyweight knit longsleeve polo. Hand-printed "CROWNED BY CHAOS" stencil print detailing down sleeves.',
+    name: 'GHL LS Tees',
+    price: 96000,
+    formerPrice: 110000,
+    category: 'Tees',
+    description: 'Striking contrast sleeve panel-blocked heavyweight knit longsleeve tee. Hand-printed "CROWNED BY CHAOS" stencil print detailing down sleeves.',
     details: [
-      '100% Cotton double knitted pique structure',
+      '100% Premium combed cotton jersey structure',
       'Oversized fit with extended block shoulder seam',
       'Heavy oil-based ink stencil typography prints on both arms',
-      'Enamelled metal zip hardware placket',
-      'Ribbed collar and heavyweight side-slits'
+      'Clean ribbed crewneck collar',
+      'Double needle stitched cuffs and heavyweight side-slits'
     ],
     sizes: ['S', 'M', 'L', 'XL'],
     images: ['crowned-chaos-polo'],

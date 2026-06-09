@@ -292,9 +292,8 @@ export const ProductVisualizer: React.FC<VisualizerProps> = ({
             <g transform="translate(230, 120) rotate(65)">
               <text x="0" y="0" fill="#D9FE00" fontFamily="var(--font-display)" fontSize="7" fontWeight="bold" letterSpacing="1">CROWNED</text>
             </g>
-            {/* Placket zipper */}
-            <line x1="145" y1="75" x2="145" y2="105" stroke="#D9FE00" strokeWidth="2" />
-            <circle cx="145" cy="103" r="3" fill="#8E8E93" />
+            {/* Crewneck collar line */}
+            <path d="M 130,70 Q 145,82 160,70" fill="none" stroke="#8E8E93" strokeWidth="2.5" />
           </g>
         );
 
