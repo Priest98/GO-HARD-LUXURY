@@ -76,22 +76,21 @@ export const ProductVisualizer: React.FC<VisualizerProps> = ({
       case 'ghl-silky-polo':
         return (
           <g transform="translate(10, 10) scale(0.9)">
-            {/* Main Tee Shape */}
-            <path d="M 70,80 L 100,60 L 130,70 L 140,75 L 150,75 L 160,70 L 190,60 L 220,80 L 205,115 L 185,110 L 185,210 L 105,210 L 105,110 L 85,115 Z" fill="#1A1A1E" stroke="#8E8E93" strokeWidth="2.5" />
+            {/* Main Tee/Polo Shape in White */}
+            <path d="M 70,80 L 100,60 L 130,70 L 140,75 L 150,75 L 160,70 L 190,60 L 220,80 L 205,115 L 185,110 L 185,210 L 105,210 L 105,110 L 85,115 Z" fill="#FFFFFF" stroke="#8E8E93" strokeWidth="2.5" />
             {/* Sleeves stitch panel */}
-            <path d="M 100,60 L 105,110" fill="none" stroke="#D9FE00" strokeWidth="1" strokeDasharray="3,3" />
-            <path d="M 190,60 L 185,110" fill="none" stroke="#D9FE00" strokeWidth="1" strokeDasharray="3,3" />
-            {/* Zip collar placket */}
-            <path d="M 130,70 L 145,100 L 160,70" fill="none" stroke="#8E8E93" strokeWidth="2" />
-            <line x1="145" y1="75" x2="145" y2="125" stroke="#3A3A3C" strokeWidth="2" />
-            {/* Zip puller handle */}
-            <rect x="143" y="112" width="4" height="12" rx="1" fill="#D9FE00" stroke="#111" strokeWidth="0.5" />
-            <circle cx="145" cy="115" r="1.5" fill="#111" />
-            {/* Silky fold lines */}
-            <path d="M 115,140 Q 145,150 175,135" fill="none" stroke="#2C2C30" strokeWidth="2" />
-            <path d="M 110,180 Q 135,175 180,185" fill="none" stroke="#2C2C30" strokeWidth="1.5" />
-            {/* Subtle gloss lines */}
-            <path d="M 95,90 L 102,110" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" opacity="0.15" />
+            <path d="M 100,60 L 105,110" fill="none" stroke="#D1D1D6" strokeWidth="1" strokeDasharray="3,3" />
+            <path d="M 190,60 L 185,110" fill="none" stroke="#D1D1D6" strokeWidth="1" strokeDasharray="3,3" />
+            {/* V-neck dark opening */}
+            <path d="M 132,70 L 145,95 L 158,70 Z" fill="#1A1A1E" />
+            {/* V-neck collar ribs */}
+            <path d="M 130,70 L 145,97" stroke="#AEAEB2" strokeWidth="2.5" strokeLinecap="round" />
+            <path d="M 160,70 L 145,97" stroke="#AEAEB2" strokeWidth="2.5" strokeLinecap="round" />
+            {/* Minimal left chest GHL monogram */}
+            <text x="112" y="115" fill="#1A1A1E" fontFamily="var(--font-luxury)" fontSize="7" fontWeight="black" letterSpacing="0.2">GHL</text>
+            {/* Soft creases/folds on white fabric */}
+            <path d="M 115,140 Q 145,146 175,135" fill="none" stroke="#E5E5EA" strokeWidth="2" />
+            <path d="M 110,180 Q 135,176 180,185" fill="none" stroke="#E5E5EA" strokeWidth="1.5" />
           </g>
         );
 

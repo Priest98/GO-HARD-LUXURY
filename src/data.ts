@@ -22,14 +22,15 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-silky-polo',
-    name: 'Ghl Silky Shortsleeve Polo',
-    price: 450000,
+    name: 'GHL Vneck Polo',
+    price: 91000,
+    formerPrice: 100000,
     category: 'Polos',
-    description: 'Luxurious silk-rayon blend shortsleeve polo with custom GHL monogram metallic hardware. Relaxed high-fashion fit with dynamic drop shoulder drape.',
+    description: 'Luxurious silk-rayon blend V-neck polo in a pure all-white colorway. Features a relaxed high-fashion silhouette with a modern flat collar structure and premium drape.',
     details: [
-      '55% Silk, 45% Rayon fine-gauge knit',
-      'Oxidized brand engraved lock zipper puller',
-      'Engineered wide collar points',
+      '55% Silk, 45% Rayon fine-gauge knit in pure white',
+      'Minimalist ribbed V-neck collar silhouette',
+      'Dropped shoulder seam for casual drape profile',
       'Side slit vents at straight bottom hem',
       'Silky cool-touch, heavyweight fluid movement'
     ],
