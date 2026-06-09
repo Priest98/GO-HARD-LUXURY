@@ -175,8 +175,9 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-battlefield-tee',
-    name: 'Ghl Battlefield Quotes Tee',
-    price: 450000,
+    name: 'GHL 26 Jerseys',
+    price: 71600,
+    formerPrice: 80000,
     category: 'Tees',
     description: 'Tactical sand-dyed military combat tee with Tupacquote screenprint printed on upper back. Deep, premium raw stitch accent lines.',
     details: [
@@ -266,9 +267,8 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-tee26-archive',
-    name: 'GHL 26 Jerseys',
-    price: 71600,
-    formerPrice: 80000,
+    name: 'Ghl Tee Pattern 26',
+    price: 400000,
     category: 'Tees',
     description: 'Archival organic cotton graphics tee, featuring large high-definition distressed screenprint graphic block number 26 across the rear shoulders.',
     details: [
