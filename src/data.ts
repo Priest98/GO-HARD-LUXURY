@@ -97,8 +97,9 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-stoned-denim-26',
-    name: 'Ghl Stoned Denim 26',
-    price: 650000,
+    name: 'LONG JEAN 👖',
+    price: 96000,
+    formerPrice: 112000,
     category: 'Denim',
     description: 'Individually hand-distressed custom stonewash denim. Feature-heavy utility pocket panels, customized hardware studs, and stacked raw-hem draping for a straight bootcut stack.',
     details: [
