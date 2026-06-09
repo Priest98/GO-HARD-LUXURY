@@ -80,25 +80,6 @@ export const GHL_PRODUCTS: Product[] = [
     quotes: 'Structured silhouette. Total freedom.'
   },
   {
-    id: 'ghl-socks',
-    name: 'Ghl Ribbed Slogan Socks',
-    price: 120000,
-    category: 'Accessories',
-    description: 'Thick combed cotton ribbed crew socks featuring dual knit-in branding details: "GHL" on the cuff, and the official mantra "THUGGIN SINCE 19" on the sole.',
-    details: [
-      '80% Combed Cotton, 17% Polyester, 3% Elastane',
-      'Double-padded plush underfoot looping for comfort',
-      'Arch compression elastic support band',
-      'Breathable instep panel knitting',
-      'Classic high-calf height ribbed athletic look'
-    ],
-    sizes: ['OS'],
-    images: ['ribbed-socks'],
-    badge: 'NEW ARRIVAL',
-    releaseDate: '2026-05-15',
-    quotes: 'Thuggin Since 19.'
-  },
-  {
     id: 'ghl-stoned-denim-26',
     name: 'LONG JEAN 👖',
     price: 96000,
@@ -199,16 +180,16 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-crowned-chaos',
-    name: 'Crowned by Chaos Longsleeve',
-    price: 550000,
-    category: 'Polos',
-    description: 'Striking contrast sleeve panel-blocked heavyweight knit longsleeve polo. Hand-printed "CROWNED BY CHAOS" stencil print detailing down sleeves.',
+    name: 'GHL LS Tees',
+    price: 96000,
+    category: 'Tees',
+    description: 'Striking contrast sleeve panel-blocked heavyweight knit longsleeve tee. Hand-printed "CROWNED BY CHAOS" stencil print detailing down sleeves.',
     details: [
-      '100% Cotton double knitted pique structure',
+      '100% Premium combed cotton jersey structure',
       'Oversized fit with extended block shoulder seam',
       'Heavy oil-based ink stencil typography prints on both arms',
-      'Enamelled metal zip hardware placket',
-      'Ribbed collar and heavyweight side-slits'
+      'Clean ribbed crewneck collar',
+      'Double needle stitched cuffs and heavyweight side-slits'
     ],
     sizes: ['S', 'M', 'L', 'XL'],
     images: ['crowned-chaos-polo'],
