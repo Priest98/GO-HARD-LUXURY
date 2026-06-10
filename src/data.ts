@@ -3,7 +3,7 @@ import { Product, CouponCode } from './types';
 export const GHL_PRODUCTS: Product[] = [
   {
     id: 'ghl-visor-cap',
-    name: 'Hat 👒',
+    name: 'Hat',
     price: 46000,
     category: 'Accessories',
     description: 'Off Thug official visor cap. Low profile shape, custom embroidered front logo, adjustable dual-color tactical clasp on the rear strap.',
@@ -42,7 +42,7 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-woven-polo',
-    name: 'UP&DOWN ✨',
+    name: 'UP&DOWN',
     price: 160000,
     formerPrice: 180000,
     category: 'Tracksuits',
@@ -81,7 +81,7 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-stoned-denim-26',
-    name: 'LONG JEAN 👖',
+    name: 'LONG JEAN',
     price: 96000,
     formerPrice: 112000,
     category: 'Denim',
@@ -101,7 +101,7 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-slides',
-    name: 'Slippers ✨',
+    name: 'Slippers',
     price: 81000,
     formerPrice: 96000,
     category: 'Footwear',
@@ -120,7 +120,7 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-analog-glasses',
-    name: 'Hat 👒',
+    name: 'Hat',
     price: 46000,
     formerPrice: 58000,
     category: 'Accessories',
@@ -199,7 +199,7 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-snapback-original',
-    name: 'Hat 👒',
+    name: 'Hat',
     price: 60000,
     formerPrice: 75000,
     category: 'Accessories',
@@ -235,7 +235,7 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-denim-archive',
-    name: 'LONG JEAN 👖',
+    name: 'LONG JEAN',
     price: 96000,
     formerPrice: 112000,
     category: 'Denim',
@@ -273,7 +273,7 @@ export const GHL_PRODUCTS: Product[] = [
 
   {
     id: 'ghl-stoned-pant-archive',
-    name: 'LONG JEAN 👖',
+    name: 'LONG JEAN',
     price: 96000,
     formerPrice: 112000,
     category: 'Denim',
