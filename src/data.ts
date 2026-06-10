@@ -15,7 +15,7 @@ export const GHL_PRODUCTS: Product[] = [
       'Internal sweat-wicking custom band'
     ],
     sizes: ['OS'],
-    images: ['visor-cap'],
+    images: ['/image/cap/ghl_cap_visor.jpeg'],
     badge: 'NEW ARRIVAL',
     releaseDate: '2026-05-20',
     quotes: 'Crowned in silence. Crafted for daily combat.'
@@ -35,7 +35,7 @@ export const GHL_PRODUCTS: Product[] = [
       'Silky cool-touch, heavyweight fluid movement'
     ],
     sizes: ['S', 'M', 'L', 'XL'],
-    images: ['silky-shortsleeve'],
+    images: ['/image/polo/IMG_0475.JPG.jpeg'],
     badge: 'NEW ARRIVAL',
     releaseDate: '2026-05-25',
     quotes: 'Soft on the skin, heavy in the streets.'
@@ -55,7 +55,7 @@ export const GHL_PRODUCTS: Product[] = [
       'Secure zip-pockets for modern utility'
     ],
     sizes: ['S', 'M', 'L', 'XL'],
-    images: ['woven-shortsleeve'],
+    images: ['/image/sweatshirt/IMG_9949.JPG.jpeg'],
     badge: 'NEW ARRIVAL',
     releaseDate: '2026-05-22'
   },
@@ -74,7 +74,7 @@ export const GHL_PRODUCTS: Product[] = [
       'Embroidered mini tonal signature on left cuff'
     ],
     sizes: ['S', 'M', 'L', 'XL'],
-    images: ['longsleeve-polo'],
+    images: ['/image/Tees/ghl_tee_long.jpeg'],
     badge: 'NEW ARRIVAL',
     releaseDate: '2026-05-18',
     quotes: 'Structured silhouette. Total freedom.'
@@ -94,7 +94,7 @@ export const GHL_PRODUCTS: Product[] = [
       'Hand-frayed distressed knees and hem'
     ],
     sizes: ['30', '32', '34', '36'],
-    images: ['stoned-denim'],
+    images: ['/image/denim/ghl_denim_stoned.jpeg'],
     badge: '1of1',
     releaseDate: '2026-05-28',
     quotes: 'Worth the wait... Go hard lux.'
@@ -114,7 +114,7 @@ export const GHL_PRODUCTS: Product[] = [
       'Painless smooth inner lining to prevent rubbing'
     ],
     sizes: ['8', '9', '10', '11'],
-    images: ['foam-slides'],
+    images: ['/image/slides/IMG_9834.JPG.jpeg'],
     badge: 'NEW ARRIVAL',
     releaseDate: '2026-05-10'
   },
@@ -133,7 +133,7 @@ export const GHL_PRODUCTS: Product[] = [
       'Finished interior custom logo branding tape'
     ],
     sizes: ['OS'],
-    images: ['analog-glasses'],
+    images: ['/image/cap/IMG_0491.JPG.jpeg'],
     badge: 'NEW ARRIVAL',
     releaseDate: '2026-05-14',
     quotes: 'Look back at your shadows, find your vision.'
@@ -153,7 +153,7 @@ export const GHL_PRODUCTS: Product[] = [
       'Contrast side tape accents'
     ],
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    images: ['athletics-tee'],
+    images: ['/image/Tees/IMG_8427.JPG.jpeg'],
     badge: 'NEW ARRIVAL',
     releaseDate: '2026-05-12',
     quotes: 'Athletes of the concrete court.'
@@ -173,7 +173,7 @@ export const GHL_PRODUCTS: Product[] = [
       'Slight long-line silhouette with dropped side seams'
     ],
     sizes: ['S', 'M', 'L', 'XL'],
-    images: ['battlefield-tee'],
+    images: ['/image/Tees/IMG_9422.JPG.jpeg'],
     badge: 'NEW ARRIVAL',
     releaseDate: '2026-05-24',
     quotes: 'Through every dark night, there\'s a bright day after.'
@@ -192,7 +192,7 @@ export const GHL_PRODUCTS: Product[] = [
       'Double needle stitched cuffs and heavyweight side-slits'
     ],
     sizes: ['S', 'M', 'L', 'XL'],
-    images: ['crowned-chaos-polo'],
+    images: ['/image/Tees/ghl_tee_chaos.jpeg'],
     badge: 'NEW ARRIVAL',
     releaseDate: '2026-05-26',
     quotes: 'Chaos is the crown. Wear it proud.'
@@ -212,7 +212,7 @@ export const GHL_PRODUCTS: Product[] = [
       'Finished interior custom branding tape lines'
     ],
     sizes: ['OS'],
-    images: ['snapback-hat'],
+    images: ['/image/cap/ghl_cap_snapback.jpeg'],
     releaseDate: '2026-05-02'
   },
   {
@@ -230,7 +230,7 @@ export const GHL_PRODUCTS: Product[] = [
       'Casual, everyday standard true-to-size length'
     ],
     sizes: ['S', 'M', 'L', 'XL'],
-    images: ['soft-tee'],
+    images: ['/image/Tees/IMG_0932.JPG.jpeg'],
     releaseDate: '2026-04-20'
   },
   {
@@ -248,7 +248,7 @@ export const GHL_PRODUCTS: Product[] = [
       'Relaxed comfort thigh tapering down to puddle hem'
     ],
     sizes: ['30', '32', '34', '36'],
-    images: ['archive-denim'],
+    images: ['/image/denim/ghl_denim_archive.jpeg'],
     releaseDate: '2026-04-10',
     quotes: 'Locked in the Vault. Vintage GHL.'
   },
@@ -267,7 +267,7 @@ export const GHL_PRODUCTS: Product[] = [
       'Double needle stitched flat hem trims'
     ],
     sizes: ['S', 'M', 'L', 'XL'],
-    images: ['archive-tee26'],
+    images: ['/image/Tees/IMG_9423.JPG.jpeg'],
     releaseDate: '2026-04-05'
   },
 
@@ -286,7 +286,7 @@ export const GHL_PRODUCTS: Product[] = [
       'Ankle utility cords for tapered or puddle configurations'
     ],
     sizes: ['30', '32', '34', '36'],
-    images: ['archive-stoned-pant'],
+    images: ['/image/denim/ghl_denim_pant.png'],
     releaseDate: '2026-03-10',
     quotes: 'Constructed to withstand any environment.'
   }
