@@ -292,7 +292,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
                     >
                       {/* Product Thumbnail Drawer with vector */}
                       <div className="w-16 h-16 rounded-none overflow-hidden shrink-0 border border-white/15 bg-black">
-                        <ProductVisualizer productId={item.product.id} className="w-full h-full scale-120 hover:scale-130 transition-transform rounded-none" />
+                        <ProductVisualizer productId={item.product.id} productImageUrl={item.product.images?.[0]} className="w-full h-full scale-120 hover:scale-130 transition-transform rounded-none" />
                       </div>
 
                       {/* Product Descriptions */}

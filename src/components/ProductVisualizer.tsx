@@ -23,14 +23,18 @@ interface VisualizerProps {
   productId: string;
   className?: string;
   isDetailView?: boolean;
+  productImageUrl?: string; // added to support custom uploaded images
 }
 
 export const ProductVisualizer: React.FC<VisualizerProps> = ({
   productId,
   className = '',
-  isDetailView = false
+  isDetailView = false,
+  productImageUrl
 }) => {
-  const imageSrc = PRODUCT_IMAGES[productId];
+  // Use productImageUrl if it is a valid path or remote URL, otherwise fall back to PRODUCT_IMAGES
+  const isValidUrl = productImageUrl && (productImageUrl.startsWith('http') || productImageUrl.startsWith('/') || productImageUrl.startsWith('data:'));
+  const imageSrc = isValidUrl ? productImageUrl : PRODUCT_IMAGES[productId];
   const hasImage = !!imageSrc;
 
   // Common design grid background for tactical brand theme

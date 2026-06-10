@@ -29,7 +29,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     >
       {/* Product Image Frame with custom drawing visualizer */}
       <div className="relative aspect-square overflow-hidden rounded-none bg-black">
-        <ProductVisualizer productId={product.id} className="w-full h-full rounded-none" />
+        <ProductVisualizer productId={product.id} productImageUrl={product.images?.[0]} className="w-full h-full rounded-none" />
 
         {/* Dynamic Badge Overlays */}
         {product.badge && (

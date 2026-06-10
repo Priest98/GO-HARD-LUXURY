@@ -93,7 +93,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               GHL
             </div>
 
-            <ProductVisualizer productId={product.id} className="w-full max-w-[340px] z-10" isDetailView={true} />
+            <ProductVisualizer productId={product.id} productImageUrl={product.images?.[0]} className="w-full max-w-[340px] z-10" isDetailView={true} />
             <div className="absolute bottom-4 left-6 right-6 flex justify-between items-center text-[9px] font-mono text-[#8e8e93] font-bold z-10 uppercase tracking-widest">
               <span>PATTERN_ID: {product.id.replaceAll('-', '_')}</span>
               <span>SCALE: 1.1x STABLE</span>
