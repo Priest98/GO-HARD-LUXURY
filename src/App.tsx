@@ -16,7 +16,10 @@ export default function App() {
     const stored = localStorage.getItem('GHL_PRODUCTS');
     if (stored) {
       try {
-        return JSON.parse(stored);
+        const parsed = JSON.parse(stored) as Product[];
+        const ghlIds = new Set(GHL_PRODUCTS.map(p => p.id));
+        const customProducts = parsed.filter(p => !ghlIds.has(p.id));
+        return [...GHL_PRODUCTS, ...customProducts];
       } catch (e) {
         console.error('Failed to parse stored products', e);
       }
@@ -118,8 +121,15 @@ export default function App() {
             releaseDate: p.release_date,
             formerPrice: p.former_price ? Number(p.former_price) : undefined
           }));
-          setProducts(mapped);
-          localStorage.setItem('GHL_PRODUCTS', JSON.stringify(mapped));
+          
+          // Merge Supabase products with static data.ts products (GHL_PRODUCTS)
+          // DB products take precedence, local-only data.ts products are appended.
+          const dbIds = new Set(mapped.map(p => p.id));
+          const onlyLocal = GHL_PRODUCTS.filter(p => !dbIds.has(p.id));
+          const combined = [...mapped, ...onlyLocal];
+          
+          setProducts(combined);
+          localStorage.setItem('GHL_PRODUCTS', JSON.stringify(combined));
         }
 
         // Fetch homepage config
@@ -174,6 +184,121 @@ export default function App() {
     }
 
     loadData();
+  }, []);
+
+  // Real-time subscriptions for products, orders, and homepage config
+  useEffect(() => {
+    if (!isSupabaseConfigured) return;
+
+    const refetchProducts = async () => {
+      try {
+        const { data: dbProducts, error } = await supabase
+          .from('products')
+          .select('*')
+          .order('release_date', { ascending: false });
+
+        if (!error && dbProducts) {
+          const mapped = dbProducts.map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            price: Number(p.price),
+            category: p.category,
+            description: p.description || '',
+            details: p.details || [],
+            sizes: p.sizes || [],
+            images: p.images || [],
+            soldOut: !!p.sold_out,
+            badge: p.badge || '',
+            quotes: p.quotes || '',
+            releaseDate: p.release_date,
+            formerPrice: p.former_price ? Number(p.former_price) : undefined
+          }));
+
+          const dbIds = new Set(mapped.map(p => p.id));
+          const onlyLocal = GHL_PRODUCTS.filter(p => !dbIds.has(p.id));
+          const combined = [...mapped, ...onlyLocal];
+
+          setProducts(combined);
+          localStorage.setItem('GHL_PRODUCTS', JSON.stringify(combined));
+        }
+      } catch (err) {
+        console.error('Failed to re-fetch products in realtime:', err);
+      }
+    };
+
+    const refetchHomepageConfig = async () => {
+      try {
+        const { data: dbConfig, error } = await supabase
+          .from('homepage_config')
+          .select('*')
+          .eq('id', 'singleton')
+          .maybeSingle();
+
+        if (!error && dbConfig) {
+          const mappedConfig = {
+            announcementText: dbConfig.announcement_text,
+            announcementEnabled: !!dbConfig.announcement_enabled,
+            heroHeadline: dbConfig.hero_headline,
+            heroSubheadline: dbConfig.hero_subheadline,
+            heroDescription: dbConfig.hero_description,
+            heroVideoUrl: dbConfig.hero_video_url,
+            ctaText: dbConfig.cta_text,
+            featuredCollectionCategory: dbConfig.featured_collection_category || 'ALL'
+          };
+          setHomepageConfig(mappedConfig);
+          localStorage.setItem('GHL_HOMEPAGE_CONFIG', JSON.stringify(mappedConfig));
+        }
+      } catch (err) {
+        console.error('Failed to re-fetch homepage config in realtime:', err);
+      }
+    };
+
+    const refetchOrders = async () => {
+      try {
+        const { data: dbOrders, error } = await supabase
+          .from('orders')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (!error && dbOrders) {
+          const mappedOrders = dbOrders.map((o: any) => ({
+            id: o.id,
+            date: o.date,
+            customerName: o.customer_name,
+            customerEmail: o.customer_email,
+            items: o.items,
+            totalAmount: Number(o.total_amount),
+            status: o.status,
+            paymentStatus: o.payment_status
+          }));
+          setOrders(mappedOrders);
+          localStorage.setItem('GHL_ORDERS', JSON.stringify(mappedOrders));
+        }
+      } catch (err) {
+        console.error('Failed to re-fetch orders in realtime:', err);
+      }
+    };
+
+    const productsChannel = supabase
+      .channel('realtime-products-storefront')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, refetchProducts)
+      .subscribe();
+
+    const configChannel = supabase
+      .channel('realtime-config-storefront')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'homepage_config' }, refetchHomepageConfig)
+      .subscribe();
+
+    const ordersChannel = supabase
+      .channel('realtime-orders-storefront')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, refetchOrders)
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(productsChannel);
+      supabase.removeChannel(configChannel);
+      supabase.removeChannel(ordersChannel);
+    };
   }, []);
 
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
