@@ -208,11 +208,117 @@ export default function App() {
     setTheme(prev => (prev === 'night' ? 'day' : 'night'));
   };
 
-  // Increment visitor counter on storefront load
+  // Increment visitor counter on storefront load & initialize analytics tracking
   useEffect(() => {
-    const count = parseInt(localStorage.getItem('GHL_VISITOR_COUNT') || '142');
+    const count = parseInt(localStorage.getItem('GHL_VISITOR_COUNT') || '0');
     localStorage.setItem('GHL_VISITOR_COUNT', (count + 1).toString());
+
+    // 1. Google Analytics 4 Script Dynamic Injection
+    const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID;
+    if (measurementId && measurementId !== 'YOUR_GA_MEASUREMENT_ID') {
+      const scriptId = 'google-analytics-gtag';
+      if (!document.getElementById(scriptId)) {
+        const script = document.createElement('script');
+        script.id = scriptId;
+        script.async = true;
+        script.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
+        document.head.appendChild(script);
+
+        window.dataLayer = window.dataLayer || [];
+        window.gtag = function() {
+          window.dataLayer!.push(arguments);
+        };
+        window.gtag('js', new Date());
+        window.gtag('config', measurementId);
+      }
+    }
+
+    // 2. Global Event Tracking Engine
+    window.trackEvent = async (eventName: string, metadata = {}) => {
+      let sessionId = sessionStorage.getItem('GHL_SESSION_ID');
+      if (!sessionId) {
+        sessionId = 'session_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        sessionStorage.setItem('GHL_SESSION_ID', sessionId);
+      }
+
+      let referrer = document.referrer || 'Direct';
+      if (referrer.includes('instagram.com')) referrer = 'Instagram';
+      else if (referrer.includes('tiktok.com')) referrer = 'TikTok';
+      else if (referrer.includes('google.com')) referrer = 'Google';
+      else if (referrer.includes('t.co') || referrer.includes('twitter.com')) referrer = 'X / Twitter';
+
+      const path = window.location.hash || '#home';
+
+      // GA4 tracking
+      if (window.gtag && measurementId) {
+        window.gtag('event', eventName, {
+          session_id: sessionId,
+          page_path: path,
+          referrer: referrer,
+          ...metadata
+        });
+      }
+
+      // Supabase tracking
+      if (isSupabaseConfigured) {
+        try {
+          const { error } = await supabase.from('analytics_events').insert([{
+            event_name: eventName,
+            product_id: metadata.productId || null,
+            product_name: metadata.productName || null,
+            session_id: sessionId,
+            referrer: referrer,
+            path: path
+          }]);
+          if (error) console.error('Database analytics insert error:', error);
+        } catch (err) {
+          console.error('Failed to log event to Supabase:', err);
+        }
+      } else {
+        // Local fallback
+        try {
+          const localEvents = JSON.parse(localStorage.getItem('GHL_ANALYTICS_EVENTS') || '[]');
+          localEvents.push({
+            event_name: eventName,
+            product_id: metadata.productId || null,
+            product_name: metadata.productName || null,
+            session_id: sessionId,
+            referrer: referrer,
+            path: path,
+            created_at: new Date().toISOString()
+          });
+          localStorage.setItem('GHL_ANALYTICS_EVENTS', JSON.stringify(localEvents.slice(-100)));
+        } catch (e) {
+          console.error('Local analytics logging error:', e);
+        }
+      }
+    };
+
+    // Track initial page load
+    setTimeout(() => {
+      if (window.trackEvent) window.trackEvent('page_view');
+    }, 100);
   }, []);
+
+  // Track product view details modal open
+  useEffect(() => {
+    if (viewedProduct && window.trackEvent) {
+      window.trackEvent('product_view', {
+        productId: viewedProduct.id,
+        productName: viewedProduct.name
+      });
+    }
+  }, [viewedProduct]);
+
+  // Track page views when category or search changes
+  useEffect(() => {
+    if (window.trackEvent) {
+      window.trackEvent('page_view', {
+        category: selectedCategory,
+        search: searchQuery
+      });
+    }
+  }, [selectedCategory, searchQuery]);
 
   // Tactical Live Clock UTC Timer
   const [currentTime, setCurrentTime] = useState<Date>(new Date("2026-06-06T08:53:30Z"));
@@ -285,6 +391,15 @@ export default function App() {
     }
 
     syncCart(updatedCart);
+
+    if (window.trackEvent) {
+      window.trackEvent('add_to_cart', {
+        productId: product.id,
+        productName: product.name,
+        size: size,
+        quantity: quantity
+      });
+    }
   };
 
   // Quick direct add from card

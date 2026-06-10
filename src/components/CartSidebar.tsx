@@ -82,6 +82,13 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
     }
 
     setIsSubmittingOrder(true);
+
+    if (typeof window !== 'undefined' && window.trackEvent) {
+      window.trackEvent('checkout_start', {
+        total: grandTotal,
+        items_count: cartItems.length
+      });
+    }
     
     try {
       if (typeof FlutterwaveCheckout !== 'undefined') {
@@ -121,6 +128,13 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
               }
               setIsSubmittingOrder(false);
               setCheckoutStep('complete');
+
+              if (typeof window !== 'undefined' && window.trackEvent) {
+                window.trackEvent('purchase', {
+                  total: grandTotal,
+                  orderId: randomID
+                });
+              }
             } else {
               alert("Payment verification pending or unsuccessful: " + data.message);
               setIsSubmittingOrder(false);
@@ -156,6 +170,13 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
         }
         setIsSubmittingOrder(false);
         setCheckoutStep('complete');
+
+        if (typeof window !== 'undefined' && window.trackEvent) {
+          window.trackEvent('purchase', {
+            total: grandTotal,
+            orderId: randomID
+          });
+        }
       }, 1500);
     }
   };

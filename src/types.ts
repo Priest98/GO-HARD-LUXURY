@@ -27,3 +27,24 @@ export interface CouponCode {
   discountPercentage: number;
   description: string;
 }
+
+declare global {
+  interface Window {
+    trackEvent?: (
+      eventName: string,
+      metadata?: {
+        productId?: string;
+        productName?: string;
+        total?: number;
+        orderId?: string;
+        size?: string;
+        quantity?: number;
+        category?: string;
+        search?: string;
+        [key: string]: any;
+      }
+    ) => void;
+    gtag?: (...args: any[]) => void;
+    dataLayer?: any[];
+  }
+}

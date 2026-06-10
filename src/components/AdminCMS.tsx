@@ -6,7 +6,7 @@ import {
   Filter, TrendingUp, Layers, Copy, PlusCircle, X, Lock, 
   AlertCircle, Eye, Video, Trash2, Edit, Check, ExternalLink, 
   EyeOff, RefreshCw, Bell, AlertTriangle, ShieldCheck, Download,
-  Laptop, Smartphone
+  Laptop, Smartphone, BarChart3
 } from 'lucide-react';
 import { Product, SortOption } from '../types';
 import { supabase, isSupabaseConfigured } from '../supabaseClient';
@@ -214,6 +214,112 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
   const [showMobileUplinkModal, setShowMobileUplinkModal] = useState<boolean>(false);
   const [showMediaLibraryModal, setShowMediaLibraryModal] = useState<boolean>(false);
   const [mobileSessionId, setMobileSessionId] = useState<string>(() => Math.random().toString(36).substring(2, 12));
+
+  // Analytics tab state managers
+  const [analyticsEvents, setAnalyticsEvents] = useState<any[]>([]);
+  const [loadingAnalytics, setLoadingAnalytics] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (activeTab === 'analytics' || activeTab === 'overview') {
+      fetchAnalyticsEvents();
+    }
+  }, [activeTab]);
+
+  // Subscribe to real-time events in database
+  useEffect(() => {
+    if (!isSupabaseConfigured) return;
+
+    const channel = supabase
+      .channel('realtime-analytics-events')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'analytics_events' },
+        (payload) => {
+          setAnalyticsEvents(prev => [payload.new, ...prev].slice(0, 100));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const fetchAnalyticsEvents = async () => {
+    if (!isSupabaseConfigured) {
+      // Local fallback
+      try {
+        const stored = JSON.parse(localStorage.getItem('GHL_ANALYTICS_EVENTS') || '[]');
+        stored.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        setAnalyticsEvents(stored);
+      } catch (e) {
+        console.error('Failed to parse local analytics events', e);
+      }
+      return;
+    }
+
+    setLoadingAnalytics(true);
+    try {
+      const { data, error } = await supabase
+        .from('analytics_events')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (error) throw error;
+      setAnalyticsEvents(data || []);
+    } catch (err) {
+      console.error('Failed to fetch analytics events:', err);
+    } finally {
+      setLoadingAnalytics(false);
+    }
+  };
+
+  const getAnalyticsStats = () => {
+    const totalSessions = new Set(analyticsEvents.map(e => e.session_id)).size;
+    const pageViews = analyticsEvents.filter(e => e.event_name === 'page_view').length;
+    const addToCarts = analyticsEvents.filter(e => e.event_name === 'add_to_cart').length;
+    const checkouts = analyticsEvents.filter(e => e.event_name === 'checkout_start').length;
+    const purchases = analyticsEvents.filter(e => e.event_name === 'purchase').length;
+    
+    // Unique session metrics for conversion rates
+    const cartSessions = new Set(
+      analyticsEvents.filter(e => e.event_name === 'add_to_cart').map(e => e.session_id)
+    ).size;
+    const purchaseSessions = new Set(
+      analyticsEvents.filter(e => e.event_name === 'purchase').map(e => e.session_id)
+    ).size;
+
+    const conversionRate = totalSessions > 0 ? ((purchaseSessions / totalSessions) * 100).toFixed(1) : '0.0';
+    const addToCartRate = totalSessions > 0 ? ((cartSessions / totalSessions) * 100).toFixed(1) : '0.0';
+    
+    const sources: { [key: string]: number } = {};
+    analyticsEvents.forEach(e => {
+      const src = e.referrer || 'Direct';
+      sources[src] = (sources[src] || 0) + 1;
+    });
+    
+    return {
+      totalSessions,
+      pageViews,
+      addToCarts,
+      checkouts,
+      purchases,
+      conversionRate,
+      addToCartRate,
+      sources
+    };
+  };
+
+  const stats = getAnalyticsStats();
+  const lookerStudioUrl = import.meta.env.VITE_LOOKER_STUDIO_URL || '';
+
+  const cardData = [
+    { label: 'TOTAL SESSIONS', val: stats.totalSessions, change: `${stats.pageViews} Page Views`, icon: Users },
+    { label: 'CONVERSION RATE', val: `${stats.conversionRate}%`, change: `${stats.purchases} Purchases`, icon: TrendingUp },
+    { label: 'ADD TO BAG RATE', val: `${stats.addToCartRate}%`, change: `${stats.addToCarts} Additions`, icon: Package },
+    { label: 'CHECKOUT TRIGGERS', val: stats.checkouts, change: 'Initiated Payments', icon: CreditCard }
+  ];
 
   // Listen to mobile upload uplink broadcasts
   useEffect(() => {
@@ -949,6 +1055,7 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
               <nav className="p-4 space-y-1">
                 {[
                   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+                  { id: 'analytics', label: 'Analytics', icon: BarChart3 },
                   { id: 'products', label: 'Products', icon: Package },
                   { id: 'collections', label: 'Collections', icon: Layers },
                   { id: 'homepage', label: 'Homepage Editor', icon: Video },
@@ -1006,6 +1113,7 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
               <div>
                 <h1 className="font-display font-black text-2xl md:text-3xl text-white uppercase tracking-tight">
                   {activeTab === 'overview' && 'SYSTEM OVERVIEW'}
+                  {activeTab === 'analytics' && 'ANALYTICS & INSIGHTS'}
                   {activeTab === 'products' && 'PRODUCT CATALOG'}
                   {activeTab === 'collections' && 'COLLECTION CLASSIFIER'}
                   {activeTab === 'homepage' && 'HOMEPAGE VISUAL EDITOR'}
@@ -1193,6 +1301,191 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
                       </div>
                     </div>
 
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 1.5: ANALYTICS (GA4 & Looker Studio) */}
+              {activeTab === 'analytics' && (
+                <div className="space-y-6">
+                  {/* Overview Cards Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {cardData.map((card, idx) => (
+                      <div key={idx} className="bg-[#141414] border border-[#262626] rounded-xl p-5 relative overflow-hidden transition-all hover:border-zinc-700/80">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <span className="font-mono text-[9px] text-zinc-500 font-bold uppercase tracking-widest block">{card.label}</span>
+                            <span className="text-2xl font-black font-display text-white mt-1 block">{card.val}</span>
+                          </div>
+                          <div className="p-2 bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-400">
+                            <card.icon size={16} />
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1.5 mt-4 text-[9px] font-mono font-bold text-zinc-400 uppercase tracking-widest">
+                          <TrendingUp size={10} className="text-[#39FF88]" />
+                          <span>{card.change}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Main section: Looker Studio Frame and Traffic Split */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    {/* Left: Looker Studio Embed */}
+                    <div className="lg:col-span-8 bg-[#141414] border border-[#262626] rounded-xl p-6 space-y-4">
+                      <h3 className="font-display font-black text-sm uppercase text-white tracking-wide">
+                        Google Looker Studio Report
+                      </h3>
+                      {lookerStudioUrl ? (
+                        <div className="w-full h-[550px] border border-[#262626] rounded-lg overflow-hidden bg-black relative">
+                          <iframe
+                            src={lookerStudioUrl}
+                            className="w-full h-full border-none"
+                            allowFullScreen
+                            sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-full h-[550px] border border-[#262626] border-dashed rounded-lg flex flex-col items-center justify-center p-6 text-center bg-[#0a0a0a]">
+                          <div className="p-4 bg-zinc-900/50 border border-zinc-800 rounded-full mb-4">
+                            <ExternalLink size={24} className="text-zinc-500 animate-pulse" />
+                          </div>
+                          <h4 className="font-display font-black text-sm uppercase text-white tracking-wider mb-2">
+                            LINK GOOGLE LOOKER STUDIO
+                          </h4>
+                          <p className="max-w-md text-xs font-mono text-zinc-500 leading-relaxed mb-6 uppercase">
+                            To render your deep-dive visual analytics reports, embed your Looker Studio report URL in the project environment variables.
+                          </p>
+                          <div className="bg-[#141414] border border-[#262626] p-5 rounded-lg text-left max-w-md w-full font-mono text-[10px] space-y-3 uppercase tracking-wider text-zinc-400">
+                            <p className="text-[#39FF88] font-bold text-xs pb-1.5 border-b border-[#262626]">SETUP STEPS:</p>
+                            <div className="flex gap-2">
+                              <span className="text-[#39FF88] font-black">01.</span>
+                              <span>Open your report in <a href="https://lookerstudio.google.com" target="_blank" rel="noreferrer" className="text-white hover:underline">Looker Studio</a></span>
+                            </div>
+                            <div className="flex gap-2">
+                              <span className="text-[#39FF88] font-black">02.</span>
+                              <span>Click Share ▾ &rarr; Embed report</span>
+                            </div>
+                            <div className="flex gap-2">
+                              <span className="text-[#39FF88] font-black">03.</span>
+                              <span>Enable embedding and copy the Embed URL (inside src="")</span>
+                            </div>
+                            <div className="flex gap-2">
+                              <span className="text-[#39FF88] font-black">04.</span>
+                              <span>Add it as VITE_LOOKER_STUDIO_URL in .env.local</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Right: Traffic Referrals Split */}
+                    <div className="lg:col-span-4 bg-[#141414] border border-[#262626] rounded-xl p-6 space-y-6">
+                      <div>
+                        <h3 className="font-display font-black text-sm uppercase text-white tracking-wide mb-1">
+                          Traffic Channels
+                        </h3>
+                        <p className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest">
+                          Acquisition sources tracked
+                        </p>
+                      </div>
+
+                      <div className="space-y-4">
+                        {['Instagram', 'TikTok', 'Google', 'Direct', 'X / Twitter'].map((channel) => {
+                          const count = stats.sources[channel] || 0;
+                          const total = Object.values(stats.sources).reduce((a, b) => a + b, 0) || 1;
+                          const pct = ((count / total) * 100).toFixed(0);
+
+                          return (
+                            <div key={channel} className="space-y-1.5">
+                              <div className="flex justify-between items-center text-xs font-mono">
+                                <span className="text-zinc-400 font-bold uppercase">{channel}</span>
+                                <span className="text-white font-black">{pct}% <span className="text-zinc-500 font-normal">({count})</span></span>
+                              </div>
+                              <div className="w-full h-1.5 bg-zinc-900 border border-[#262626] rounded-full overflow-hidden">
+                                <div 
+                                  className="h-full bg-[#39FF88] transition-all duration-500"
+                                  style={{ width: `${pct}%` }}
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      <div className="bg-[#0A0A0A] border border-[#262626] p-4 rounded-xl text-center">
+                        <span className="font-mono text-[9px] text-[#39FF88] uppercase tracking-widest font-bold block mb-1">GA4 Property Linked</span>
+                        <span className="font-mono text-xs text-white block truncate uppercase">
+                          {import.meta.env.VITE_GA_MEASUREMENT_ID || 'UNLINKED // OPTIONAL'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Real-time Activity Feed */}
+                  <div className="bg-[#141414] border border-[#262626] rounded-xl p-6">
+                    <div className="flex items-center justify-between pb-4 border-b border-[#262626] mb-4">
+                      <h3 className="font-display font-black text-sm uppercase text-white tracking-wide flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-[#39FF88] animate-pulse" />
+                        Live Event Log
+                      </h3>
+                      <button 
+                        onClick={fetchAnalyticsEvents} 
+                        className="text-zinc-500 hover:text-white transition-colors cursor-pointer"
+                        title="Reload logs"
+                      >
+                        <RefreshCw size={12} className={loadingAnalytics ? 'animate-spin' : ''} />
+                      </button>
+                    </div>
+
+                    {loadingAnalytics && analyticsEvents.length === 0 ? (
+                      <div className="text-center py-8 text-zinc-500 font-mono text-xs animate-pulse">
+                        LOADING LIVE STREAMS...
+                      </div>
+                    ) : analyticsEvents.length === 0 ? (
+                      <div className="text-center py-8 text-zinc-500 font-mono text-xs">
+                        AWAITING CUSTOMER TELEMETRY EVENT STREAMS...
+                      </div>
+                    ) : (
+                      <div className="space-y-3.5 max-h-[300px] overflow-y-auto pr-2 scrollbar-none">
+                        {analyticsEvents.slice(0, 20).map((ev, index) => {
+                          const dateObj = ev.created_at ? new Date(ev.created_at) : new Date();
+                          const timeStr = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                          const dateStr = dateObj.toLocaleDateString([], { month: 'short', day: '2-digit' });
+                          
+                          let text = '';
+                          let colorClass = 'text-zinc-400';
+                          
+                          if (ev.event_name === 'page_view') {
+                            text = `Visitor loaded page ${ev.path || '#home'} (Source: ${ev.referrer || 'Direct'})`;
+                            colorClass = 'text-zinc-500';
+                          } else if (ev.event_name === 'product_view') {
+                            text = `Customer viewed product detail: "${ev.product_name || ev.product_id}"`;
+                            colorClass = 'text-zinc-300';
+                          } else if (ev.event_name === 'add_to_cart') {
+                            text = `Added "${ev.product_name || ev.product_id}" to shopping bag`;
+                            colorClass = 'text-[#39FF88] font-bold';
+                          } else if (ev.event_name === 'checkout_start') {
+                            text = `Initiated payment checkout sequence (Subtotal: ₦${Number(ev.total || 0).toLocaleString()})`;
+                            colorClass = 'text-yellow-400 font-bold';
+                          } else if (ev.event_name === 'purchase') {
+                            text = `ORDER PLACED SUCCESSFULLY (Ref ID: ${ev.order_id || 'GHL-REG'}, Revenue: ₦${Number(ev.total || 0).toLocaleString()})`;
+                            colorClass = 'text-black bg-[#39FF88] px-2 py-0.5 rounded font-black';
+                          } else {
+                            text = `Triggered custom event: ${ev.event_name}`;
+                          }
+                          
+                          return (
+                            <div key={ev.id || index} className="flex gap-4 items-start text-xs border-b border-[#262626]/20 pb-3 last:border-b-0 last:pb-0">
+                              <span className="font-mono text-[9px] text-[#39FF88] shrink-0 mt-0.5">[{dateStr} {timeStr}]</span>
+                              <div className={`font-mono leading-relaxed ${colorClass}`}>
+                                {text}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
