@@ -1,15 +1,15 @@
 import React from 'react';
 
 const PRODUCT_IMAGES: Record<string, string> = {
-  'ghl-visor-cap': '/image/cap/IMG_1589.JPG (1).jpeg',
-  'ghl-snapback-original': '/image/cap/IMG_1591.JPG (1).jpeg',
+  'ghl-visor-cap': '/image/cap/IMG_0490.JPG.jpeg',
+  'ghl-snapback-original': '/image/cap/IMG_0492.JPG.jpeg',
   'ghl-silky-polo': '/image/polo/IMG_0475.JPG.jpeg',
   'ghl-woven-polo': '/image/sweatshirt/IMG_9949.JPG.jpeg',
-  'ghl-longsleeve-polo': '/image/Tees/IMG_9425.JPG (1).jpeg',
-  'ghl-crowned-chaos': '/image/Tees/IMG_9424.JPG (1).jpeg',
-  'ghl-stoned-denim-26': '/image/denim/IMG_6913.JPG.jpeg',
-  'ghl-denim-archive': '/image/denim/IMG_8065.JPG.jpeg',
-  'ghl-stoned-pant-archive': '/image/denim/IMG_0798.PNG',
+  'ghl-longsleeve-polo': '/image/sweatshirt/IMG_0102.JPG.jpeg',
+  'ghl-crowned-chaos': '/image/sweatshirt/IMG_0103.JPG.jpeg',
+  'ghl-stoned-denim-26': '/image/denim/IMG_1897.JPG.jpeg',
+  'ghl-denim-archive': '/image/denim/IMG_9513.JPG.jpeg',
+  'ghl-stoned-pant-archive': '/image/denim/IMG_9513.JPG.jpeg',
   'ghl-slides': '/image/slides/IMG_9834.JPG.jpeg',
   'ghl-athletics-19': '/image/Tees/IMG_8427.JPG.jpeg',
   'ghl-battlefield-tee': '/image/Tees/IMG_9422.JPG.jpeg',
