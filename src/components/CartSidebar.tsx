@@ -93,7 +93,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
     try {
       if (typeof FlutterwaveCheckout !== 'undefined') {
         FlutterwaveCheckout({
-          public_key: "FLWPUBK_TEST-c39a31bb0ee84784a95c1c8a149a4ba1-X", // Mock client test key
+          public_key: import.meta.env.VITE_FLW_PUBLIC_KEY || "FLWPUBK_TEST-c39a31bb0ee84784a95c1c8a149a4ba1-X",
           tx_ref: `GHL-TX-${Date.now()}`,
           amount: grandTotal,
           currency: "NGN",
