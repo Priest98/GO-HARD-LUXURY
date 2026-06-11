@@ -143,9 +143,8 @@ ${matchedCouponText}• *GRAND TOTAL PAID: ₦${grandTotal.toLocaleString()}*
 My payment has been confirmed! Please verify my order coordination.`;
 
               const whatsappUrl = `https://wa.me/2349038499673?text=${encodeURIComponent(message)}`;
-              
-              // Open WhatsApp in new tab
-              window.open(whatsappUrl, '_blank');
+              // Redirect to WhatsApp directly in the same tab to bypass browser popup blockers
+              window.location.href = whatsappUrl;
 
               if (onOrderComplete) {
                 onOrderComplete({
@@ -220,9 +219,8 @@ ${matchedCouponText}• *GRAND TOTAL: ₦${grandTotal.toLocaleString()}*
 Please verify my order coordination!`;
 
         const whatsappUrl = `https://wa.me/2349038499673?text=${encodeURIComponent(message)}`;
-        
-        // Open WhatsApp in new tab
-        window.open(whatsappUrl, '_blank');
+        // Redirect to WhatsApp directly in the same tab to bypass browser popup blockers
+        window.location.href = whatsappUrl;
 
         if (onOrderComplete) {
           onOrderComplete({
