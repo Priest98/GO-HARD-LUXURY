@@ -66,7 +66,7 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
   });
   const [adminEmail, setAdminEmail] = useState<string>('admin@gohardluxury.com');
   const [adminPassword, setAdminPassword] = useState<string>('');
-  const [adminRole, setAdminRole] = useState<'Super Admin' | 'Staff Manager' | 'Content Manager'>('Super Admin');
+  const [adminRole, setAdminRole] = useState<'Super Admin' | 'Staff Manager' | 'Content Manager' | 'Guest'>('Super Admin');
   const [authError, setAuthError] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showForgotModal, setShowForgotModal] = useState<boolean>(false);
@@ -110,13 +110,13 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
           if (data && data.role && !error) {
             setAdminRole(data.role);
           } else {
-            // Default metadata role if available, otherwise fallback to Super Admin
-            const role = session.user.user_metadata?.role || 'Super Admin';
+            // Default metadata role if available, otherwise fallback to Guest
+            const role = session.user.user_metadata?.role || 'Guest';
             setAdminRole(role);
           }
         } catch (err) {
           console.error('Failed to resolve database user role:', err);
-          const role = session.user.user_metadata?.role || 'Super Admin';
+          const role = session.user.user_metadata?.role || 'Guest';
           setAdminRole(role);
         }
       } else {
@@ -516,9 +516,19 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const allowedExts = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'mp4'];
+    const fileExt = file.name.split('.').pop()?.toLowerCase();
+    if (!fileExt || !allowedExts.includes(fileExt)) {
+      alert('Unsupported media file format. Allowed formats: jpg, jpeg, png, webp, gif, mp4.');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) { // 10MB Limit
+      alert('Media size exceeds the 10MB limit.');
+      return;
+    }
+
     if (isSupabaseConfigured) {
       try {
-        const fileExt = file.name.split('.').pop();
         const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
         
         // Upload file to bucket 'media'
@@ -1020,7 +1030,7 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
             />
             <button
               onClick={() => {
-                alert(`Security recovery coordinates dispatched to ${forgotEmail || 'registered address'}.\n(Check mock inbox logs). Password is admin123`);
+                alert(`If administrative coordinates match, recovery codes will be dispatched to ${forgotEmail || 'registered address'}.`);
                 setShowForgotModal(false);
               }}
               className="w-full py-2.5 bg-white text-black font-mono text-[10px] font-black rounded-lg uppercase tracking-widest hover:opacity-90"
@@ -1034,9 +1044,42 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
       {/* MAIN CORE ADMIN LAYOUT */}
       {isAuthenticated && (
         <div className="flex-1 flex flex-col md:flex-row relative z-10">
-          
-          {/* LEFT SIDEBAR PANEL */}
-          <aside className="w-full md:w-64 bg-[#0E0E0E] border-r border-[#262626] flex flex-col justify-between shrink-0">
+          {adminRole === 'Guest' ? (
+            <div className="flex-1 flex items-center justify-center p-8 bg-[#0A0A0A]">
+              <div className="w-full max-w-md bg-[#141414] border border-red-900/40 p-8 rounded-2xl text-center shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-1 bg-red-600" />
+                <div className="w-16 h-16 bg-red-950/40 border border-red-800 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <AlertTriangle size={28} />
+                </div>
+                <h2 className="font-display font-black text-xl tracking-tighter uppercase text-white mb-2">
+                  Access Denied
+                </h2>
+                <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest mb-4">
+                  Security Clearance: None
+                </p>
+                <p className="text-xs text-zinc-400 font-sans leading-relaxed mb-6">
+                  Your account coordinates are not authorized with administrative access. Please contact system coordinators for clearance.
+                </p>
+                <div className="space-y-3">
+                  <button
+                    onClick={handleLogout}
+                    className="w-full py-2.5 bg-red-600 hover:bg-red-700 text-white font-mono text-[10px] font-black rounded-lg uppercase tracking-widest transition-colors cursor-pointer"
+                  >
+                    Disconnect Session_
+                  </button>
+                  <button
+                    onClick={onCloseStore}
+                    className="w-full py-2.5 bg-[#262626] hover:bg-[#333] text-zinc-300 font-mono text-[10px] font-black rounded-lg uppercase tracking-widest transition-colors cursor-pointer"
+                  >
+                    ← Back to Storefront
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* LEFT SIDEBAR PANEL */}
+              <aside className="w-full md:w-64 bg-[#0E0E0E] border-r border-[#262626] flex flex-col justify-between shrink-0">
             <div>
               {/* Brand Header */}
               <div className="p-6 border-b border-[#262626] flex items-center justify-between">
@@ -2560,8 +2603,10 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
 
             </div>
           </main>
-        </div>
-      )}
+        </>
+        )}
+      </div>
+    )}
 
       {/* Admin Footer bar */}
       <footer className="bg-[#0E0E0E] border-t border-[#262626] py-3.5 px-6 font-mono text-[9px] text-zinc-500 text-center flex flex-col sm:flex-row justify-between items-center gap-2 z-10">
