@@ -199,9 +199,9 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-snapback-original',
-    name: 'Hat',
-    price: 60000,
-    formerPrice: 75000,
+    name: 'GHL LEO HAT',
+    price: 59000,
+    formerPrice: 70000,
     category: 'Accessories',
     description: 'High-profile traditional flat-brim snapback. Heavy textured wool-blend dome, 3D contrast font embroidery and classic plastic adjusters.',
     details: [
