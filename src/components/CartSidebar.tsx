@@ -88,95 +88,70 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
         items_count: cartItems.length
       });
     }
-    
-    try {
-      if (typeof FlutterwaveCheckout !== 'undefined') {
-        FlutterwaveCheckout({
-          public_key: import.meta.env.VITE_FLW_PUBLIC_KEY || "FLWPUBK_TEST-c39a31bb0ee84784a95c1c8a149a4ba1-X",
-          tx_ref: `GHL-TX-${Date.now()}`,
-          amount: grandTotal,
-          currency: "NGN",
-          payment_options: "card,ussd,mobilemoney",
-          customer: {
-            email: shippingEmail,
-            name: shippingName,
-          },
-          customizations: {
-            title: "GO HARD LUXURY",
-            description: "Order Dispatch Payment Coordination",
-            logo: "https://gohardluxury.com/logo.png",
-          },
-          callback: function (data: any) {
-            console.log("Flutterwave payment callback data:", data);
-            if (data.status === "successful" || data.charge_response_code === "00") {
-              const randomID = `GHL-REG-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(100 + Math.random() * 900)}`;
-              setOrderId(randomID);
-              if (onOrderComplete) {
-                onOrderComplete({
-                  customerName: shippingName,
-                  customerEmail: shippingEmail,
-                  items: cartItems.map(item => ({
-                    productId: item.product.id,
-                    productName: item.product.name,
-                    size: item.selectedSize,
-                    quantity: item.quantity,
-                    price: item.product.price
-                  })),
-                  totalAmount: grandTotal
-                });
-              }
-              setIsSubmittingOrder(false);
-              setCheckoutStep('complete');
 
-              if (typeof window !== 'undefined' && window.trackEvent) {
-                window.trackEvent('purchase', {
-                  total: grandTotal,
-                  orderId: randomID
-                });
-              }
-            } else {
-              alert("Payment verification pending or unsuccessful: " + data.message);
-              setIsSubmittingOrder(false);
-            }
-          },
-          onclose: function () {
-            setIsSubmittingOrder(false);
-            console.log("Payment checkout closed by customer.");
-          },
+    try {
+      const formattedItems = cartItems.map(item => 
+        `• ${item.product.name} (${item.selectedSize}) x${item.quantity} - ₦${(item.product.price * item.quantity).toLocaleString()}`
+      ).join('\n');
+
+      const matchedCouponText = activeCoupon 
+        ? `• Promo Discount (${activeCoupon.code} -${activeCoupon.discountPercentage}%): -₦${discountAmount.toLocaleString()}\n` 
+        : '';
+
+      const orderId = `GHL-REG-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(100 + Math.random() * 900)}`;
+
+      const message = `*GO HARD LUXURY — ORDER DISPATCH*
+---------------------------------------
+*ORDER ID:* ${orderId}
+
+*CUSTOMER DETAILS*
+• Name: ${shippingName}
+• Email: ${shippingEmail}
+• Address: ${shippingAddress}
+
+*ORDER DETAILS*
+${formattedItems}
+
+---------------------------------------
+*SUMMARY*
+• Subtotal: ₦${subtotal.toLocaleString()}
+${matchedCouponText}• *GRAND TOTAL: ₦${grandTotal.toLocaleString()}*
+---------------------------------------
+Please confirm my order coordination!`;
+
+      const whatsappUrl = `https://wa.me/2349038499673?text=${encodeURIComponent(message)}`;
+      
+      // Open WhatsApp in new tab
+      window.open(whatsappUrl, '_blank');
+
+      if (onOrderComplete) {
+        onOrderComplete({
+          customerName: shippingName,
+          customerEmail: shippingEmail,
+          items: cartItems.map(item => ({
+            productId: item.product.id,
+            productName: item.product.name,
+            size: item.selectedSize,
+            quantity: item.quantity,
+            price: item.product.price
+          })),
+          totalAmount: grandTotal
         });
-      } else {
-        throw new Error("Flutterwave Checkout SDK not loaded on window.");
+      }
+
+      setOrderId(orderId);
+      setIsSubmittingOrder(false);
+      setCheckoutStep('complete');
+
+      if (typeof window !== 'undefined' && window.trackEvent) {
+        window.trackEvent('purchase', {
+          total: grandTotal,
+          orderId: orderId
+        });
       }
     } catch (err) {
-      console.error("Failed to load Flutterwave checkout:", err);
-      // Fallback
-      setTimeout(() => {
-        const randomID = `GHL-REG-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(100 + Math.random() * 900)}`;
-        setOrderId(randomID);
-        if (onOrderComplete) {
-          onOrderComplete({
-            customerName: shippingName,
-            customerEmail: shippingEmail,
-            items: cartItems.map(item => ({
-              productId: item.product.id,
-              productName: item.product.name,
-              size: item.selectedSize,
-              quantity: item.quantity,
-              price: item.product.price
-            })),
-            totalAmount: grandTotal
-          });
-        }
-        setIsSubmittingOrder(false);
-        setCheckoutStep('complete');
-
-        if (typeof window !== 'undefined' && window.trackEvent) {
-          window.trackEvent('purchase', {
-            total: grandTotal,
-            orderId: randomID
-          });
-        }
-      }, 1500);
+      console.error("Failed to process checkout:", err);
+      setIsSubmittingOrder(false);
     }
   };
 
