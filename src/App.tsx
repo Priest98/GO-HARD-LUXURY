@@ -1038,47 +1038,7 @@ export default function App() {
 
       {/* Streetwear Inspirational Footer Quote with Brand info */}
       <footer id="store-main-footer" className="bg-brand-darkgray border-t border-brand-midgray/25 py-12 px-4 md:px-8 mt-12 text-xs font-mono">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
-          
-          <div className="space-y-3.5">
-            <h4 className="font-display font-black text-sm text-brand-offwhite tracking-wider uppercase">
-              GO HARD LUXURY // GHL
-            </h4>
-            <p className="text-[11px] text-brand-lightgray leading-relaxed font-sans normal-case">
-              Bringing luxury streetwear through industrial aesthetics and raw, message-driven drops. Thuggin since Day One.
-            </p>
-            <div className="text-[9px] text-brand-neon uppercase font-bold">
-              ESTABLISHED IN 2019 // #1of1
-            </div>
-          </div>
-
-          <div className="space-y-3.5">
-            <h5 className="font-mono font-bold text-xs text-brand-offwhite tracking-wider uppercase">
-              DROP COORDINATES_
-            </h5>
-            <ul className="space-y-1.5 text-brand-lightgray text-[11px]">
-              <li className="hover:text-brand-neon cursor-pointer" onClick={() => setSelectedCategory('ALL')}>ALL COLLECTIONS</li>
-              <li className="hover:text-brand-neon cursor-pointer" onClick={() => setSelectedCategory('POLOS')}>GHL POLO SERIES</li>
-              <li className="hover:text-brand-neon cursor-pointer" onClick={() => setSelectedCategory('DENIM')}>STONED DENIMS</li>
-              <li className="hover:text-brand-neon cursor-pointer" onClick={() => setSelectedCategory('TEES')}>PUFF PRINT TEES</li>
-              <li className="hover:text-brand-neon cursor-pointer" onClick={() => setSelectedCategory('TRACKSUITS')}>UP&DOWN TRACKSUITS</li>
-              <li className="hover:text-brand-neon cursor-pointer" onClick={() => setSelectedCategory('FOOTWEAR')}>GHL FOOTWEAR</li>
-              <li className="hover:text-brand-neon cursor-pointer" onClick={() => setSelectedCategory('ACCESSORIES')}>ACCESSORIES</li>
-            </ul>
-          </div>
-
-          <div className="space-y-3.5">
-            <h5 className="font-mono font-bold text-xs text-brand-offwhite tracking-wider uppercase">
-              CUSTOMER DESPATCH_
-            </h5>
-            <ul className="space-y-1.5 text-brand-lightgray text-[11px]">
-              <li className="hover:text-brand-neon cursor-pointer" onClick={() => alert('All shipments dispatch within 24-48 business hours with signature drop validation.')}>SECURE SHIPPING</li>
-              <li className="hover:text-brand-neon cursor-pointer" onClick={() => alert('Returns accepted within 14 coordinates of dispatch for store credit.')}>VAULT POLICY</li>
-              <li className="hover:text-brand-neon cursor-pointer" onClick={() => alert('Accepted methods:\nCards, Apple and Google Pay, and Secured Cryptographic coins.')}>CRYPT DISPATCH</li>
-              <li className="hover:text-brand-neon cursor-pointer" onClick={() => alert('Support coordinates are monitored 24/7:\nGohardluxury4@gmail.com')}>COORDS SUPPORT</li>
-            </ul>
-          </div>
-
+        <div className="max-w-7xl mx-auto">
           <div className="space-y-3.5">
             <h5 className="font-mono font-bold text-xs text-brand-offwhite tracking-wider uppercase">
               GHL_CONTACTS_

@@ -16,7 +16,6 @@ const PRODUCT_IMAGES: Record<string, string> = {
   'ghl-soft-tee': '/image/Tees/IMG_0932.JPG.jpeg',
   'ghl-tee26-archive': '/image/Tees/IMG_9423.JPG.jpeg',
   'ghl-analog-glasses': '/image/cap/IMG_0491.JPG.jpeg',
-  'ghl-socks': '/image/socks/ghl_ribbed_socks.png',
   'ghl-cap-0490': '/image/cap/IMG_0490.JPG.jpeg',
   'ghl-cap-0492': '/image/cap/IMG_0492.JPG.jpeg',
   'ghl-denim-1897': '/image/denim/IMG_1897.JPG.jpeg',
@@ -154,34 +153,6 @@ export const ProductVisualizer: React.FC<VisualizerProps> = ({
             <path d="M 130,70 L 145,85 L 160,70" fill="none" stroke="#D9FE00" strokeWidth="2" />
             {/* Logo highlight sleeve side */}
             <circle cx="57" cy="165" r="2" fill="#D9FE00" />
-          </g>
-        );
-
-      case 'ghl-socks':
-        return (
-          <g transform="translate(30, 10) scale(0.9)">
-            {/* Left Sock */}
-            <g transform="translate(0,0)">
-              {/* Backing foot shape */}
-              <path d="M 60,40 L 90,40 L 90,130 C 90,140 100,148 120,155 L 115,175 C 90,175 70,165 65,150 L 60,130 Z" fill="#1A1A1E" stroke="#8E8E93" strokeWidth="2.5" />
-              {/* Top ribbing cuff */}
-              <rect x="60" y="40" width="30" height="12" fill="#D9FE00" stroke="#222" strokeWidth="1" />
-              <line x1="66" y1="40" x2="66" y2="52" stroke="#222" strokeWidth="0.75" />
-              <line x1="72" y1="40" x2="72" y2="52" stroke="#222" strokeWidth="0.75" />
-              <line x1="78" y1="40" x2="78" y2="52" stroke="#222" strokeWidth="0.75" />
-              <line x1="84" y1="40" x2="84" y2="52" stroke="#222" strokeWidth="0.75" />
-              {/* Knit-in OFT logo on ribbing side */}
-              <text x="63" y="78" fill="#F8F8FA" fontFamily="var(--font-mono)" fontSize="10" fontWeight="bold">GHL</text>
-              <text x="63" y="90" fill="#D9FE00" fontFamily="var(--font-mono)" fontSize="8">#19</text>
-              {/* Foot grip stripes */}
-              <line x1="85" y1="160" x2="105" y2="167" stroke="#D9FE00" strokeWidth="3" opacity="0.6" />
-            </g>
-            {/* Right Sock rotated behind */}
-            <g transform="translate(60, 10) rotate(15, 75, 107)">
-              <path d="M 60,40 L 90,40 L 90,130 C 90,140 100,148 120,155 L 115,175 C 90,175 70,165 65,150 L 60,130 Z" fill="#151518" stroke="#555" strokeWidth="2" />
-              <rect x="60" y="40" width="30" height="12" fill="#2E2E33" stroke="#111" strokeWidth="1" />
-              <text x="63" y="78" fill="#8E8E93" fontFamily="var(--font-mono)" fontSize="10" fontWeight="bold">GHL</text>
-            </g>
           </g>
         );
 

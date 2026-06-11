@@ -421,24 +421,6 @@ export const GHL_PRODUCTS: Product[] = [
     images: ['/image/Tees/IMG_0933.JPG.jpeg'],
     releaseDate: '2026-06-07',
     quotes: 'Schematic designs of streetwear.'
-  },
-  {
-    id: 'ghl-socks',
-    name: 'RIBBED SOCKS',
-    price: 12000,
-    category: 'Accessories',
-    description: 'Premium ribbed cotton socks with knit-in GHL branding logo details.',
-    details: [
-      'High stretch ribbed cotton-spandex blend',
-      'Knit-in GHL branding graphic logo',
-      'Cushioned footbed for support impact',
-      'Reinforced heel and toe sections',
-      'Standard crew length sizing'
-    ],
-    sizes: ['OS'],
-    images: ['/image/socks/ghl_ribbed_socks.png'],
-    releaseDate: '2026-06-08',
-    quotes: 'Grip the floor.'
   }
 ];
 
