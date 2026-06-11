@@ -289,6 +289,150 @@ export const GHL_PRODUCTS: Product[] = [
     images: ['/image/denim/ghl_denim_pant.png'],
     releaseDate: '2026-03-10',
     quotes: 'Constructed to withstand any environment.'
+  },
+  {
+    id: 'ghl-cap-0490',
+    name: 'GHL TRUCKER CAP',
+    price: 46000,
+    category: 'Accessories',
+    description: 'Premium high-profile structured trucker cap. Front GHL embroidery with contrast mesh backing.',
+    details: [
+      'Structured 5-panel trucker profile',
+      'High-density signature front embroidery',
+      'Breathable technical mesh back panels',
+      'Adjustable snapback closure',
+      'Sweat-wicking interior headband'
+    ],
+    sizes: ['OS'],
+    images: ['/image/cap/IMG_0490.JPG.jpeg'],
+    releaseDate: '2026-06-01',
+    quotes: 'Breathe easy. Stand heavy.'
+  },
+  {
+    id: 'ghl-cap-0492',
+    name: 'GHL ARCHIVE CAP',
+    price: 46000,
+    category: 'Accessories',
+    description: 'Archival snapback cap with vintage embroidery details.',
+    details: [
+      'Premium washed cotton canvas crown',
+      'Distressed detail edge lines',
+      'Classic 6-panel unstructured fit',
+      'Embroidered ventilation eyelets',
+      'Adjustable brass clasp rear strap'
+    ],
+    sizes: ['OS'],
+    images: ['/image/cap/IMG_0492.JPG.jpeg'],
+    releaseDate: '2026-05-30',
+    quotes: 'Archived from the streets.'
+  },
+  {
+    id: 'ghl-denim-1897',
+    name: 'RAW DENIM SHORT',
+    price: 81000,
+    category: 'Denim',
+    description: 'Heavyweight custom fit raw denim shorts. Finished with signature pocket detailing.',
+    details: [
+      '14oz Japanese raw denim fabric',
+      'Relaxed, loose-fit streetwear profile',
+      'Custom engraved hardware studs and rivets',
+      'Frayed raw-edge hem styling',
+      'Signature contrast triple stitching'
+    ],
+    sizes: ['30', '32', '34', '36'],
+    images: ['/image/denim/IMG_1897.JPG.jpeg'],
+    releaseDate: '2026-06-03',
+    quotes: 'Unfinished edges. Untamed mindset.'
+  },
+  {
+    id: 'ghl-denim-9513',
+    name: 'CARGO JEAN',
+    price: 96000,
+    category: 'Denim',
+    description: 'Tactical multi-pocket cargo jeans. Heavy canvas reinforcement and adjustable cuffs.',
+    details: [
+      'Heavy duty 13.5oz pre-washed denim',
+      'Dual tactical utility cargo side pockets',
+      'Reinforced knee panel inserts',
+      'Adjustable toggle drawcords at cuffs',
+      'Custom leather rear branding patch'
+    ],
+    sizes: ['30', '32', '34', '36'],
+    images: ['/image/denim/IMG_9513.JPG.jpeg'],
+    releaseDate: '2026-06-04',
+    quotes: 'Built to carry the weight.'
+  },
+  {
+    id: 'ghl-sweatshirt-0102',
+    name: 'CREWNECK SWEAT',
+    price: 110000,
+    category: 'Tracksuits',
+    description: 'Heavyweight technical knit crewneck sweatshirt with custom GHL typography prints.',
+    details: [
+      '450GSM Ultra-heavyweight organic cotton fleece',
+      'Ribbed side panels for comfort movement',
+      'Puff print GHL typography on chest and sleeves',
+      'Double-needle lockstitch seams',
+      'Pre-shrunk treatment for lifetime fit'
+    ],
+    sizes: ['S', 'M', 'L', 'XL'],
+    images: ['/image/sweatshirt/IMG_0102.JPG.jpeg'],
+    releaseDate: '2026-06-05',
+    quotes: 'Heavy knit. Pure focus.'
+  },
+  {
+    id: 'ghl-sweatshirt-0103',
+    name: 'ZIP HOODIE',
+    price: 130000,
+    category: 'Tracksuits',
+    description: 'Full-zip technical performance hoodie. Secure zipper pockets and engineered hood.',
+    details: [
+      'Double-knit technical performance interlock',
+      'Full-front dual direction zipper',
+      'Deep structured double-lined hood',
+      'Secure zip-pockets for modern utility',
+      'Ribbed elastic cuffs and bottom hem'
+    ],
+    sizes: ['S', 'M', 'L', 'XL'],
+    images: ['/image/sweatshirt/IMG_0103.JPG.jpeg'],
+    releaseDate: '2026-06-06',
+    quotes: 'Shielded from the cold.'
+  },
+  {
+    id: 'ghl-tee-0933',
+    name: 'GRAPHIC TEE',
+    price: 71600,
+    category: 'Tees',
+    description: 'Vintage washed cotton graphic tee featuring signature collection schematic front print.',
+    details: [
+      '280GSM Combed cotton jersey base',
+      'Garment pigment-dyed for washed grey look',
+      'High-definition distressed graphic front print',
+      'Thick ribbed collar banding',
+      'Relaxed boxy oversized streetwear drape'
+    ],
+    sizes: ['S', 'M', 'L', 'XL'],
+    images: ['/image/Tees/IMG_0933.JPG.jpeg'],
+    releaseDate: '2026-06-07',
+    quotes: 'Schematic designs of streetwear.'
+  },
+  {
+    id: 'ghl-socks',
+    name: 'RIBBED SOCKS',
+    price: 12000,
+    category: 'Accessories',
+    description: 'Premium ribbed cotton socks with knit-in GHL branding logo details.',
+    details: [
+      'High stretch ribbed cotton-spandex blend',
+      'Knit-in GHL branding graphic logo',
+      'Cushioned footbed for support impact',
+      'Reinforced heel and toe sections',
+      'Standard crew length sizing'
+    ],
+    sizes: ['OS'],
+    images: ['/image/socks/ghl_ribbed_socks.png'],
+    releaseDate: '2026-06-08',
+    quotes: 'Grip the floor.'
   }
 ];
 

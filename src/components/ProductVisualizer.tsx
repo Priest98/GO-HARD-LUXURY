@@ -17,6 +17,13 @@ const PRODUCT_IMAGES: Record<string, string> = {
   'ghl-tee26-archive': '/image/Tees/IMG_9423.JPG.jpeg',
   'ghl-analog-glasses': '/image/cap/IMG_0491.JPG.jpeg',
   'ghl-socks': '/image/socks/ghl_ribbed_socks.png',
+  'ghl-cap-0490': '/image/cap/IMG_0490.JPG.jpeg',
+  'ghl-cap-0492': '/image/cap/IMG_0492.JPG.jpeg',
+  'ghl-denim-1897': '/image/denim/IMG_1897.JPG.jpeg',
+  'ghl-denim-9513': '/image/denim/IMG_9513.JPG.jpeg',
+  'ghl-sweatshirt-0102': '/image/sweatshirt/IMG_0102.JPG.jpeg',
+  'ghl-sweatshirt-0103': '/image/sweatshirt/IMG_0103.JPG.jpeg',
+  'ghl-tee-0933': '/image/Tees/IMG_0933.JPG.jpeg',
 };
 
 interface VisualizerProps {
