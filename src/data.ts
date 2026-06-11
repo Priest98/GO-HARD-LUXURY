@@ -235,9 +235,9 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-denim-archive',
-    name: 'LONG JEAN',
-    price: 96000,
-    formerPrice: 112000,
+    name: 'GO HARD LUX LONG JEAN',
+    price: 50000,
+    formerPrice: 60000,
     category: 'Denim',
     description: 'Archival five-pocket classic relaxed denim pant. Highlighted by intensive heavy wear-line stonewashing and hand-scraped faded detailing.',
     details: [
@@ -273,22 +273,22 @@ export const GHL_PRODUCTS: Product[] = [
 
   {
     id: 'ghl-stoned-pant-archive',
-    name: 'LONG JEAN',
-    price: 96000,
-    formerPrice: 112000,
+    name: 'GHL logo shorts',
+    price: 60000,
+    formerPrice: 70000,
     category: 'Denim',
-    description: 'Archival heavyweight cotton cargo pants. Tailored with dual bellows zip-pockets, hand stonewash, and military-style adjustable ankle drawcords.',
+    description: 'Premium athletic shorts featuring contrast side panel piping, comfortable elastic waistband with drawcords, and custom GHL logo embroidery on the left hem.',
     details: [
-      '100% Cotton heavy drill duck canvas',
-      'Stonewashed for individual shade variances',
-      'Dual utility cargo pockets with custom snap covers',
-      'Articulated panel knees for ergonomic walk comfort',
-      'Ankle utility cords for tapered or puddle configurations'
+      'Premium breathable athletic performance fabric',
+      'Contrast side panel block and piping details',
+      'Comfortable elastic waistband with adjustable tactical drawcords',
+      'Signature GHL embroidered logo on the left leg',
+      'Dual secure side slip pockets for daily essentials'
     ],
     sizes: ['30', '32', '34', '36'],
     images: ['/image/denim/ghl_denim_pant.png'],
     releaseDate: '2026-03-10',
-    quotes: 'Constructed to withstand any environment.'
+    quotes: 'Styled for comfort. Designed for the streets.'
   },
   {
     id: 'ghl-cap-0490',
