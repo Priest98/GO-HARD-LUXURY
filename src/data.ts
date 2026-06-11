@@ -120,7 +120,7 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-analog-glasses',
-    name: 'Hat',
+    name: 'GHL HAT TME BLACK',
     price: 46000,
     formerPrice: 58000,
     category: 'Accessories',
