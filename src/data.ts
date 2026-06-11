@@ -400,8 +400,9 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-tee-0933',
-    name: 'GRAPHIC TEE',
-    price: 71600,
+    name: 'GHL logo tees',
+    price: 70000,
+    formerPrice: 95000,
     category: 'Tees',
     description: 'Vintage washed cotton graphic tee featuring signature collection schematic front print.',
     details: [
