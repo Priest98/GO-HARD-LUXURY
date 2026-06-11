@@ -292,8 +292,9 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-cap-0490',
-    name: 'GHL TRUCKER CAP',
+    name: 'GHL TME HAT',
     price: 46000,
+    formerPrice: 58000,
     category: 'Accessories',
     description: 'Premium high-profile structured trucker cap. Front GHL embroidery with contrast mesh backing.',
     details: [
@@ -310,8 +311,9 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-cap-0492',
-    name: 'GHL ARCHIVE CAP',
-    price: 46000,
+    name: 'GHL HAT 0492',
+    price: 60000,
+    formerPrice: 75000,
     category: 'Accessories',
     description: 'Archival snapback cap with vintage embroidery details.',
     details: [
@@ -328,8 +330,9 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-denim-1897',
-    name: 'RAW DENIM SHORT',
-    price: 81000,
+    name: 'long jean side design',
+    price: 96000,
+    formerPrice: 112000,
     category: 'Denim',
     description: 'Heavyweight custom fit raw denim shorts. Finished with signature pocket detailing.',
     details: [
