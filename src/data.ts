@@ -367,16 +367,17 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-sweatshirt-0102',
-    name: 'CREWNECK SWEAT',
-    price: 110000,
-    category: 'Tracksuits',
-    description: 'Heavyweight technical knit crewneck sweatshirt with custom GHL typography prints.',
+    name: 'GHL LS TEES black',
+    price: 96000,
+    formerPrice: 110000,
+    category: 'Tees',
+    description: 'Premium heavyweight long sleeve tee in dark black. Finished with custom signature branding.',
     details: [
-      '450GSM Ultra-heavyweight organic cotton fleece',
-      'Ribbed side panels for comfort movement',
-      'Puff print GHL typography on chest and sleeves',
-      'Double-needle lockstitch seams',
-      'Pre-shrunk treatment for lifetime fit'
+      'Premium heavyweight cotton interlock fabric',
+      'Comfortable crewneck design',
+      'Clean ribbed cuffs',
+      'Signature GHL logo branding',
+      'Relaxed modern streetwear fit'
     ],
     sizes: ['S', 'M', 'L', 'XL'],
     images: ['/image/sweatshirt/IMG_0102.JPG.jpeg'],
@@ -385,16 +386,17 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-sweatshirt-0103',
-    name: 'ZIP HOODIE',
-    price: 130000,
-    category: 'Tracksuits',
-    description: 'Full-zip technical performance hoodie. Secure zipper pockets and engineered hood.',
+    name: 'GHL LS TEES white',
+    price: 96000,
+    formerPrice: 110000,
+    category: 'Tees',
+    description: 'Premium heavyweight long sleeve tee in clean white. Finished with custom signature branding.',
     details: [
-      'Double-knit technical performance interlock',
-      'Full-front dual direction zipper',
-      'Deep structured double-lined hood',
-      'Secure zip-pockets for modern utility',
-      'Ribbed elastic cuffs and bottom hem'
+      'Premium heavyweight cotton interlock fabric',
+      'Comfortable crewneck design',
+      'Clean ribbed cuffs',
+      'Signature GHL logo branding',
+      'Relaxed modern streetwear fit'
     ],
     sizes: ['S', 'M', 'L', 'XL'],
     images: ['/image/sweatshirt/IMG_0103.JPG.jpeg'],
