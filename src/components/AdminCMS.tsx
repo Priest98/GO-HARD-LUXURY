@@ -441,7 +441,7 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
           password: adminPassword
         });
         const fallbackEmail = import.meta.env.VITE_LOCAL_ADMIN_EMAIL || 'admin@gohardluxury.com';
-        const fallbackPassword = import.meta.env.VITE_LOCAL_ADMIN_PASSWORD || 'admin123';
+        const fallbackPassword = import.meta.env.VITE_LOCAL_ADMIN_PASSWORD || 'GOHARDLUX@123';
 
         if (error) {
           // Fallback credentials check
@@ -464,7 +464,7 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
       }
     } else {
       const fallbackEmail = import.meta.env.VITE_LOCAL_ADMIN_EMAIL || 'admin@gohardluxury.com';
-      const fallbackPassword = import.meta.env.VITE_LOCAL_ADMIN_PASSWORD || 'admin123';
+      const fallbackPassword = import.meta.env.VITE_LOCAL_ADMIN_PASSWORD || 'GOHARDLUX@123';
 
       if (adminEmail === fallbackEmail && adminPassword === fallbackPassword) {
         setIsAuthenticated(true);
