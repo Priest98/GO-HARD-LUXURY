@@ -3,7 +3,7 @@ import { Product, CouponCode } from './types';
 export const GHL_PRODUCTS: Product[] = [
   {
     id: 'ghl-visor-cap',
-    name: 'Hat',
+    name: 'Hat 1',
     price: 46000,
     category: 'Accessories',
     description: 'Off Thug official visor cap. Low profile shape, custom embroidered front logo, adjustable dual-color tactical clasp on the rear strap.',
@@ -61,7 +61,7 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-longsleeve-polo',
-    name: 'GHL LS Tees',
+    name: 'GHL LS Tees 1',
     price: 96000,
     formerPrice: 110000,
     category: 'Tees',
@@ -81,7 +81,7 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-stoned-denim-26',
-    name: 'LONG JEAN',
+    name: 'LONG JEAN 1',
     price: 96000,
     formerPrice: 112000,
     category: 'Denim',
@@ -120,7 +120,7 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-analog-glasses',
-    name: 'Hat',
+    name: 'Hat 2',
     price: 46000,
     formerPrice: 58000,
     category: 'Accessories',
@@ -160,7 +160,7 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-battlefield-tee',
-    name: 'GHL 26 Jerseys',
+    name: 'GHL 26 Jerseys 1',
     price: 71600,
     formerPrice: 80000,
     category: 'Tees',
@@ -180,7 +180,7 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-crowned-chaos',
-    name: 'GHL LS Tees',
+    name: 'GHL LS Tees 2',
     price: 96000,
     category: 'Tees',
     description: 'Striking contrast sleeve panel-blocked heavyweight knit longsleeve tee. Hand-printed "CROWNED BY CHAOS" stencil print detailing down sleeves.',
@@ -199,7 +199,7 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-snapback-original',
-    name: 'Hat',
+    name: 'Hat 3',
     price: 60000,
     formerPrice: 75000,
     category: 'Accessories',
@@ -235,7 +235,7 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-denim-archive',
-    name: 'LONG JEAN',
+    name: 'LONG JEAN 2',
     price: 96000,
     formerPrice: 112000,
     category: 'Denim',
@@ -254,7 +254,7 @@ export const GHL_PRODUCTS: Product[] = [
   },
   {
     id: 'ghl-tee26-archive',
-    name: 'GHL 26 Jerseys',
+    name: 'GHL 26 Jerseys 2',
     price: 71600,
     formerPrice: 80000,
     category: 'Tees',
@@ -273,7 +273,7 @@ export const GHL_PRODUCTS: Product[] = [
 
   {
     id: 'ghl-stoned-pant-archive',
-    name: 'LONG JEAN',
+    name: 'LONG JEAN 3',
     price: 96000,
     formerPrice: 112000,
     category: 'Denim',
