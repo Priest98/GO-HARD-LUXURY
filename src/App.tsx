@@ -658,7 +658,7 @@ export default function App() {
 
             {/* Middle: Vertical Navigation Links */}
             <div className="flex flex-col gap-3 py-2 border-y border-white/5">
-              {['ALL', 'POLOS', 'DENIM', 'TEES', 'ACCESSORIES'].map((cat, index) => (
+              {['ALL', 'POLOS', 'DENIM', 'TEES', 'TRACKSUITS', 'FOOTWEAR', 'ACCESSORIES'].map((cat, index) => (
                 <button
                   key={cat}
                   onClick={() => {
@@ -765,7 +765,7 @@ export default function App() {
             {/* Navigation links (Desktop only, hidden when compact/scrolled & not hovered) */}
             {(!isScrolled || isHovered) && !isSearchVisible && (
               <nav className="hidden md:flex items-center gap-8 text-[10px] uppercase tracking-[0.2em] font-black">
-                {['ALL', 'POLOS', 'DENIM', 'TEES', 'ACCESSORIES'].map((cat) => (
+                {['ALL', 'POLOS', 'DENIM', 'TEES', 'TRACKSUITS', 'FOOTWEAR', 'ACCESSORIES'].map((cat) => (
                   <button
                     id={`nav-tab-${cat}`}
                     key={cat}
@@ -966,7 +966,7 @@ export default function App() {
           {/* Leftside: category tags scrolling container */}
           <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 scrollbar-none">
             <SlidersHorizontal size={13} className="text-brand-lightgray shrink-0 mr-1.5 hidden sm:inline" />
-            {['ALL', 'POLOS', 'DENIM', 'TEES', 'ACCESSORIES'].map((category) => (
+            {['ALL', 'POLOS', 'DENIM', 'TEES', 'TRACKSUITS', 'FOOTWEAR', 'ACCESSORIES'].map((category) => (
               <button
                 id={`filter-pill-${category}`}
                 key={category}
@@ -1061,6 +1061,9 @@ export default function App() {
               <li className="hover:text-brand-neon cursor-pointer" onClick={() => setSelectedCategory('POLOS')}>GHL POLO SERIES</li>
               <li className="hover:text-brand-neon cursor-pointer" onClick={() => setSelectedCategory('DENIM')}>STONED DENIMS</li>
               <li className="hover:text-brand-neon cursor-pointer" onClick={() => setSelectedCategory('TEES')}>PUFF PRINT TEES</li>
+              <li className="hover:text-brand-neon cursor-pointer" onClick={() => setSelectedCategory('TRACKSUITS')}>UP&DOWN TRACKSUITS</li>
+              <li className="hover:text-brand-neon cursor-pointer" onClick={() => setSelectedCategory('FOOTWEAR')}>GHL FOOTWEAR</li>
+              <li className="hover:text-brand-neon cursor-pointer" onClick={() => setSelectedCategory('ACCESSORIES')}>ACCESSORIES</li>
             </ul>
           </div>
 

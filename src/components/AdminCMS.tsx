@@ -375,7 +375,7 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
   const [productForm, setProductForm] = useState<any>(initialProductState);
 
   // Collections State
-  const [collections, setCollections] = useState<string[]>(['ALL', 'POLOS', 'DENIM', 'TEES', 'ACCESSORIES']);
+  const [collections, setCollections] = useState<string[]>(['ALL', 'POLOS', 'DENIM', 'TEES', 'TRACKSUITS', 'FOOTWEAR', 'ACCESSORIES']);
   const [newCollectionName, setNewCollectionName] = useState<string>('');
 
   // Promo Codes State
@@ -1659,6 +1659,8 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
                                   <option value="Tees">Tees</option>
                                   <option value="Accessories">Accessories</option>
                                   <option value="Footwear">Footwear</option>
+                                  <option value="Tracksuits">Tracksuits</option>
+                                  <option value="Eyewear">Eyewear</option>
                                 </select>
                               </div>
                             </div>
