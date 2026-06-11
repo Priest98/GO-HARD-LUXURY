@@ -54,8 +54,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
   // Calculators
   const subtotal = cartItems.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
   const discountAmount = activeCoupon ? (subtotal * activeCoupon.discountPercentage) / 100 : 0;
-  const deliveryFee = subtotal > 150000 ? 0 : 12000.00; // Free delivery above ₦150,000
-  const grandTotal = subtotal - discountAmount + deliveryFee;
+  const grandTotal = subtotal - discountAmount;
 
   const handleApplyCoupon = (e: React.FormEvent) => {
     e.preventDefault();
@@ -369,7 +368,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
                           <input
                             id="coupon-input"
                             type="text"
-                            placeholder="COUPON_COORDS (e.g. THUG19)"
+                            placeholder="COUPON_COORDS (e.g. WORTHIT)"
                             value={couponInput}
                             onChange={(e) => {
                               setCouponInput(e.target.value);
@@ -394,7 +393,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
                       </p>
                     )}
                     <p className="text-[9px] font-mono text-[#8e8e93] font-bold mt-2 leading-relaxed uppercase tracking-wider">
-                      TIP: USE LAUNCH CODE <span className="text-white font-black cursor-pointer hover:underline" onClick={() => setCouponInput('THUG19')}>THUG19</span> FOR 19% OFF YOUR ORDER
+                      TIP: USE LAUNCH CODE <span className="text-white font-black cursor-pointer hover:underline" onClick={() => setCouponInput('WORTHIT')}>WORTHIT</span> FOR 10% OFF YOUR ORDER
                     </p>
                   </div>
                 </div>
@@ -527,10 +526,6 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
                             <span>-₦{discountAmount.toLocaleString()}</span>
                           </div>
                         )}
-                        <div className="flex justify-between">
-                          <span>Air Courier Drop:</span>
-                          <span className="text-white">{deliveryFee === 0 ? 'FREE' : `₦${deliveryFee.toLocaleString()}`}</span>
-                        </div>
                         <div className="flex justify-between text-xs pt-2.5 border-t border-white/10 font-black text-white">
                           <span>GRAND TOTAL:</span>
                           <span className="text-white">₦{grandTotal.toLocaleString()}</span>
@@ -583,17 +578,6 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
                     <div className="flex justify-between text-white font-black">
                       <span>Promo Discount (-{activeCoupon.discountPercentage}%):</span>
                       <span>-₦{discountAmount.toLocaleString()}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between">
-                    <span>Priority Air Courier:</span>
-                    <span className="text-white font-black">
-                      {deliveryFee === 0 ? 'FREE' : `₦${deliveryFee.toLocaleString()}`}
-                    </span>
-                  </div>
-                  {deliveryFee > 0 && (
-                    <div className="text-[8px] text-white/50 rounded flex justify-end font-black tracking-widest">
-                      ADD ₦{(150000 - subtotal).toLocaleString()} MORE FOR FREE COURIER DROP
                     </div>
                   )}
                   <div className="flex justify-between text-xs font-black text-white pt-3 border-t border-white/10">

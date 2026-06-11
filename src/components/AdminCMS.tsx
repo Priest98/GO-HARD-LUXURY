@@ -384,7 +384,6 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
     if (stored) return JSON.parse(stored);
     return [
       { code: 'GOHARD', discountPercentage: 15, description: '15% OFF Sitewide launch code', isActive: true, usedCount: 142 },
-      { code: 'THUG19', discountPercentage: 19, description: '19% OFF - The Official GHL discount', isActive: true, usedCount: 89 },
       { code: 'WORTHIT', discountPercentage: 10, description: '10% OFF - loyal customer bonus', isActive: true, usedCount: 33 }
     ];
   });

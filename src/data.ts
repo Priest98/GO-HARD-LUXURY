@@ -426,11 +426,6 @@ export const GHL_PRODUCTS: Product[] = [
 
 export const COUPON_CODES: CouponCode[] = [
   {
-    code: 'THUG19',
-    discountPercentage: 19,
-    description: '19% OFF - The Official OFF THUG Launch discount'
-  },
-  {
     code: 'WORTHIT',
     discountPercentage: 10,
     description: '10% OFF - Worth The Wait loyal customer bonus'
