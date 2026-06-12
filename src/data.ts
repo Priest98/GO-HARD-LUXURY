@@ -442,6 +442,27 @@ export const GHL_PRODUCTS: Product[] = [
     releaseDate: '2026-06-12',
     quotes: 'Crowned in silence. Built to carry the weight.',
     whatsappLink: 'https://wa.me/p/25719671704311754/2349038499673'
+  },
+  {
+    id: 'ghl-hoodie-members',
+    name: 'GHL HOODIE',
+    price: 99000,
+    formerPrice: 116000,
+    category: 'Tracksuits',
+    description: 'Premium heavy-knit members-only hoodie. Features signature double-lined structured hood, front kangaroo pocket, custom GHL engraved metal hardware, and relaxed high-fashion streetwear silhouette.',
+    details: [
+      '85% Combed organic cotton, 15% Polyester fleece base',
+      'Double-lined structured hood for premium drape',
+      'Front utility kangaroo pocket detailing',
+      'Ribbed cuffs and waistband styling',
+      'Tonal embroidered branding detail on chest'
+    ],
+    sizes: ['S', 'M', 'L', 'XL'],
+    images: ['/image/sweatshirt/IMG_0106.JPG.jpeg'],
+    badge: 'NEW ARRIVAL',
+    releaseDate: '2026-06-12',
+    quotes: '4TOP MEMBERS ONLY✨',
+    whatsappLink: 'https://wa.me/p/26738126365823997/2349038499673'
   }
 ];
 

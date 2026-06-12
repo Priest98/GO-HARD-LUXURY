@@ -57,3 +57,56 @@ ON CONFLICT (id) DO UPDATE SET
   quotes = EXCLUDED.quotes,
   release_date = EXCLUDED.release_date,
   whatsapp_link = EXCLUDED.whatsapp_link;
+
+-- 3. Insert GHL HOODIE product into the products table
+INSERT INTO public.products (
+  id, 
+  name, 
+  price, 
+  category, 
+  description, 
+  details, 
+  sizes, 
+  images, 
+  sold_out, 
+  badge, 
+  quotes, 
+  release_date, 
+  former_price, 
+  whatsapp_link
+)
+VALUES (
+  'ghl-hoodie-members',
+  'GHL HOODIE',
+  99000,
+  'Tracksuits',
+  'Premium heavy-knit members-only hoodie. Features signature double-lined structured hood, front kangaroo pocket, custom GHL engraved metal hardware, and relaxed high-fashion streetwear silhouette.',
+  ARRAY[
+    '85% Combed organic cotton, 15% Polyester fleece base', 
+    'Double-lined structured hood for premium drape', 
+    'Front utility kangaroo pocket detailing', 
+    'Ribbed cuffs and waistband styling', 
+    'Tonal embroidered branding detail on chest'
+  ],
+  ARRAY['S', 'M', 'L', 'XL'],
+  ARRAY['/image/sweatshirt/IMG_0106.JPG.jpeg'],
+  false,
+  'NEW ARRIVAL',
+  '4TOP MEMBERS ONLY✨',
+  '2026-06-12',
+  116000,
+  'https://wa.me/p/26738126365823997/2349038499673'
+)
+ON CONFLICT (id) DO UPDATE SET
+  name = EXCLUDED.name,
+  price = EXCLUDED.price,
+  former_price = EXCLUDED.former_price,
+  category = EXCLUDED.category,
+  description = EXCLUDED.description,
+  details = EXCLUDED.details,
+  sizes = EXCLUDED.sizes,
+  images = EXCLUDED.images,
+  badge = EXCLUDED.badge,
+  quotes = EXCLUDED.quotes,
+  release_date = EXCLUDED.release_date,
+  whatsapp_link = EXCLUDED.whatsapp_link;
