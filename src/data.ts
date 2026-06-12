@@ -63,8 +63,7 @@ export const GHL_PRODUCTS: Product[] = [
   {
     id: 'ghl-423-tracksuit',
     name: 'UP&DOWN 423',
-    price: 160600,
-    formerPrice: 180000,
+    price: 46000,
     category: 'Tracksuits',
     description: "Premium technical grey and black tracksuit set featuring matching full-zip jacket and utility track pants. Detailed with a custom '423' branding design at the back.",
     details: [
@@ -86,8 +85,8 @@ export const GHL_PRODUCTS: Product[] = [
   {
     id: 'ghl-longsleeve-polo',
     name: 'GHL LS Tees',
-    price: 96000,
-    formerPrice: 110000,
+    price: 81000,
+    formerPrice: 96000,
     category: 'Tees',
     description: 'Streetwear-contoured premium longsleeve knit tee. Interlock structural drape featuring high-rib elastic cuffs and a minimalist raw-cut hem.',
     details: [
@@ -242,8 +241,8 @@ export const GHL_PRODUCTS: Product[] = [
   {
     id: 'ghl-soft-tee',
     name: 'GHL COLOR TEES',
-    price: 81000,
-    formerPrice: 90000,
+    price: 70000,
+    formerPrice: 81000,
     category: 'Tees',
     description: 'Premium garment-dyed organic combed cotton tee, available in a variety of curated street hues. Features high stitch density and center-neck micro branding embroidery.',
     details: [
@@ -430,7 +429,7 @@ export const GHL_PRODUCTS: Product[] = [
   {
     id: 'ghl-tee-0933',
     name: 'GHL logo tees',
-    price: 70000,
+    price: 81000,
     formerPrice: 95000,
     category: 'Tees',
     description: 'Vintage washed cotton graphic tee featuring signature collection schematic front print.',
