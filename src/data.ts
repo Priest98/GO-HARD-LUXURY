@@ -55,13 +55,32 @@ export const GHL_PRODUCTS: Product[] = [
       'Secure zip-pockets for modern utility'
     ],
     sizes: ['S', 'M', 'L', 'XL'],
+    images: ['/image/sweatshirt/IMG_9949.JPG.jpeg'],
+    badge: 'NEW ARRIVAL',
+    releaseDate: '2026-05-22',
+    whatsappLink: 'https://wa.me/p/26511439021850765/2349038499673'
+  },
+  {
+    id: 'ghl-442-tracksuit',
+    name: 'UP&DOWN 442',
+    price: 160600,
+    formerPrice: 180000,
+    category: 'Tracksuits',
+    description: "Premium technical grey and black tracksuit set featuring matching full-zip jacket and utility track pants. Detailed with a custom '442' branding design at the back.",
+    details: [
+      'Heavyweight performance interlock fabric',
+      '442 print detail at the back',
+      'Signature GO HARD LUXURY sleeve and leg branding',
+      'Contrasting side piping lines and ribbed elastic hems',
+      'Secure zip-pockets for daily essentials'
+    ],
+    sizes: ['S', 'M', 'L', 'XL'],
     images: [
-      '/image/sweatshirt/IMG_9949.JPG.jpeg',
       '/image/sweatshirt/IMG_1555.WEBP',
       '/image/sweatshirt/IMG_1556.WEBP'
     ],
     badge: 'NEW ARRIVAL',
-    releaseDate: '2026-05-22',
+    releaseDate: '2026-06-12',
     whatsappLink: 'https://wa.me/p/26511439021850765/2349038499673'
   },
   {
