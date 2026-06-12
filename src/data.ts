@@ -55,7 +55,11 @@ export const GHL_PRODUCTS: Product[] = [
       'Secure zip-pockets for modern utility'
     ],
     sizes: ['S', 'M', 'L', 'XL'],
-    images: ['/image/sweatshirt/IMG_9949.JPG.jpeg'],
+    images: [
+      '/image/sweatshirt/IMG_9949.JPG.jpeg',
+      '/image/sweatshirt/IMG_1555.WEBP',
+      '/image/sweatshirt/IMG_1556.WEBP'
+    ],
     badge: 'NEW ARRIVAL',
     releaseDate: '2026-05-22',
     whatsappLink: 'https://wa.me/p/26511439021850765/2349038499673'

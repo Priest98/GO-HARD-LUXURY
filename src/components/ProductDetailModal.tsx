@@ -18,6 +18,11 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   if (!product) return null;
 
   const [selectedSize, setSelectedSize] = useState<string>(product.sizes[0] || 'S');
+  const [activeImageIndex, setActiveImageIndex] = useState<number>(0);
+
+  React.useEffect(() => {
+    setActiveImageIndex(0);
+  }, [product?.id]);
   const [quantity, setQuantity] = useState<number>(1);
   const [waitlistEmail, setWaitlistEmail] = useState<string>('');
   const [waitlistSuccess, setWaitlistSuccess] = useState<boolean>(false);
@@ -93,7 +98,26 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               GHL
             </div>
 
-            <ProductVisualizer productId={product.id} productImageUrl={product.images?.[0]} className="w-full max-w-[340px] z-10" isDetailView={true} />
+            <ProductVisualizer productId={product.id} productImageUrl={product.images?.[activeImageIndex]} className="w-full max-w-[340px] z-10" isDetailView={true} />
+            
+            {product.images && product.images.length > 1 && (
+              <div className="flex gap-2 mt-4 z-10 justify-center overflow-x-auto w-full max-w-[340px]">
+                {product.images.map((img, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setActiveImageIndex(index)}
+                    className={`w-11 h-11 border transition-all cursor-pointer ${
+                      activeImageIndex === index 
+                        ? 'border-[#39FF88] scale-105' 
+                        : 'border-white/10 hover:border-white/20'
+                    } bg-black p-0.5 overflow-hidden`}
+                  >
+                    <img src={img} alt="" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+
             <div className="absolute bottom-4 left-6 right-6 flex justify-between items-center text-[9px] font-mono text-[#8e8e93] font-bold z-10 uppercase tracking-widest">
               <span>PATTERN_ID: {product.id.replaceAll('-', '_')}</span>
               <span>SCALE: 1.1x STABLE</span>
