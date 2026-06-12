@@ -370,7 +370,8 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
     badge: 'NEW ARRIVAL' as any,
     quotes: '',
     releaseDate: new Date().toISOString().split('T')[0],
-    formerPrice: undefined
+    formerPrice: undefined,
+    whatsappLink: ''
   };
   const [productForm, setProductForm] = useState<any>(initialProductState);
 
@@ -626,7 +627,8 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
           sold_out: !!productForm.soldOut,
           badge: productForm.badge,
           quotes: productForm.quotes,
-          release_date: productForm.releaseDate
+          release_date: productForm.releaseDate,
+          whatsapp_link: productForm.whatsappLink || null
         };
 
         if (isCreatingProduct) {
@@ -672,7 +674,10 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
   };
 
   const handleEditProductClick = (product: Product) => {
-    setProductForm({ ...product });
+    setProductForm({
+      ...product,
+      whatsappLink: product.whatsappLink || ''
+    });
     setIsCreatingProduct(false);
     setEditingProduct(product);
   };
@@ -719,7 +724,8 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
           sold_out: !!duplicated.soldOut,
           badge: duplicated.badge,
           quotes: duplicated.quotes,
-          release_date: duplicated.releaseDate
+          release_date: duplicated.releaseDate,
+          whatsapp_link: duplicated.whatsappLink || null
         });
         if (error) throw error;
         setProducts(prev => [duplicated, ...prev]);
@@ -1643,6 +1649,17 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
                                   onChange={(e) => setProductForm({ ...productForm, formerPrice: e.target.value ? parseFloat(e.target.value) : undefined })}
                                   className="w-full bg-[#0A0A0A] border border-[#262626] focus:border-[#39FF88] px-3.5 py-2.5 rounded-lg outline-none text-white"
                                   placeholder="None"
+                                />
+                              </div>
+
+                              <div>
+                                <label className="block text-zinc-400 uppercase tracking-wider mb-1">WHATSAPP PRODUCT LINK:</label>
+                                <input
+                                  type="text"
+                                  value={productForm.whatsappLink || ''}
+                                  onChange={(e) => setProductForm({ ...productForm, whatsappLink: e.target.value })}
+                                  className="w-full bg-[#0A0A0A] border border-[#262626] focus:border-[#39FF88] px-3.5 py-2.5 rounded-lg outline-none text-white"
+                                  placeholder="e.g. https://wa.me/p/..."
                                 />
                               </div>
 

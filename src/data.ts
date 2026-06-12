@@ -421,6 +421,27 @@ export const GHL_PRODUCTS: Product[] = [
     images: ['/image/Tees/IMG_0933.JPG.jpeg'],
     releaseDate: '2026-06-07',
     quotes: 'Schematic designs of streetwear.'
+  },
+  {
+    id: 'ghl-camo-fc',
+    name: 'GHL CAMO FC',
+    price: 35000,
+    formerPrice: 45000,
+    category: 'Accessories',
+    description: 'Premium high-profile structured woodland camouflage cap. Custom embroidered front logo design, unstructured 6-panel dome paneling, and adjustable tactical clasp.',
+    details: [
+      'Premium heavy camouflage cotton shell',
+      'Original GHL front logo embroidery',
+      'Structured 6-panel dome paneling',
+      'Adjustable rear slide buckle or snap strap',
+      'Internal sweat-wicking custom band'
+    ],
+    sizes: ['OS'],
+    images: ['/image/cap/IMG_8429.JPG.jpeg'],
+    badge: 'NEW ARRIVAL',
+    releaseDate: '2026-06-12',
+    quotes: 'Crowned in silence. Built to carry the weight.',
+    whatsappLink: 'https://wa.me/p/25719671704311754/2349038499673'
   }
 ];
 

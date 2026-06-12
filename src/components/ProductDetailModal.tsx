@@ -243,6 +243,21 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       </>
                     )}
                   </button>
+
+                  {product.whatsappLink && (
+                    <a
+                      href={product.whatsappLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="h-[48px] px-5 flex items-center justify-center gap-2 rounded-none bg-[#25D366] hover:bg-[#20ba59] text-white active:scale-[0.98] font-mono text-xs font-black tracking-widest transition-all duration-200 cursor-pointer uppercase border border-[#25D366]"
+                      title="Order directly on WhatsApp"
+                    >
+                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.717-1.456L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.625 1.451 5.48-.002 9.936-4.436 9.938-9.911.001-2.652-1.03-5.145-2.903-7.02C16.436 1.848 13.945 1.02 11.999 1.02 6.522 1.02 2.066 5.454 2.064 10.93c-.001 1.516.417 2.999 1.21 4.316l-.993 3.626 3.766-.978zM17.487 14.39c-.3-.15-1.774-.875-2.046-.974-.272-.1-.47-.15-.667.15-.197.3-.762.974-.934 1.171-.173.197-.347.222-.647.072-3.003-1.5-4.48-2.6-5.617-4.55-.3-.518-.03-.8.271-1.1.272-.271.603-.7.904-1.05.3-.35.4-.599.6-.999.2-.4.1-.75-.05-1.05-.15-.3-.667-1.607-.914-2.204-.24-.579-.485-.5-.667-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.774-.726 2.022-1.429.247-.699.247-1.299.173-1.428-.074-.13-.272-.21-.572-.36z"/>
+                      </svg>
+                      <span className="hidden sm:inline">WHATSAPP</span>
+                    </a>
+                  )}
                 </div>
 
                 <div className="mt-5 flex items-center gap-2 text-[8px] font-mono text-[#8e8e93] font-bold justify-center uppercase tracking-widest">

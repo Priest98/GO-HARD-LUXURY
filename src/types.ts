@@ -12,6 +12,7 @@ export interface Product {
   quotes?: string;
   releaseDate: string;
   formerPrice?: number;
+  whatsappLink?: string;
 }
 
 export interface CartItem {
