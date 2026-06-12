@@ -19,11 +19,10 @@ export default function App() {
     if (stored) {
       try {
         const parsed = JSON.parse(stored) as Product[];
-        const ghlIds = new Set(GHL_PRODUCTS.map(p => p.id));
-        const customProducts = parsed.filter(
-          p => !ghlIds.has(p.id) && !RETIRED_PRODUCT_IDS.has(p.id)
-        );
-        return [...GHL_PRODUCTS, ...customProducts];
+        const validProducts = parsed.filter(p => !RETIRED_PRODUCT_IDS.has(p.id));
+        const parsedIds = new Set(validProducts.map(p => p.id));
+        const newStaticProducts = GHL_PRODUCTS.filter(p => !parsedIds.has(p.id));
+        return [...validProducts, ...newStaticProducts];
       } catch (e) {
         console.error('Failed to parse stored products', e);
       }
@@ -114,18 +113,18 @@ export default function App() {
             const staticProd = GHL_PRODUCTS.find(sp => sp.id === p.id);
             return {
               id: p.id,
-              name: staticProd?.name || p.name,
-              price: staticProd ? staticProd.price : Number(p.price),
-              category: staticProd?.category || p.category,
-              description: staticProd ? staticProd.description : (p.description || ''),
-              details: staticProd ? staticProd.details : (p.details || []),
-              sizes: staticProd ? staticProd.sizes : (p.sizes || []),
-              images: (staticProd?.images && staticProd.images.length > 0) ? staticProd.images : (p.images || []),
+              name: p.name || staticProd?.name || '',
+              price: p.price !== undefined && p.price !== null ? Number(p.price) : (staticProd?.price || 0),
+              category: p.category || staticProd?.category || 'Tees',
+              description: p.description !== undefined && p.description !== null && p.description !== '' ? p.description : (staticProd?.description || ''),
+              details: p.details && p.details.length > 0 ? p.details : (staticProd?.details || []),
+              sizes: p.sizes && p.sizes.length > 0 ? p.sizes : (staticProd?.sizes || []),
+              images: p.images && p.images.length > 0 ? p.images : (staticProd?.images || []),
               soldOut: !!p.sold_out,
-              badge: staticProd?.badge || p.badge || '',
-              quotes: staticProd?.quotes || p.quotes || '',
-              releaseDate: staticProd?.releaseDate || p.release_date,
-              formerPrice: staticProd ? staticProd.formerPrice : (p.former_price ? Number(p.former_price) : undefined),
+              badge: p.badge !== undefined && p.badge !== null && p.badge !== '' ? p.badge : (staticProd?.badge || ''),
+              quotes: p.quotes !== undefined && p.quotes !== null ? p.quotes : (staticProd?.quotes || ''),
+              releaseDate: p.release_date || staticProd?.releaseDate || '',
+              formerPrice: p.former_price !== undefined && p.former_price !== null ? Number(p.former_price) : staticProd?.formerPrice,
               whatsappLink: p.whatsapp_link || staticProd?.whatsappLink || undefined
             };
           });
@@ -210,18 +209,18 @@ export default function App() {
             const staticProd = GHL_PRODUCTS.find(sp => sp.id === p.id);
             return {
               id: p.id,
-              name: staticProd?.name || p.name,
-              price: staticProd ? staticProd.price : Number(p.price),
-              category: staticProd?.category || p.category,
-              description: staticProd ? staticProd.description : (p.description || ''),
-              details: staticProd ? staticProd.details : (p.details || []),
-              sizes: staticProd ? staticProd.sizes : (p.sizes || []),
-              images: (staticProd?.images && staticProd.images.length > 0) ? staticProd.images : (p.images || []),
+              name: p.name || staticProd?.name || '',
+              price: p.price !== undefined && p.price !== null ? Number(p.price) : (staticProd?.price || 0),
+              category: p.category || staticProd?.category || 'Tees',
+              description: p.description !== undefined && p.description !== null && p.description !== '' ? p.description : (staticProd?.description || ''),
+              details: p.details && p.details.length > 0 ? p.details : (staticProd?.details || []),
+              sizes: p.sizes && p.sizes.length > 0 ? p.sizes : (staticProd?.sizes || []),
+              images: p.images && p.images.length > 0 ? p.images : (staticProd?.images || []),
               soldOut: !!p.sold_out,
-              badge: staticProd?.badge || p.badge || '',
-              quotes: staticProd?.quotes || p.quotes || '',
-              releaseDate: staticProd?.releaseDate || p.release_date,
-              formerPrice: staticProd ? staticProd.formerPrice : (p.former_price ? Number(p.former_price) : undefined),
+              badge: p.badge !== undefined && p.badge !== null && p.badge !== '' ? p.badge : (staticProd?.badge || ''),
+              quotes: p.quotes !== undefined && p.quotes !== null ? p.quotes : (staticProd?.quotes || ''),
+              releaseDate: p.release_date || staticProd?.releaseDate || '',
+              formerPrice: p.former_price !== undefined && p.former_price !== null ? Number(p.former_price) : staticProd?.formerPrice,
               whatsappLink: p.whatsapp_link || staticProd?.whatsappLink || undefined
             };
           });
