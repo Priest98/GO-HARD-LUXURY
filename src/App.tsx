@@ -471,10 +471,16 @@ export default function App() {
   // Update filtered, searched, and sorted product lists
   const filteredProducts = products
     .filter(p => {
-      const matchCategory = selectedCategory === 'ALL' || p.category.toUpperCase() === selectedCategory.toUpperCase();
+      const cat1 = p.category ? p.category.toLowerCase().trim() : '';
+      const cat2 = selectedCategory ? selectedCategory.toLowerCase().trim() : '';
+      const matchCategory = selectedCategory === 'ALL' || 
+                            cat1 === cat2 ||
+                            (cat1 + 's') === cat2 ||
+                            cat1 === (cat2 + 's') ||
+                            (cat1.startsWith('accessor') && cat2.startsWith('accessor'));
       const matchSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          p.category.toLowerCase().includes(searchQuery.toLowerCase());
+                          (p.category && p.category.toLowerCase().includes(searchQuery.toLowerCase()));
       return matchCategory && matchSearch;
     })
     .sort((a, b) => {

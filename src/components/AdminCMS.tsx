@@ -1911,7 +1911,13 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
                           {products
                             .filter(p => {
                               const matchSearch = p.name.toLowerCase().includes(productSearch.toLowerCase()) || p.id.toLowerCase().includes(productSearch.toLowerCase());
-                              const matchCat = productFilterCat === 'ALL' || p.category.toUpperCase() === productFilterCat.toUpperCase();
+                              const cat1 = p.category ? p.category.toLowerCase().trim() : '';
+                              const cat2 = productFilterCat ? productFilterCat.toLowerCase().trim() : '';
+                              const matchCat = productFilterCat === 'ALL' || 
+                                               cat1 === cat2 ||
+                                               (cat1 + 's') === cat2 ||
+                                               cat1 === (cat2 + 's') ||
+                                               (cat1.startsWith('accessor') && cat2.startsWith('accessor'));
                               return matchSearch && matchCat;
                             })
                             .map((p) => (
@@ -2007,7 +2013,15 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
                           <div>
                             <span className="font-display font-black text-sm text-white uppercase tracking-wider">{col}</span>
                             <span className="font-mono text-[9px] text-zinc-500 block uppercase mt-0.5">
-                              Matches {products.filter(p => p.category.toUpperCase() === col).length} active products
+                              Matches {products.filter(p => {
+                                const cat1 = p.category ? p.category.toLowerCase().trim() : '';
+                                const cat2 = col ? col.toLowerCase().trim() : '';
+                                return col === 'ALL' || 
+                                       cat1 === cat2 ||
+                                       (cat1 + 's') === cat2 ||
+                                       cat1 === (cat2 + 's') ||
+                                       (cat1.startsWith('accessor') && cat2.startsWith('accessor'));
+                              }).length} active products
                             </span>
                           </div>
                           
