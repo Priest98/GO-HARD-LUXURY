@@ -110,3 +110,10 @@ ON CONFLICT (id) DO UPDATE SET
   quotes = EXCLUDED.quotes,
   release_date = EXCLUDED.release_date,
   whatsapp_link = EXCLUDED.whatsapp_link;
+
+-- 4. Update UP&DOWN product's price and whatsapp_link in products table
+UPDATE public.products 
+SET 
+  price = 160600,
+  whatsapp_link = 'https://wa.me/p/26511439021850765/2349038499673'
+WHERE id = 'ghl-woven-polo';
