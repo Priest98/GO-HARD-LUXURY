@@ -10,6 +10,8 @@ import { AdminCMS } from './components/AdminCMS';
 import { MobileUploadUplink } from './components/MobileUploadUplink';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 
+const RETIRED_PRODUCT_IDS = new Set(['ghl-442-tracksuit', 'ghl-ribbed-socks', 'ghl-socks']);
+
 export default function App() {
   // State elements - Persistent Products database
   const [products, setProducts] = useState<Product[]>(() => {
@@ -18,7 +20,9 @@ export default function App() {
       try {
         const parsed = JSON.parse(stored) as Product[];
         const ghlIds = new Set(GHL_PRODUCTS.map(p => p.id));
-        const customProducts = parsed.filter(p => !ghlIds.has(p.id));
+        const customProducts = parsed.filter(
+          p => !ghlIds.has(p.id) && !RETIRED_PRODUCT_IDS.has(p.id)
+        );
         return [...GHL_PRODUCTS, ...customProducts];
       } catch (e) {
         console.error('Failed to parse stored products', e);
@@ -106,22 +110,25 @@ export default function App() {
         if (prodError) throw prodError;
 
         if (dbProducts && dbProducts.length > 0) {
-          const mapped = dbProducts.map((p: any) => ({
-            id: p.id,
-            name: p.name,
-            price: Number(p.price),
-            category: p.category,
-            description: p.description || '',
-            details: p.details || [],
-            sizes: p.sizes || [],
-            images: p.images || [],
-            soldOut: !!p.sold_out,
-            badge: p.badge || '',
-            quotes: p.quotes || '',
-            releaseDate: p.release_date,
-            formerPrice: p.former_price ? Number(p.former_price) : undefined,
-            whatsappLink: p.whatsapp_link || GHL_PRODUCTS.find(sp => sp.id === p.id)?.whatsappLink || undefined
-          }));
+          const mapped = dbProducts.map((p: any) => {
+            const staticProd = GHL_PRODUCTS.find(sp => sp.id === p.id);
+            return {
+              id: p.id,
+              name: staticProd?.name || p.name,
+              price: staticProd ? staticProd.price : Number(p.price),
+              category: staticProd?.category || p.category,
+              description: staticProd ? staticProd.description : (p.description || ''),
+              details: staticProd ? staticProd.details : (p.details || []),
+              sizes: staticProd ? staticProd.sizes : (p.sizes || []),
+              images: (staticProd?.images && staticProd.images.length > 0) ? staticProd.images : (p.images || []),
+              soldOut: !!p.sold_out,
+              badge: staticProd?.badge || p.badge || '',
+              quotes: staticProd?.quotes || p.quotes || '',
+              releaseDate: staticProd?.releaseDate || p.release_date,
+              formerPrice: staticProd ? staticProd.formerPrice : (p.former_price ? Number(p.former_price) : undefined),
+              whatsappLink: p.whatsapp_link || staticProd?.whatsappLink || undefined
+            };
+          });
           
           // Merge Supabase products with static data.ts products (GHL_PRODUCTS)
           // DB products take precedence, local-only data.ts products are appended.
@@ -199,22 +206,25 @@ export default function App() {
           .order('release_date', { ascending: false });
 
         if (!error && dbProducts) {
-          const mapped = dbProducts.map((p: any) => ({
-            id: p.id,
-            name: p.name,
-            price: Number(p.price),
-            category: p.category,
-            description: p.description || '',
-            details: p.details || [],
-            sizes: p.sizes || [],
-            images: p.images || [],
-            soldOut: !!p.sold_out,
-            badge: p.badge || '',
-            quotes: p.quotes || '',
-            releaseDate: p.release_date,
-            formerPrice: p.former_price ? Number(p.former_price) : undefined,
-            whatsappLink: p.whatsapp_link || GHL_PRODUCTS.find(sp => sp.id === p.id)?.whatsappLink || undefined
-          }));
+          const mapped = dbProducts.map((p: any) => {
+            const staticProd = GHL_PRODUCTS.find(sp => sp.id === p.id);
+            return {
+              id: p.id,
+              name: staticProd?.name || p.name,
+              price: staticProd ? staticProd.price : Number(p.price),
+              category: staticProd?.category || p.category,
+              description: staticProd ? staticProd.description : (p.description || ''),
+              details: staticProd ? staticProd.details : (p.details || []),
+              sizes: staticProd ? staticProd.sizes : (p.sizes || []),
+              images: (staticProd?.images && staticProd.images.length > 0) ? staticProd.images : (p.images || []),
+              soldOut: !!p.sold_out,
+              badge: staticProd?.badge || p.badge || '',
+              quotes: staticProd?.quotes || p.quotes || '',
+              releaseDate: staticProd?.releaseDate || p.release_date,
+              formerPrice: staticProd ? staticProd.formerPrice : (p.former_price ? Number(p.former_price) : undefined),
+              whatsappLink: p.whatsapp_link || staticProd?.whatsappLink || undefined
+            };
+          });
 
           const dbIds = new Set(mapped.map(p => p.id));
           const onlyLocal = GHL_PRODUCTS.filter(p => !dbIds.has(p.id));

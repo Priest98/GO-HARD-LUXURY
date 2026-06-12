@@ -16,5 +16,12 @@ if (!isSupabaseConfigured) {
 // Export the client. If not configured, it will be initialized as null,
 // and we will check `isSupabaseConfigured` before making database queries.
 export const supabase = isSupabaseConfigured
-  ? createClient(supabaseUrl, supabaseAnonKey)
+  ? createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      }
+    })
   : (null as any);

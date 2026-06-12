@@ -335,7 +335,7 @@ export const GHL_PRODUCTS: Product[] = [
   {
     id: 'ghl-cap-0492',
     name: 'GHL HAT 0492',
-    price: 60000,
+    price: 46000,
     formerPrice: 75000,
     category: 'Accessories',
     description: 'Archival snapback cap with vintage embroidery details.',

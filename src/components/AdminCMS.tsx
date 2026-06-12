@@ -370,8 +370,7 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
     badge: 'NEW ARRIVAL' as any,
     quotes: '',
     releaseDate: new Date().toISOString().split('T')[0],
-    formerPrice: undefined,
-    whatsappLink: ''
+    formerPrice: undefined
   };
   const [productForm, setProductForm] = useState<any>(initialProductState);
 
@@ -485,6 +484,43 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
     localStorage.removeItem('GHL_ADMIN_AUTH');
     addAuditLog('Logged out of system session');
   };
+
+  // Keep a ref of handleLogout to prevent rebuilding active event listeners on state updates
+  const logoutRef = useRef(handleLogout);
+  useEffect(() => {
+    logoutRef.current = handleLogout;
+  }, [handleLogout]);
+
+  // Auto-logout after 30 minutes of inactivity
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+    let timeoutId: any;
+
+    const resetTimer = () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        console.log('Inactivity timeout reached (30 minutes). Logging out...');
+        logoutRef.current();
+      }, INACTIVITY_TIMEOUT);
+    };
+
+    const events = ['mousemove', 'keypress', 'mousedown', 'touchstart', 'scroll'];
+    events.forEach(event => {
+      window.addEventListener(event, resetTimer);
+    });
+
+    // Start timer on initial mount / login
+    resetTimer();
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      events.forEach(event => {
+        window.removeEventListener(event, resetTimer);
+      });
+    };
+  }, [isAuthenticated]);
 
   // Add Audit Log helper
   const addAuditLog = async (action: string) => {
@@ -627,8 +663,7 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
           sold_out: !!productForm.soldOut,
           badge: productForm.badge,
           quotes: productForm.quotes,
-          release_date: productForm.releaseDate,
-          whatsapp_link: productForm.whatsappLink || null
+          release_date: productForm.releaseDate
         };
 
         if (isCreatingProduct) {
@@ -675,8 +710,7 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
 
   const handleEditProductClick = (product: Product) => {
     setProductForm({
-      ...product,
-      whatsappLink: product.whatsappLink || ''
+      ...product
     });
     setIsCreatingProduct(false);
     setEditingProduct(product);
@@ -724,8 +758,7 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
           sold_out: !!duplicated.soldOut,
           badge: duplicated.badge,
           quotes: duplicated.quotes,
-          release_date: duplicated.releaseDate,
-          whatsapp_link: duplicated.whatsappLink || null
+          release_date: duplicated.releaseDate
         });
         if (error) throw error;
         setProducts(prev => [duplicated, ...prev]);
@@ -1652,16 +1685,6 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
                                 />
                               </div>
 
-                              <div>
-                                <label className="block text-zinc-400 uppercase tracking-wider mb-1">WHATSAPP PRODUCT LINK:</label>
-                                <input
-                                  type="text"
-                                  value={productForm.whatsappLink || ''}
-                                  onChange={(e) => setProductForm({ ...productForm, whatsappLink: e.target.value })}
-                                  className="w-full bg-[#0A0A0A] border border-[#262626] focus:border-[#39FF88] px-3.5 py-2.5 rounded-lg outline-none text-white"
-                                  placeholder="e.g. https://wa.me/p/..."
-                                />
-                              </div>
 
                               <div>
                                 <label className="block text-zinc-400 uppercase tracking-wider mb-1">CATEGORY:</label>
