@@ -61,15 +61,15 @@ export const GHL_PRODUCTS: Product[] = [
     whatsappLink: 'https://wa.me/p/26511439021850765/2349038499673'
   },
   {
-    id: 'ghl-442-tracksuit',
-    name: 'UP&DOWN 442',
+    id: 'ghl-423-tracksuit',
+    name: 'UP&DOWN 423',
     price: 160600,
     formerPrice: 180000,
     category: 'Tracksuits',
-    description: "Premium technical grey and black tracksuit set featuring matching full-zip jacket and utility track pants. Detailed with a custom '442' branding design at the back.",
+    description: "Premium technical grey and black tracksuit set featuring matching full-zip jacket and utility track pants. Detailed with a custom '423' branding design at the back.",
     details: [
       'Heavyweight performance interlock fabric',
-      '442 print detail at the back',
+      '423 print detail at the back',
       'Signature GO HARD LUXURY sleeve and leg branding',
       'Contrasting side piping lines and ribbed elastic hems',
       'Secure zip-pockets for daily essentials'
@@ -81,7 +81,7 @@ export const GHL_PRODUCTS: Product[] = [
     ],
     badge: 'NEW ARRIVAL',
     releaseDate: '2026-06-12',
-    whatsappLink: 'https://wa.me/p/26511439021850765/2349038499673'
+    whatsappLink: 'https://wa.me/p/35212527398394627/2349038499673'
   },
   {
     id: 'ghl-longsleeve-polo',

@@ -120,7 +120,7 @@ export default function App() {
             quotes: p.quotes || '',
             releaseDate: p.release_date,
             formerPrice: p.former_price ? Number(p.former_price) : undefined,
-            whatsappLink: p.whatsapp_link || undefined
+            whatsappLink: p.whatsapp_link || GHL_PRODUCTS.find(sp => sp.id === p.id)?.whatsappLink || undefined
           }));
           
           // Merge Supabase products with static data.ts products (GHL_PRODUCTS)
@@ -213,7 +213,7 @@ export default function App() {
             quotes: p.quotes || '',
             releaseDate: p.release_date,
             formerPrice: p.former_price ? Number(p.former_price) : undefined,
-            whatsappLink: p.whatsapp_link || undefined
+            whatsappLink: p.whatsapp_link || GHL_PRODUCTS.find(sp => sp.id === p.id)?.whatsappLink || undefined
           }));
 
           const dbIds = new Set(mapped.map(p => p.id));
