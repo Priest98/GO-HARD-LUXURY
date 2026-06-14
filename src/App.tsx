@@ -457,7 +457,7 @@ export default function App() {
   }, [selectedCategory, searchQuery]);
 
   // Tactical Live Clock UTC Timer
-  const [currentTime, setCurrentTime] = useState<Date>(new Date("2026-06-06T08:53:30Z"));
+  const [currentTime, setCurrentTime] = useState<Date>(new Date());
 
   // Track scroll position for dynamic island header
   const [isScrolled, setIsScrolled] = useState<boolean>(false);
@@ -472,7 +472,7 @@ export default function App() {
   // Initialize and update UTC time ticker
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentTime(prev => new Date(prev.getTime() + 1000));
+      setCurrentTime(new Date());
     }, 1000);
     return () => clearInterval(timer);
   }, []);
