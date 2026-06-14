@@ -113,6 +113,29 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
     localStorage.setItem('GHL_MEDIA_LIST', JSON.stringify(mediaList));
   }, [mediaList]);
 
+  // Database Analytics State
+  const [dbVisitorCount, setDbVisitorCount] = useState<number | null>(null);
+
+  // Fetch db analytics count
+  useEffect(() => {
+    if (!isSupabaseConfigured || !isAuthenticated) return;
+    const fetchDbVisitors = async () => {
+      try {
+        const { count, error } = await supabase
+          .from('analytics')
+          .select('*', { count: 'exact', head: true });
+        if (!error && count !== null) {
+          setDbVisitorCount(count);
+        }
+      } catch (err) {
+        console.warn('Analytics table not found on Supabase.');
+      }
+    };
+    fetchDbVisitors();
+    const interval = setInterval(fetchDbVisitors, 30000); // refresh every 30s
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
+
   // Load session & dynamic records from Supabase
   useEffect(() => {
     if (!isSupabaseConfigured) return;
@@ -1289,7 +1312,12 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
                       { label: 'NUMBER OF SALES', val: totalOrders, change: 'Total Completed', icon: CreditCard },
                       { label: 'PRODUCTS AVAILABLE', val: activeProducts, change: `${products.length} catalog items`, icon: Package },
                       { label: 'PRODUCT UNITS SOLD', val: totalProductsSold, change: 'Units Dispatched', icon: TrendingUp },
-                      { label: 'VISITORS LOGGED', val: visitorCount, change: 'Simulated Count', icon: Users }
+                      { 
+                        label: 'VISITORS LOGGED', 
+                        val: dbVisitorCount !== null ? dbVisitorCount : visitorCount, 
+                        change: dbVisitorCount !== null ? 'Live Database Sync' : 'Simulated Count', 
+                        icon: Users 
+                      }
                     ].map((card, i) => {
                       const Icon = card.icon;
                       return (

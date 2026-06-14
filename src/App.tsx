@@ -349,6 +349,17 @@ export default function App() {
     const count = parseInt(localStorage.getItem('GHL_VISITOR_COUNT') || '0');
     localStorage.setItem('GHL_VISITOR_COUNT', (count + 1).toString());
 
+    // Sync hit count to Supabase if configured
+    if (isSupabaseConfigured) {
+      supabase.from('analytics').insert({}).then(({ error }) => {
+        if (error) {
+          console.warn('Analytics table not yet created on Supabase. Falling back to local storage.');
+        } else {
+          console.log('Page view logged to database.');
+        }
+      });
+    }
+
     // 1. Google Analytics 4 Script Dynamic Injection
     const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID;
     if (measurementId && measurementId !== 'YOUR_GA_MEASUREMENT_ID') {
