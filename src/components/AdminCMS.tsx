@@ -6,7 +6,7 @@ import {
   Filter, TrendingUp, Layers, Copy, PlusCircle, X, Lock, 
   AlertCircle, Eye, Video, Trash2, Edit, Check, ExternalLink, 
   EyeOff, RefreshCw, Bell, AlertTriangle, ShieldCheck, Download,
-  Laptop, Smartphone, BarChart3
+  Laptop, Smartphone, BarChart3, Sun, Moon
 } from 'lucide-react';
 import { Product, SortOption } from '../types';
 import { supabase, isSupabaseConfigured } from '../supabaseClient';
@@ -71,6 +71,28 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showForgotModal, setShowForgotModal] = useState<boolean>(false);
   const [forgotEmail, setForgotEmail] = useState<string>('');
+
+  // Theme Toggle State
+  const [isLight, setIsLight] = useState<boolean>(() => {
+    return document.documentElement.classList.contains('light');
+  });
+
+  useEffect(() => {
+    setIsLight(document.documentElement.classList.contains('light'));
+  }, []);
+
+  const handleToggleTheme = () => {
+    const root = document.documentElement;
+    if (isLight) {
+      root.classList.remove('light');
+      localStorage.setItem('GHL_THEME', 'night');
+      setIsLight(false);
+    } else {
+      root.classList.add('light');
+      localStorage.setItem('GHL_THEME', 'day');
+      setIsLight(true);
+    }
+  };
 
   // Media Storage State
   const [mediaList, setMediaList] = useState<any[]>(() => {
@@ -1032,12 +1054,24 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
                 <ShieldCheck size={12} className="text-[#39FF88]" />
                 SECURE AES_256 PORT
               </span>
-              <button 
-                onClick={onCloseStore} 
-                className="hover:text-white"
-              >
-                ← Back to Storefront
-              </button>
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={handleToggleTheme}
+                  className="hover:text-white flex items-center gap-1 cursor-pointer"
+                  type="button"
+                >
+                  {isLight ? <Moon size={11} /> : <Sun size={11} />}
+                  <span>{isLight ? 'DARK' : 'LIGHT'}</span>
+                </button>
+                <span className="text-[#262626]">|</span>
+                <button 
+                  onClick={onCloseStore} 
+                  className="hover:text-white cursor-pointer"
+                  type="button"
+                >
+                  ← STOREFRONT
+                </button>
+              </div>
             </div>
           </motion.div>
         </div>
@@ -1168,6 +1202,14 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
 
             {/* Bottom Actions */}
             <div className="p-4 border-t border-[#262626] space-y-3">
+              <button
+                onClick={handleToggleTheme}
+                className="w-full flex items-center justify-center gap-2 py-2.5 border border-[#262626] text-white hover:bg-[#141414] rounded-lg font-mono text-[10px] font-bold uppercase tracking-widest cursor-pointer"
+              >
+                {isLight ? <Moon size={12} /> : <Sun size={12} />}
+                <span>{isLight ? 'Dark Mode' : 'Light Mode'}</span>
+              </button>
+
               <button
                 onClick={onCloseStore}
                 className="w-full flex items-center justify-center gap-2 py-2.5 border border-[#262626] text-white hover:bg-[#141414] rounded-lg font-mono text-[10px] font-bold uppercase tracking-widest cursor-pointer"
