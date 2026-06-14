@@ -35,12 +35,12 @@ export default function App() {
   }, [products]);
 
   // Admin Mode state
-  const [isAdminMode, setIsAdminMode] = useState<boolean>(() => window.location.hash === '#admin');
+  const [isAdminMode, setIsAdminMode] = useState<boolean>(() => window.location.hash === '#ghl-portal-secure-2026');
   const [isMobileUploadMode, setIsMobileUploadMode] = useState<boolean>(() => window.location.hash.startsWith('#mobile-upload'));
   
   useEffect(() => {
     const handleHashChange = () => {
-      setIsAdminMode(window.location.hash === '#admin');
+      setIsAdminMode(window.location.hash === '#ghl-portal-secure-2026');
       setIsMobileUploadMode(window.location.hash.startsWith('#mobile-upload'));
     };
     window.addEventListener('hashchange', handleHashChange);
@@ -1083,24 +1083,6 @@ export default function App() {
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto mt-12 pt-8 border-t border-brand-midgray/15 flex flex-col md:flex-row justify-between items-center gap-4 text-brand-lightgray/55 text-[10px]">
-          <span>© 2026 OFF THUG RACK DESIGN CO. ALL RIGHTS DISPATCHED FOR DEPLOYMENTS.</span>
-          <div className="flex items-center gap-6">
-            <a href="https://gohardluxury.com/#" target="_blank" rel="noreferrer" className="hover:text-brand-neon inline-flex items-center gap-1 cursor-pointer">
-              <span>VISIT SOURCE SITE</span>
-              <ExternalLink size={10} />
-            </a>
-            <button 
-              onClick={() => {
-                setIsAdminMode(true);
-                window.location.hash = '#admin';
-              }} 
-              className="hover:text-brand-neon cursor-pointer font-bold tracking-widest uppercase text-[9px] flex items-center gap-1 bg-transparent border-none"
-            >
-              <span>[ADMIN PORTAL]</span>
-            </button>
-          </div>
-        </div>
       </footer>
 
       {/* Cart dispatch menu drawer slide over */}
