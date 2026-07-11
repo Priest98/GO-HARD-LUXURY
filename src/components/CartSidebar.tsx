@@ -15,6 +15,7 @@ interface CartSidebarProps {
   onRemoveItem: (productId: string, size: string) => void;
   onClearCart: () => void;
   onOrderComplete?: (orderData: {
+    id?: string;
     customerName: string;
     customerEmail: string;
     items: {
@@ -25,6 +26,9 @@ interface CartSidebarProps {
       price: number;
     }[];
     totalAmount: number;
+    paymentMethod?: string;
+    paymentStatus?: string;
+    status?: string;
   }) => void;
 }
 
@@ -48,6 +52,16 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
   const [shippingEmail, setShippingEmail] = useState<string>('');
   const [orderId, setOrderId] = useState<string>('');
   const [isSubmittingOrder, setIsSubmittingOrder] = useState<boolean>(false);
+  
+  // Payment option state
+  const [paymentMethod, setPaymentMethod] = useState<'flutterwave' | 'bank_transfer'>('flutterwave');
+  const [copied, setCopied] = useState<boolean>(false);
+
+  const handleCopyAccountNumber = () => {
+    navigator.clipboard.writeText('6427700774');
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   if (!isOpen) return null;
 
@@ -87,6 +101,73 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
         total: grandTotal,
         items_count: cartItems.length
       });
+    }
+
+    if (paymentMethod === 'bank_transfer') {
+      setTimeout(() => {
+        const randomID = `GHL-REG-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(100 + Math.random() * 900)}`;
+        setOrderId(randomID);
+
+        // Build and trigger the WhatsApp confirmation redirect
+        const formattedItems = cartItems.map(item => 
+          `• ${item.product.name} (${item.selectedSize}) x${item.quantity} - ₦${(item.product.price * item.quantity).toLocaleString()}`
+        ).join('\n');
+
+        const matchedCouponText = activeCoupon 
+          ? `• Promo Discount (${activeCoupon.code} -${activeCoupon.discountPercentage}%): -₦${discountAmount.toLocaleString()}\n` 
+          : '';
+
+        const message = `Hello, I have completed my bank transfer payment for my GO HARD LUXURY order. Kindly confirm receipt of my payment.
+
+*ORDER DETAILS*
+---------------------------------------
+*ORDER ID:* ${randomID}
+*CUSTOMER:* ${shippingName}
+*EMAIL:* ${shippingEmail}
+*DELIVERY ADDRESS:* ${shippingAddress}
+
+*ITEMS:*
+${formattedItems}
+
+---------------------------------------
+*SUMMARY*
+• Subtotal: ₦${subtotal.toLocaleString()}
+${matchedCouponText}• *GRAND TOTAL: ₦${grandTotal.toLocaleString()}*
+---------------------------------------`;
+
+        const whatsappUrl = `https://wa.me/2349038499673?text=${encodeURIComponent(message)}`;
+        // Redirect to WhatsApp directly in the same tab to bypass browser popup blockers
+        window.location.href = whatsappUrl;
+
+        if (onOrderComplete) {
+          onOrderComplete({
+            id: randomID,
+            customerName: shippingName,
+            customerEmail: shippingEmail,
+            items: cartItems.map(item => ({
+              productId: item.product.id,
+              productName: item.product.name,
+              size: item.selectedSize,
+              quantity: item.quantity,
+              price: item.product.price
+            })),
+            totalAmount: grandTotal,
+            status: 'Pending',
+            paymentStatus: 'Pending'
+          });
+        }
+
+        setIsSubmittingOrder(false);
+        setCheckoutStep('complete');
+
+        if (typeof window !== 'undefined' && window.trackEvent) {
+          window.trackEvent('purchase', {
+            total: grandTotal,
+            orderId: randomID
+          });
+        }
+      }, 1200);
+      return;
     }
     
     try {
@@ -148,6 +229,7 @@ My payment has been confirmed! Please verify my order coordination.`;
 
               if (onOrderComplete) {
                 onOrderComplete({
+                  id: randomID,
                   customerName: shippingName,
                   customerEmail: shippingEmail,
                   items: cartItems.map(item => ({
@@ -224,6 +306,7 @@ Please verify my order coordination!`;
 
         if (onOrderComplete) {
           onOrderComplete({
+            id: randomID,
             customerName: shippingName,
             customerEmail: shippingEmail,
             items: cartItems.map(item => ({
@@ -515,6 +598,101 @@ Please verify my order coordination!`;
                         className="w-full bg-[#121212] border border-white/20 px-3 py-2 text-xs font-mono text-white focus:border-white outline-none rounded-none placeholder-white/20 resize-none uppercase tracking-wider"
                       />
                     </div>
+
+                    {/* Payment Option Selector */}
+                    <div className="space-y-2 pt-3 border-t border-white/10">
+                      <label className="font-mono text-[9px] text-[#8e8e93] font-black uppercase tracking-widest block">Select Payment Protocol_</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {/* Flutterwave Option */}
+                        <div
+                          onClick={() => setPaymentMethod('flutterwave')}
+                          className={`p-3 border text-left cursor-pointer transition-all flex flex-col justify-between h-20 rounded-none ${
+                            paymentMethod === 'flutterwave'
+                              ? 'border-white bg-white/5'
+                              : 'border-white/10 bg-black hover:border-white/30'
+                          }`}
+                        >
+                          <div className="flex justify-between items-start">
+                            <span className="font-mono text-[10px] font-black text-white uppercase tracking-widest leading-none">
+                              Online Pay
+                            </span>
+                            <div className={`w-3 h-3 rounded-full border flex items-center justify-center ${
+                              paymentMethod === 'flutterwave' ? 'border-white bg-white' : 'border-white/20 bg-transparent'
+                            }`}>
+                              {paymentMethod === 'flutterwave' && <div className="w-1.5 h-1.5 rounded-full bg-black" />}
+                            </div>
+                          </div>
+                          <span className="font-mono text-[8px] text-[#8e8e93] uppercase font-bold tracking-wider leading-none">
+                            Flutterwave (Card/USSD)
+                          </span>
+                        </div>
+
+                        {/* Bank Transfer Option */}
+                        <div
+                          onClick={() => setPaymentMethod('bank_transfer')}
+                          className={`p-3 border text-left cursor-pointer transition-all flex flex-col justify-between h-20 rounded-none ${
+                            paymentMethod === 'bank_transfer'
+                              ? 'border-white bg-white/5'
+                              : 'border-white/10 bg-black hover:border-white/30'
+                          }`}
+                        >
+                          <div className="flex justify-between items-start">
+                            <span className="font-mono text-[10px] font-black text-white uppercase tracking-widest leading-none">
+                              Bank Transfer
+                            </span>
+                            <div className={`w-3 h-3 rounded-full border flex items-center justify-center ${
+                              paymentMethod === 'bank_transfer' ? 'border-white bg-white' : 'border-white/20 bg-transparent'
+                            }`}>
+                              {paymentMethod === 'bank_transfer' && <div className="w-1.5 h-1.5 rounded-full bg-black" />}
+                            </div>
+                          </div>
+                          <span className="font-mono text-[8px] text-[#8e8e93] uppercase font-bold tracking-wider leading-none">
+                            Direct Transfer
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Bank Transfer Account Details */}
+                    {paymentMethod === 'bank_transfer' && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="border border-white/20 bg-[#0A0A0A] p-4 space-y-3 rounded-none overflow-hidden"
+                      >
+                        <div className="flex items-center gap-1.5 border-b border-white/10 pb-2">
+                          <CreditCard size={11} className="text-white" />
+                          <span className="font-mono text-[9px] font-black uppercase tracking-widest text-white">
+                            OPay Payment Coordinates_
+                          </span>
+                        </div>
+                        
+                        <div className="space-y-2 font-mono text-[10px]">
+                          <div className="flex justify-between">
+                            <span className="text-[#8e8e93] uppercase">Bank:</span>
+                            <span className="text-white font-black">OPay</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-[#8e8e93] uppercase">Account Name:</span>
+                            <span className="text-white font-black">GO HARD LUXURY</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-[#8e8e93] uppercase">Account Number:</span>
+                            <span className="text-white font-black select-all tracking-wider">6427700774</span>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={handleCopyAccountNumber}
+                          className="w-full py-2 bg-white/5 border border-white/20 text-white hover:bg-white hover:text-black font-mono text-[9px] font-black tracking-widest uppercase transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                        >
+                          {copied ? 'COPIED TO CLIPBOARD ✔' : 'COPY ACCOUNT NUMBER'}
+                        </button>
+                      </motion.div>
+                    )}
                   </div>
 
                   <div className="bg-black border border-white/10 p-3 flex items-start gap-2.5 text-[9px] font-mono text-[#8e8e93] font-bold uppercase tracking-wider leading-relaxed">
@@ -681,7 +859,7 @@ Please verify my order coordination!`;
                     ) : (
                       <>
                         <Check size={12} />
-                        <span>DEPLOY SHIPPINGS & PLACE ORDER</span>
+                        <span>{paymentMethod === 'bank_transfer' ? "I'VE MADE PAYMENT" : "DEPLOY SHIPPINGS & PLACE ORDER"}</span>
                       </>
                     )}
                   </button>

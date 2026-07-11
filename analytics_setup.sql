@@ -18,3 +18,12 @@ CREATE POLICY "Allow public page view inserts" ON public.analytics
 -- 4. Policy: Allow authenticated admin users to read the logs/counts
 CREATE POLICY "Allow admin selects for analytics" ON public.analytics
   FOR SELECT TO authenticated USING (true);
+
+-- 5. Privileges: Grant SELECT/INSERT permissions to anon/authenticated roles
+GRANT INSERT ON public.analytics TO anon;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.analytics TO authenticated;
+GRANT ALL PRIVILEGES ON public.analytics TO service_role;
+
+GRANT INSERT ON public.analytics_events TO anon;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.analytics_events TO authenticated;
+GRANT ALL PRIVILEGES ON public.analytics_events TO service_role;

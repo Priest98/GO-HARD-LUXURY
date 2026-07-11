@@ -1104,13 +1104,13 @@ export default function App() {
         onUpdateQty={handleUpdateQty}
         onRemoveItem={handleRemoveItem}
         onClearCart={handleClearCart}
-        onOrderComplete={async (orderData) => {
+        onOrderComplete={async (orderData: any) => {
           const newOrder = {
-            id: `GHL-REG-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(100 + Math.random() * 900)}`,
+            id: orderData.id || `GHL-REG-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(100 + Math.random() * 900)}`,
             date: new Date().toISOString().replace('T', ' ').substring(0, 16),
             ...orderData,
-            status: 'Paid',
-            paymentStatus: 'Paid'
+            status: orderData.status || 'Paid',
+            paymentStatus: orderData.paymentStatus || 'Paid'
           };
           setOrders(prev => [newOrder, ...prev]);
 
