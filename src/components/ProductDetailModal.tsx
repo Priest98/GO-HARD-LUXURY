@@ -22,6 +22,9 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
   React.useEffect(() => {
     setActiveImageIndex(0);
+    if (product) {
+      setSelectedSize(product.sizes[0] || 'S');
+    }
   }, [product?.id]);
   const [quantity, setQuantity] = useState<number>(1);
   const [waitlistEmail, setWaitlistEmail] = useState<string>('');

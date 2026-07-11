@@ -600,98 +600,102 @@ Please verify my order coordination!`;
                     </div>
 
                     {/* Payment Option Selector */}
-                    <div className="space-y-2 pt-3 border-t border-white/10">
+                    <div className="space-y-3 pt-3 border-t border-white/10">
                       <label className="font-mono text-[9px] text-[#8e8e93] font-black uppercase tracking-widest block">Select Payment Protocol_</label>
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="grid grid-cols-2 gap-3">
                         {/* Flutterwave Option */}
                         <div
                           onClick={() => setPaymentMethod('flutterwave')}
-                          className={`p-3 border text-left cursor-pointer transition-all flex flex-col justify-between h-20 rounded-none ${
+                          className={`p-3.5 border cursor-pointer transition-all flex flex-col justify-between h-24 relative rounded-none ${
                             paymentMethod === 'flutterwave'
-                              ? 'border-white bg-white/5'
-                              : 'border-white/10 bg-black hover:border-white/30'
+                              ? 'border-[#39FF88] bg-[#39FF88]/5 shadow-[0_0_10px_rgba(57,255,136,0.15)]'
+                              : 'border-white/15 bg-black hover:border-white/30'
                           }`}
                         >
-                          <div className="flex justify-between items-start">
+                          <div className="flex justify-between items-center w-full">
                             <span className="font-mono text-[10px] font-black text-white uppercase tracking-widest leading-none">
                               Online Pay
                             </span>
-                            <div className={`w-3 h-3 rounded-full border flex items-center justify-center ${
-                              paymentMethod === 'flutterwave' ? 'border-white bg-white' : 'border-white/20 bg-transparent'
+                            <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
+                              paymentMethod === 'flutterwave' ? 'border-[#39FF88]' : 'border-white/20'
                             }`}>
-                              {paymentMethod === 'flutterwave' && <div className="w-1.5 h-1.5 rounded-full bg-black" />}
+                              {paymentMethod === 'flutterwave' && <div className="w-1.5 h-1.5 rounded-full bg-[#39FF88]" />}
                             </div>
                           </div>
-                          <span className="font-mono text-[8px] text-[#8e8e93] uppercase font-bold tracking-wider leading-none">
-                            Flutterwave (Card/USSD)
-                          </span>
+                          <div className="mt-1 flex flex-col gap-0.5">
+                            <span className="font-mono text-[8px] text-[#8e8e93] uppercase font-bold tracking-wider leading-none">
+                              Card, USSD, Transfer
+                            </span>
+                            <span className="font-mono text-[8px] text-[#39FF88] uppercase font-black tracking-widest leading-none mt-1">
+                              [INSTANT CONFIRM]
+                            </span>
+                          </div>
                         </div>
 
                         {/* Bank Transfer Option */}
                         <div
                           onClick={() => setPaymentMethod('bank_transfer')}
-                          className={`p-3 border text-left cursor-pointer transition-all flex flex-col justify-between h-20 rounded-none ${
+                          className={`p-3.5 border cursor-pointer transition-all flex flex-col justify-between h-24 relative rounded-none ${
                             paymentMethod === 'bank_transfer'
-                              ? 'border-white bg-white/5'
-                              : 'border-white/10 bg-black hover:border-white/30'
+                              ? 'border-[#39FF88] bg-[#39FF88]/5 shadow-[0_0_10px_rgba(57,255,136,0.15)]'
+                              : 'border-white/15 bg-black hover:border-white/30'
                           }`}
                         >
-                          <div className="flex justify-between items-start">
+                          <div className="flex justify-between items-center w-full">
                             <span className="font-mono text-[10px] font-black text-white uppercase tracking-widest leading-none">
                               Bank Transfer
                             </span>
-                            <div className={`w-3 h-3 rounded-full border flex items-center justify-center ${
-                              paymentMethod === 'bank_transfer' ? 'border-white bg-white' : 'border-white/20 bg-transparent'
+                            <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
+                              paymentMethod === 'bank_transfer' ? 'border-[#39FF88]' : 'border-white/20'
                             }`}>
-                              {paymentMethod === 'bank_transfer' && <div className="w-1.5 h-1.5 rounded-full bg-black" />}
+                              {paymentMethod === 'bank_transfer' && <div className="w-1.5 h-1.5 rounded-full bg-[#39FF88]" />}
                             </div>
                           </div>
-                          <span className="font-mono text-[8px] text-[#8e8e93] uppercase font-bold tracking-wider leading-none">
-                            Direct Transfer
-                          </span>
+                          <div className="mt-1 flex flex-col gap-0.5">
+                            <span className="font-mono text-[8px] text-[#8e8e93] uppercase font-bold tracking-wider leading-none">
+                              Manual Transfer
+                            </span>
+                            <span className="font-mono text-[8px] text-yellow-500 uppercase font-black tracking-widest leading-none mt-1">
+                              [VERIFY ON WA]
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
 
                     {/* Bank Transfer Account Details */}
                     {paymentMethod === 'bank_transfer' && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="border border-white/20 bg-[#0A0A0A] p-4 space-y-3 rounded-none overflow-hidden"
-                      >
+                      <div className="border border-white/20 bg-[#0A0A0A] p-4 space-y-4 rounded-none mt-3">
                         <div className="flex items-center gap-1.5 border-b border-white/10 pb-2">
-                          <CreditCard size={11} className="text-white" />
-                          <span className="font-mono text-[9px] font-black uppercase tracking-widest text-white">
+                          <CreditCard size={11} className="text-[#39FF88]" />
+                          <span className="font-mono text-[9px] font-black uppercase tracking-widest text-white animate-pulse">
                             OPay Payment Coordinates_
                           </span>
                         </div>
                         
-                        <div className="space-y-2 font-mono text-[10px]">
+                        <div className="space-y-3 font-mono text-[11px] text-white">
                           <div className="flex justify-between">
                             <span className="text-[#8e8e93] uppercase">Bank:</span>
-                            <span className="text-white font-black">OPay</span>
+                            <span className="font-black text-[#39FF88]">OPay</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-[#8e8e93] uppercase">Account Name:</span>
-                            <span className="text-white font-black">GO HARD LUXURY</span>
+                            <span className="font-black">GO HARD LUXURY</span>
                           </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-[#8e8e93] uppercase">Account Number:</span>
-                            <span className="text-white font-black select-all tracking-wider">6427700774</span>
+                          <div className="flex justify-between items-center bg-black/60 p-2.5 border border-white/5">
+                            <span className="text-[#8e8e93] uppercase text-[9px]">Account Number:</span>
+                            <span className="font-black text-[#39FF88] select-all tracking-wider text-xs font-mono">6427700774</span>
                           </div>
                         </div>
 
                         <button
                           type="button"
                           onClick={handleCopyAccountNumber}
-                          className="w-full py-2 bg-white/5 border border-white/20 text-white hover:bg-white hover:text-black font-mono text-[9px] font-black tracking-widest uppercase transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                          className="w-full py-2.5 bg-white text-black hover:bg-neutral-200 font-mono text-[9px] font-black tracking-widest uppercase transition-all cursor-pointer flex items-center justify-center gap-1.5"
                         >
                           {copied ? 'COPIED TO CLIPBOARD ✔' : 'COPY ACCOUNT NUMBER'}
                         </button>
-                      </motion.div>
+                      </div>
                     )}
                   </div>
 
