@@ -38,9 +38,20 @@ export const ProductVisualizer: React.FC<VisualizerProps> = ({
   isDetailView = false,
   productImageUrl
 }) => {
+  // Normalize casing of local /image/... paths if they differ from the hardcoded keys to prevent case-sensitive server 404s
+  let normalizedImageUrl = productImageUrl;
+  if (productImageUrl && productImageUrl.startsWith('/image/')) {
+    const matchKey = Object.keys(PRODUCT_IMAGES).find(
+      k => PRODUCT_IMAGES[k].toLowerCase() === productImageUrl.toLowerCase()
+    );
+    if (matchKey) {
+      normalizedImageUrl = PRODUCT_IMAGES[matchKey];
+    }
+  }
+
   // Use productImageUrl if it is a valid path or remote URL, otherwise fall back to PRODUCT_IMAGES
-  const isValidUrl = productImageUrl && (productImageUrl.startsWith('http') || productImageUrl.startsWith('/') || productImageUrl.startsWith('data:'));
-  const imageSrc = isValidUrl ? productImageUrl : PRODUCT_IMAGES[productId];
+  const isValidUrl = normalizedImageUrl && (normalizedImageUrl.startsWith('http') || normalizedImageUrl.startsWith('/') || normalizedImageUrl.startsWith('data:'));
+  const imageSrc = isValidUrl ? normalizedImageUrl : PRODUCT_IMAGES[productId];
   const hasImage = !!imageSrc;
 
   // Common design grid background for tactical brand theme

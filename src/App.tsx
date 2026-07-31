@@ -86,9 +86,24 @@ export default function App() {
       try {
         const parsed = JSON.parse(stored) as Product[];
         const validProducts = parsed.filter(p => !RETIRED_PRODUCT_IDS.has(p.id));
-        const parsedIds = new Set(validProducts.map(p => p.id));
+        
+        // Force update images, details, and sizes from data.ts static GHL_PRODUCTS to correct any cached casing/path errors
+        const updatedProducts = validProducts.map(p => {
+          const staticProd = GHL_PRODUCTS.find(sp => sp.id === p.id);
+          if (staticProd) {
+            return {
+              ...p,
+              images: staticProd.images,
+              details: staticProd.details,
+              sizes: staticProd.sizes,
+            };
+          }
+          return p;
+        });
+
+        const parsedIds = new Set(updatedProducts.map(p => p.id));
         const newStaticProducts = GHL_PRODUCTS.filter(p => !parsedIds.has(p.id));
-        return [...validProducts, ...newStaticProducts];
+        return [...updatedProducts, ...newStaticProducts];
       } catch (e) {
         console.error('Failed to parse stored products', e);
       }
@@ -185,7 +200,15 @@ export default function App() {
               description: p.description !== undefined && p.description !== null && p.description !== '' ? p.description : (staticProd?.description || ''),
               details: p.details && p.details.length > 0 ? p.details : (staticProd?.details || []),
               sizes: p.sizes && p.sizes.length > 0 ? p.sizes : (staticProd?.sizes || []),
-              images: p.images && p.images.length > 0 ? p.images : (staticProd?.images || []),
+              images: p.images && p.images.length > 0 
+                ? p.images.map((img: string) => {
+                    if (img.startsWith('/image/') && staticProd) {
+                      const staticImg = staticProd.images.find(si => si.toLowerCase() === img.toLowerCase());
+                      return staticImg || img;
+                    }
+                    return img;
+                  })
+                : (staticProd?.images || []),
               soldOut: !!p.sold_out,
               badge: p.badge !== undefined && p.badge !== null && p.badge !== '' ? p.badge : (staticProd?.badge || ''),
               quotes: p.quotes !== undefined && p.quotes !== null ? p.quotes : (staticProd?.quotes || ''),
@@ -281,7 +304,15 @@ export default function App() {
               description: p.description !== undefined && p.description !== null && p.description !== '' ? p.description : (staticProd?.description || ''),
               details: p.details && p.details.length > 0 ? p.details : (staticProd?.details || []),
               sizes: p.sizes && p.sizes.length > 0 ? p.sizes : (staticProd?.sizes || []),
-              images: p.images && p.images.length > 0 ? p.images : (staticProd?.images || []),
+              images: p.images && p.images.length > 0 
+                ? p.images.map((img: string) => {
+                    if (img.startsWith('/image/') && staticProd) {
+                      const staticImg = staticProd.images.find(si => si.toLowerCase() === img.toLowerCase());
+                      return staticImg || img;
+                    }
+                    return img;
+                  })
+                : (staticProd?.images || []),
               soldOut: !!p.sold_out,
               badge: p.badge !== undefined && p.badge !== null && p.badge !== '' ? p.badge : (staticProd?.badge || ''),
               quotes: p.quotes !== undefined && p.quotes !== null ? p.quotes : (staticProd?.quotes || ''),
