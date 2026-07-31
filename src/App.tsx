@@ -13,7 +13,7 @@ import { supabase, isSupabaseConfigured } from './supabaseClient';
 const RETIRED_PRODUCT_IDS = new Set(['ghl-442-tracksuit', 'ghl-ribbed-socks', 'ghl-socks']);
 
 function groupProductVariants(sortedProducts: Product[]): Product[] {
-  const result: Product[] = [];
+  const groups: Product[][] = [];
   const visited = new Set<string>();
   
   const getGroupKey = (p: Product) => {
@@ -39,8 +39,9 @@ function groupProductVariants(sortedProducts: Product[]): Product[] {
     if (name.includes('tme hat') || name.includes('tme cap') || name.includes('hat tme')) {
       return 'tme_headwear';
     }
-    // Standardize GHL logo shorts
-    if (name.includes('logo shorts') || name.includes('shorts')) {
+    // Standardize GHL logo shorts and singular short names (except short sleeve shirts)
+    const isShorts = name.includes('shorts') || (name.includes('short') && !name.includes('short sleeve') && !name.includes('short-sleeve') && !name.includes('shortsleeve'));
+    if (isShorts) {
       return 'shorts';
     }
     // Standardize other hats
@@ -54,25 +55,59 @@ function groupProductVariants(sortedProducts: Product[]): Product[] {
     return name.trim();
   };
 
+  // Group variants in sorted order
   for (let i = 0; i < sortedProducts.length; i++) {
     const currentProduct = sortedProducts[i];
     if (visited.has(currentProduct.id)) {
       continue;
     }
     
-    result.push(currentProduct);
+    const key = getGroupKey(currentProduct);
+    const group = [currentProduct];
     visited.add(currentProduct.id);
     
-    const currentKey = getGroupKey(currentProduct);
-    if (currentKey) {
+    if (key) {
       for (let j = i + 1; j < sortedProducts.length; j++) {
         const otherProduct = sortedProducts[j];
-        if (!visited.has(otherProduct.id) && getGroupKey(otherProduct) === currentKey) {
-          result.push(otherProduct);
+        if (!visited.has(otherProduct.id) && getGroupKey(otherProduct) === key) {
+          group.push(otherProduct);
           visited.add(otherProduct.id);
         }
       }
     }
+    groups.push(group);
+  }
+
+  // Flatten groups with 2-column alignment optimization
+  const result: Product[] = [];
+  const placedGroups = new Set<number>();
+
+  for (let i = 0; i < groups.length; i++) {
+    if (placedGroups.has(i)) continue;
+    
+    const group = groups[i];
+    const isEven = group.length % 2 === 0;
+
+    if (isEven) {
+      // If placing an even group at an odd index, find the first available odd group to align it
+      if (result.length % 2 !== 0) {
+        let spacerIndex = -1;
+        for (let j = i + 1; j < groups.length; j++) {
+          if (!placedGroups.has(j) && groups[j].length % 2 !== 0) {
+            spacerIndex = j;
+            break;
+          }
+        }
+
+        if (spacerIndex !== -1) {
+          result.push(...groups[spacerIndex]);
+          placedGroups.add(spacerIndex);
+        }
+      }
+    }
+
+    result.push(...group);
+    placedGroups.add(i);
   }
   
   return result;
