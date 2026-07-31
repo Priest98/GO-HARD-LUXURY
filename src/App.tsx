@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ShoppingBag, Search, Globe, Flame, SlidersHorizontal, ArrowDown, ExternalLink, RefreshCw, Sun, Moon, Menu, X } from 'lucide-react';
 import { GHL_PRODUCTS } from './data';
@@ -11,6 +11,72 @@ import { MobileUploadUplink } from './components/MobileUploadUplink';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 
 const RETIRED_PRODUCT_IDS = new Set(['ghl-442-tracksuit', 'ghl-ribbed-socks', 'ghl-socks']);
+
+function groupProductVariants(sortedProducts: Product[]): Product[] {
+  const result: Product[] = [];
+  const visited = new Set<string>();
+  
+  const getGroupKey = (p: Product) => {
+    let name = p.name.toLowerCase();
+    
+    // Standardize tracksuits
+    if (name.includes('up&down') || name.includes('tracksuit')) {
+      return 'up_and_down_tracksuit';
+    }
+    // Standardize jeans/denim
+    if (name.includes('jean') || name.includes('denim')) {
+      return 'denim_jeans';
+    }
+    // Standardize longsleeve tees
+    if (name.includes('ls tee') || name.includes('longsleeve')) {
+      return 'ls_tees';
+    }
+    // Standardize GHL 26 Jerseys
+    if (name.includes('26 jersey') || name.includes('26 jerseys')) {
+      return '26_jerseys';
+    }
+    // Standardize GHL TME caps
+    if (name.includes('tme hat') || name.includes('tme cap') || name.includes('hat tme')) {
+      return 'tme_headwear';
+    }
+    // Standardize GHL logo shorts
+    if (name.includes('logo shorts') || name.includes('shorts')) {
+      return 'shorts';
+    }
+    // Standardize other hats
+    if (name.includes('hat') || name.includes('cap') || name.includes('visor')) {
+      return 'headwear';
+    }
+    
+    // Strip colors and qualifiers
+    name = name.replace(/\b(black|white|grey|gray|red|green|blue|camo|yellow|purple|orange|pink|brown|beige|sand)\b/g, '');
+    name = name.replace(/\b(original|archive|collection|design|vneck|silky|v-neck|members|only)\b/g, '');
+    return name.trim();
+  };
+
+  for (let i = 0; i < sortedProducts.length; i++) {
+    const currentProduct = sortedProducts[i];
+    if (visited.has(currentProduct.id)) {
+      continue;
+    }
+    
+    result.push(currentProduct);
+    visited.add(currentProduct.id);
+    
+    const currentKey = getGroupKey(currentProduct);
+    if (currentKey) {
+      for (let j = i + 1; j < sortedProducts.length; j++) {
+        const otherProduct = sortedProducts[j];
+        if (!visited.has(otherProduct.id) && getGroupKey(otherProduct) === currentKey) {
+          result.push(otherProduct);
+          visited.add(otherProduct.id);
+        }
+      }
+    }
+  }
+  
+  return result;
+}
 
 export default function App() {
   // State elements - Persistent Products database
@@ -321,6 +387,8 @@ export default function App() {
   const [isSearchVisible, setIsSearchVisible] = useState<boolean>(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const [isHovered, setIsHovered] = useState<boolean>(false);
+  const [newsletterEmail, setNewsletterEmail] = useState<string>('');
+  const [activePolicy, setActivePolicy] = useState<'shipping' | 'refund' | 'privacy' | 'terms' | null>(null);
 
   // Theme state: day vs. night
   const [theme, setTheme] = useState<'day' | 'night'>(() => {
@@ -489,27 +557,29 @@ export default function App() {
   }, []);
 
   // Update filtered, searched, and sorted product lists
-  const filteredProducts = products
-    .filter(p => {
-      const cat1 = p.category ? p.category.toLowerCase().trim() : '';
-      const cat2 = selectedCategory ? selectedCategory.toLowerCase().trim() : '';
-      const matchCategory = selectedCategory === 'ALL' || 
-                            cat1 === cat2 ||
-                            (cat1 + 's') === cat2 ||
-                            cat1 === (cat2 + 's') ||
-                            (cat1.startsWith('accessor') && cat2.startsWith('accessor'));
-      const matchSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          (p.category && p.category.toLowerCase().includes(searchQuery.toLowerCase()));
-      return matchCategory && matchSearch;
-    })
-    .sort((a, b) => {
-      if (sortOption === 'price-asc') return a.price - b.price;
-      if (sortOption === 'price-desc') return b.price - a.price;
-      if (sortOption === 'name-asc') return a.name.localeCompare(b.name);
-      // Default: newest drop - based on releaseDate strings
-      return new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime();
-    });
+  const filteredProducts = groupProductVariants(
+    products
+      .filter(p => {
+        const cat1 = p.category ? p.category.toLowerCase().trim() : '';
+        const cat2 = selectedCategory ? selectedCategory.toLowerCase().trim() : '';
+        const matchCategory = selectedCategory === 'ALL' || 
+                              cat1 === cat2 ||
+                              (cat1 + 's') === cat2 ||
+                              cat1 === (cat2 + 's') ||
+                              (cat1.startsWith('accessor') && cat2.startsWith('accessor'));
+        const matchSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                            p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            (p.category && p.category.toLowerCase().includes(searchQuery.toLowerCase()));
+        return matchCategory && matchSearch;
+      })
+      .sort((a, b) => {
+        if (sortOption === 'price-asc') return a.price - b.price;
+        if (sortOption === 'price-desc') return b.price - a.price;
+        if (sortOption === 'name-asc') return a.name.localeCompare(b.name);
+        // Default: newest drop - based on releaseDate strings
+        return new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime();
+      })
+  );
 
   // Load cart from localStorage on init
   useEffect(() => {
@@ -527,6 +597,47 @@ export default function App() {
   const syncCart = (newCart: CartItem[]) => {
     setCartItems(newCart);
     localStorage.setItem('GHL_DISPATCH_BAG', JSON.stringify(newCart));
+  };
+
+  // Newsletter signup form coordination
+  const handleSubscribeNewsletter = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const email = newsletterEmail.trim();
+    if (!email || !email.includes('@')) {
+      alert('Please enter a valid email address.');
+      return;
+    }
+
+    // Save locally
+    try {
+      const stored = JSON.parse(localStorage.getItem('GHL_SUBSCRIBERS') || '[]');
+      if (!stored.includes(email)) {
+        stored.push(email);
+        localStorage.setItem('GHL_SUBSCRIBERS', JSON.stringify(stored));
+      }
+    } catch (err) {
+      console.error('Failed to save subscriber locally', err);
+    }
+
+    // Sync to Supabase if configured
+    if (isSupabaseConfigured) {
+      try {
+        const { error } = await supabase
+          .from('subscribers')
+          .insert({ email: email });
+        if (error) throw error;
+      } catch (err) {
+        console.error('Failed to sync subscriber to database:', err);
+      }
+    }
+
+    // Track analytics event
+    if (window.trackEvent) {
+      window.trackEvent('newsletter_subscribe', { email: email });
+    }
+
+    alert('Successfully subscribed to exclusive GHL drops!');
+    setNewsletterEmail('');
   };
 
   // Add item to cart
@@ -1031,7 +1142,7 @@ export default function App() {
 
         {/* Main interactive grid cards list */}
         {filteredProducts.length > 0 ? (
-          <div id="products-interactive-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div id="products-interactive-grid" className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {filteredProducts.map((product) => (
               <ProductCard
                 key={product.id}
@@ -1064,36 +1175,223 @@ export default function App() {
         )}
       </main>
 
-      {/* Streetwear Inspirational Footer Quote with Brand info */}
-      <footer id="store-main-footer" className="bg-brand-darkgray border-t border-brand-midgray/25 py-12 px-4 md:px-8 mt-12 text-xs font-mono">
-        <div className="max-w-7xl mx-auto">
-          <div className="space-y-3.5">
-            <h5 className="font-mono font-bold text-xs text-brand-offwhite tracking-wider uppercase">
-              GHL_CONTACTS_
-            </h5>
-            <ul className="space-y-1.5 text-brand-lightgray text-[11px]">
-              <li className="hover:text-brand-neon transition-colors">
-                <a href="tel:09038499673" className="block">PH: 09038499673</a>
-              </li>
-              <li className="hover:text-brand-neon transition-colors">
-                <a href="mailto:Gohardluxury4@gmail.com" className="block">EM: Gohardluxury4@gmail.com</a>
-              </li>
-              <li className="hover:text-brand-neon transition-colors">
-                <a href="https://www.tiktok.com/@gohardluxury" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1">
-                  <span>TT: @gohardluxury</span>
+      {/* Walk Into Our Store Section */}
+      <section id="store-location" className="border-t border-brand-midgray/20 bg-brand-matte py-16 scroll-mt-24">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 space-y-8">
+          <div className="text-center space-y-2">
+            <span className="font-mono text-[9px] text-brand-lightgray uppercase tracking-[0.25em] block">
+              Flagship Experience_
+            </span>
+            <h2 className="font-display font-black text-2xl md:text-3xl text-brand-offwhite uppercase tracking-tighter">
+              WALK INTO OUR STORE_
+            </h2>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+            {/* Embedded Google Map Frame */}
+            <div className="lg:col-span-8 border border-brand-midgray/25 relative min-h-[350px] md:min-h-[450px] bg-black overflow-hidden flex flex-col justify-end">
+              {/* Map iframe */}
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3964.7323869273627!2d3.472199!3d6.428489!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x103bf44dc018ff9f%3A0xb3de8dfdf16110f0!2sYL%20Collectives!5e0!3m2!1sen!2sng!4v1722428400000!5m2!1sen!2sng"
+                className="absolute inset-0 w-full h-full border-none transition-all duration-300"
+                style={{ 
+                  filter: theme === 'night' ? 'invert(90%) hue-rotate(180deg) grayscale(90%) contrast(100%)' : 'none' 
+                }}
+                allowFullScreen
+                loading="lazy"
+                title="GHL Store Location Map"
+              />
+              {/* Open in Maps Overlay button */}
+              <div className="absolute top-4 left-4 z-10">
+                <a
+                  href="https://maps.google.com/?q=YL%20Collectives,%20Lekki%20Phase%201,%20Lagos"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="bg-black/90 hover:bg-white hover:text-black border border-white/20 text-white font-mono text-[9px] font-black uppercase tracking-widest px-4 py-2.5 transition-all duration-300 inline-flex items-center gap-2 rounded-none shadow-xl"
+                >
+                  <span>Open in Maps</span>
                   <ExternalLink size={10} />
                 </a>
-              </li>
-              <li className="hover:text-brand-neon transition-colors">
-                <a href="https://instagram.com/gohxrdluxury_" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1">
-                  <span>IG: @gohxrdluxury_</span>
-                  <ExternalLink size={10} />
-                </a>
-              </li>
-            </ul>
+              </div>
+            </div>
+            
+            {/* Info details / directions */}
+            <div className="lg:col-span-4 border border-brand-midgray/25 p-6 md:p-8 flex flex-col justify-between bg-brand-darkgray space-y-6">
+              <div className="space-y-6">
+                <div className="space-y-1.5">
+                  <span className="font-mono text-[8px] text-brand-lightgray uppercase tracking-widest block">HQ Coordinates_</span>
+                  <h4 className="font-display font-black text-lg text-brand-offwhite uppercase tracking-tight leading-none">
+                    GO HARD LUXURY LAGOS
+                  </h4>
+                  <p className="text-xs font-sans text-brand-lightgray uppercase font-bold tracking-wider leading-relaxed">
+                    Plot 14, Hunponu-Wusu Road,<br />
+                    Lekki Phase 1, Lagos, Nigeria
+                  </p>
+                </div>
+
+                <div className="space-y-1.5 pt-4 border-t border-brand-midgray/20">
+                  <span className="font-mono text-[8px] text-brand-lightgray uppercase tracking-widest block">Opening Hours_</span>
+                  <ul className="text-xs font-mono text-brand-lightgray space-y-1.5 uppercase font-bold tracking-wider">
+                    <li className="flex justify-between">
+                      <span>Mon - Sat:</span>
+                      <span className="text-brand-offwhite">10:00 AM - 8:00 PM</span>
+                    </li>
+                    <li className="flex justify-between">
+                      <span>Sunday:</span>
+                      <span className="text-brand-offwhite">12:00 PM - 6:00 PM</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="space-y-1.5 pt-4 border-t border-brand-midgray/20">
+                  <span className="font-mono text-[8px] text-brand-lightgray uppercase tracking-widest block">Attendant Contact_</span>
+                  <p className="text-xs font-mono text-brand-lightgray uppercase font-bold tracking-wider">
+                    PH: <a href="tel:09038499673" className="text-brand-offwhite hover:underline">09038499673</a><br />
+                    EM: <a href="mailto:Gohardluxury4@gmail.com" className="text-brand-offwhite hover:underline">Gohardluxury4@gmail.com</a>
+                  </p>
+                </div>
+              </div>
+
+              <a
+                href="https://maps.google.com/?q=YL%20Collectives,%20Lekki%20Phase%201,%20Lagos"
+                target="_blank"
+                rel="noreferrer"
+                className="w-full bg-brand-offwhite text-brand-matte hover:bg-brand-lightgray text-[10px] font-mono font-black tracking-widest uppercase py-3.5 text-center transition-all duration-300 cursor-pointer block"
+              >
+                Get Directions ➔
+              </a>
+            </div>
           </div>
         </div>
+      </section>
 
+      {/* Redesigned Premium Footer */}
+      <footer id="store-main-footer" className="bg-brand-darkgray border-t border-brand-midgray/25 pt-16 pb-12 px-4 md:px-8 mt-12 text-xs font-mono">
+        <div className="max-w-7xl mx-auto space-y-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12">
+            
+            {/* Newsletter Column */}
+            <div className="lg:col-span-5 space-y-4">
+              <h5 className="font-display font-black text-sm text-brand-offwhite uppercase tracking-wider leading-none">
+                Sign Up For Exclusive Drops & Updates
+              </h5>
+              <p className="text-[10px] text-brand-lightgray uppercase tracking-wide leading-relaxed max-w-sm">
+                Get priority access to limited edition drops, secret archives, and custom releases.
+              </p>
+              <form onSubmit={handleSubscribeNewsletter} className="flex border-b border-brand-midgray/40 focus-within:border-brand-offwhite transition-colors duration-300 py-1.5 max-w-sm">
+                <input
+                  type="email"
+                  value={newsletterEmail}
+                  onChange={(e) => setNewsletterEmail(e.target.value)}
+                  placeholder="ENTER YOUR EMAIL COORDINATES_"
+                  className="bg-transparent border-none outline-none text-xs font-mono w-full pr-4 text-brand-offwhite placeholder-brand-lightgray/40 rounded-none"
+                  required
+                />
+                <button
+                  type="submit"
+                  className="text-brand-offwhite hover:text-brand-lightgray transition-colors duration-300 cursor-pointer"
+                  title="Subscribe to updates"
+                >
+                  ➔
+                </button>
+              </form>
+            </div>
+
+            {/* Quick Links Column */}
+            <div className="lg:col-span-2.5 space-y-4">
+              <h6 className="text-[10px] font-black text-brand-offwhite uppercase tracking-[0.2em]">
+                Quick_Links
+              </h6>
+              <ul className="space-y-2 text-[10px] text-brand-lightgray uppercase font-bold tracking-wider">
+                <li>
+                  <a href="#" className="hover:text-brand-offwhite transition-colors duration-200">Home</a>
+                </li>
+                <li>
+                  <a href="#collection-rack" className="hover:text-brand-offwhite transition-colors duration-200">Shop</a>
+                </li>
+                <li>
+                  <a href="#collection-rack" className="hover:text-brand-offwhite transition-colors duration-200">Collections</a>
+                </li>
+                <li>
+                  <a href="#store-location" className="hover:text-brand-offwhite transition-colors duration-200">About Us</a>
+                </li>
+                <li>
+                  <a href="#store-location" className="hover:text-brand-offwhite transition-colors duration-200">Contact</a>
+                </li>
+              </ul>
+            </div>
+
+            {/* Policies Column */}
+            <div className="lg:col-span-2.5 space-y-4">
+              <h6 className="text-[10px] font-black text-brand-offwhite uppercase tracking-[0.2em]">
+                Policies
+              </h6>
+              <ul className="space-y-2 text-[10px] text-brand-lightgray uppercase font-bold tracking-wider">
+                <li>
+                  <button onClick={() => setActivePolicy('shipping')} className="hover:text-brand-offwhite transition-colors duration-200 text-left uppercase cursor-pointer">Shipping Policy</button>
+                </li>
+                <li>
+                  <button onClick={() => setActivePolicy('refund')} className="hover:text-brand-offwhite transition-colors duration-200 text-left uppercase cursor-pointer">Refund Policy</button>
+                </li>
+                <li>
+                  <button onClick={() => setActivePolicy('privacy')} className="hover:text-brand-offwhite transition-colors duration-200 text-left uppercase cursor-pointer">Privacy Policy</button>
+                </li>
+                <li>
+                  <button onClick={() => setActivePolicy('terms')} className="hover:text-brand-offwhite transition-colors duration-200 text-left uppercase cursor-pointer">Terms & Conditions</button>
+                </li>
+              </ul>
+            </div>
+
+            {/* Region / Currency & Socials Column */}
+            <div className="lg:col-span-2 space-y-6">
+              <div className="space-y-3.5">
+                <h6 className="text-[10px] font-black text-brand-offwhite uppercase tracking-[0.2em] block">
+                  Region_Config
+                </h6>
+                <select className="bg-brand-matte border border-brand-midgray/40 text-brand-offwhite text-[10px] font-mono px-3 py-2 rounded-none outline-none focus:border-brand-offwhite cursor-pointer uppercase w-full max-w-[150px]">
+                  <option value="NGN">NG (₦) NGN</option>
+                  <option value="USD">US ($) USD</option>
+                  <option value="GBP">UK (£) GBP</option>
+                </select>
+              </div>
+
+              <div className="space-y-3">
+                <h6 className="text-[10px] font-black text-brand-offwhite uppercase tracking-[0.2em] block">
+                  Social_Uplinks
+                </h6>
+                <div className="flex items-center gap-4 text-brand-lightgray">
+                  <a href="https://instagram.com/gohxrdluxury_" target="_blank" rel="noreferrer" className="hover:text-brand-offwhite transition-colors duration-200" title="Instagram">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+                      <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37zM17.5 6.5h.01" />
+                    </svg>
+                  </a>
+                  <a href="https://www.tiktok.com/@gohardluxury" target="_blank" rel="noreferrer" className="hover:text-brand-offwhite transition-colors duration-200" title="TikTok">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.02 1.59 4.23.95 1.15 2.27 1.95 3.71 2.26v3.83c-1.39-.08-2.74-.61-3.84-1.49-.66-.51-1.2-1.16-1.59-1.9v8.66c0 3.75-2.54 6.77-6.24 6.77-3.69 0-6.68-2.92-6.68-6.68 0-3.75 3.01-6.79 6.79-6.79.44.02.88.08 1.3.19v3.81a2.91 2.91 0 00-1.3-.3c-1.62 0-2.94 1.32-2.94 2.94 0 1.62 1.32 2.94 2.94 2.94 1.62 0 2.94-1.32 2.94-2.94v-16.2z"/>
+                    </svg>
+                  </a>
+                  <a href="https://wa.me/2349038499673" target="_blank" rel="noreferrer" className="hover:text-brand-offwhite transition-colors duration-200" title="WhatsApp">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 11.966.01c3.182.001 6.176 1.24 8.424 3.492 2.25 2.25 3.486 5.244 3.487 8.425-.004 6.618-5.34 11.955-11.91 11.955-2.005-.002-3.973-.505-5.717-1.46L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.725 1.451 5.436 0 9.86-4.42 9.863-9.864.001-2.63-1.023-5.101-2.884-6.963-1.86-1.862-4.33-2.884-6.962-2.886-5.442 0-9.87 4.423-9.874 9.868-.001 1.748.461 3.454 1.336 4.978L1.7 22.287l4.947-1.133zm11.517-5.606c-.292-.146-1.73-.854-1.997-.951-.267-.097-.461-.146-.656.146-.195.292-.756.951-.926 1.146-.17.195-.341.219-.633.073-.292-.146-1.236-.456-2.355-1.453-.872-.778-1.46-1.74-1.631-2.03-.17-.29-.018-.447.128-.592.132-.132.292-.341.439-.512.146-.17.195-.292.292-.487.097-.195.049-.365-.024-.512-.073-.146-.656-1.583-.9-2.17-.238-.574-.479-.497-.656-.506-.17-.008-.365-.008-.56-.008s-.512.073-.78.365c-.267.292-1.022 1-.998-1.022 2.508 0 4.912 2.508 5.717s1.388 1.096 1.631.17c.29-.024.56-.268.68-.464.12-.195.244-.317.073-.464z"/>
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Bottom Copyright and Address Block */}
+          <div className="pt-8 border-t border-brand-midgray/20 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-[10px] text-brand-lightgray font-mono uppercase font-bold tracking-widest">
+            <div className="space-y-1">
+              <span>© {new Date().getFullYear()} Go Hard Luxury. All Rights Reserved.</span>
+            </div>
+            <div className="text-left md:text-right font-medium">
+              <span>STORE HQ: Plot 14, Hunponu-Wusu Road, Lekki Phase 1, Lagos, Nigeria</span>
+            </div>
+          </div>
+        </div>
       </footer>
 
       {/* Cart dispatch menu drawer slide over */}
@@ -1143,6 +1441,96 @@ export default function App() {
         onClose={() => setViewedProduct(null)}
         onAddToCart={handleAddToCart}
       />
+
+      {/* Policy Viewer Modal overlay */}
+      <AnimatePresence>
+        {activePolicy && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 15 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 15 }}
+              className="bg-brand-darkgray border border-brand-midgray/30 p-6 md:p-8 max-w-lg w-full relative space-y-6 text-brand-offwhite font-sans max-h-[90vh] overflow-y-auto"
+            >
+              <button
+                onClick={() => setActivePolicy(null)}
+                className="absolute top-4 right-4 text-brand-lightgray hover:text-brand-offwhite cursor-pointer"
+                title="Close policy details"
+              >
+                <X size={18} />
+              </button>
+
+              <div className="space-y-2 border-b border-brand-midgray/20 pb-4">
+                <span className="font-mono text-[9px] text-brand-lightgray uppercase tracking-widest block">GHL Legal Coordinates_</span>
+                <h3 className="font-display font-black text-xl uppercase tracking-tight">
+                  {activePolicy === 'shipping' && 'Shipping Policy_'}
+                  {activePolicy === 'refund' && 'Refund Policy_'}
+                  {activePolicy === 'privacy' && 'Privacy Policy_'}
+                  {activePolicy === 'terms' && 'Terms & Conditions_'}
+                </h3>
+              </div>
+
+              <div className="text-xs text-brand-lightgray space-y-4 uppercase tracking-wide leading-relaxed font-mono">
+                {activePolicy === 'shipping' && (
+                  <div className="space-y-4">
+                    <p className="font-bold text-brand-offwhite">1. Order Processing</p>
+                    <p>All GHL specimens are processed within 24-48 business hours. You will receive email tracking coordinates once dispatched.</p>
+                    <p className="font-bold text-brand-offwhite">2. Delivery Timeframes</p>
+                    <p>• Lagos Metro: 1-2 business days.<br />• Other Nigerian States: 3-5 business days.<br />• International: 7-10 business days.</p>
+                    <p className="font-bold text-brand-offwhite">3. Shipping Rates</p>
+                    <p>Flat shipping rates are computed dynamically at checkout based on destination coordinates.</p>
+                  </div>
+                )}
+
+                {activePolicy === 'refund' && (
+                  <div className="space-y-4">
+                    <p className="font-bold text-brand-offwhite">1. Exchange Protocol</p>
+                    <p>We accept returns or exchanges within 7 days of package receipt. Items must remain in their original unstructured state with all tags attached.</p>
+                    <p className="font-bold text-brand-offwhite">2. Non-Refundable Items</p>
+                    <p>Limited edition drop releases, customized items, and archive specimens are not eligible for returns or exchanges.</p>
+                    <p className="font-bold text-brand-offwhite">3. Return Coordination</p>
+                    <p>To initiate a return package, contact our attendant coordination line at 09038499673 or via WhatsApp.</p>
+                  </div>
+                )}
+
+                {activePolicy === 'privacy' && (
+                  <div className="space-y-4">
+                    <p className="font-bold text-brand-offwhite">1. Data Coordinates</p>
+                    <p>We only collect name, email, and shipping coordinates to process order dispatches and deliver drop notification updates.</p>
+                    <p className="font-bold text-brand-offwhite">2. Security System</p>
+                    <p>Your details are stored securely. We do not sell or leak coordinates to any third-party marketing entities.</p>
+                    <p className="font-bold text-brand-offwhite">3. Consent</p>
+                    <p>By registering checkout logs or subscribing to news drops, you consent to our privacy guidelines.</p>
+                  </div>
+                )}
+
+                {activePolicy === 'terms' && (
+                  <div className="space-y-4">
+                    <p className="font-bold text-brand-offwhite">1. Proprietary Designs</p>
+                    <p>All brand content, clothing illustrations, and digital specimens are copyright under Go Hard Luxury.</p>
+                    <p className="font-bold text-brand-offwhite">2. Purchase Policy</p>
+                    <p>We reserve the right to limit order quantities on exclusive drops to combat resale bots.</p>
+                    <p className="font-bold text-brand-offwhite">3. Pricing Variables</p>
+                    <p>Prices are subject to modifications depending on supply chain indices without prior warnings.</p>
+                  </div>
+                )}
+              </div>
+
+              <button
+                onClick={() => setActivePolicy(null)}
+                className="w-full py-3 bg-brand-offwhite text-brand-matte font-mono text-[10px] font-black uppercase tracking-widest transition-colors duration-300 hover:bg-brand-lightgray cursor-pointer"
+              >
+                Close Window
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
