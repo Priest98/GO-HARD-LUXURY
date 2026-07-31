@@ -190,8 +190,8 @@ export default function App() {
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
-        if (parsed.heroVideoUrl === "/video/SaveClip.App_AQMNLLCOZx9fTFK3FwpUwBbLXY_YghRBoOy3hXzNcIETEuC6RS3rLLlRf25T3rHV7gddLaq6yVC83NKbvLi672p_CxBwfD3450dxLQs.mp4" || !parsed.heroVideoUrl) {
-          parsed.heroVideoUrl = "/video/hero.MOV";
+        if (parsed.heroVideoUrl === "/video/SaveClip.App_AQMNLLCOZx9fTFK3FwpUwBbLXY_YghRBoOy3hXzNcIETEuC6RS3rLLlRf25T3rHV7gddLaq6yVC83NKbvLi672p_CxBwfD3450dxLQs.mp4" || parsed.heroVideoUrl === "/video/hero.MOV" || !parsed.heroVideoUrl) {
+          parsed.heroVideoUrl = "/video/hero.mp4";
         }
         return parsed;
       } catch (e) {
@@ -204,7 +204,7 @@ export default function App() {
       heroHeadline: "GO HARD LUX.",
       heroSubheadline: "FEATURED ARCHIVE_",
       heroDescription: "Curating the intersection of street culture and technical precision. Designed for the unseen.",
-      heroVideoUrl: "/video/hero.MOV",
+      heroVideoUrl: "/video/hero.mp4",
       ctaText: "View Lookbook",
       featuredCollectionCategory: "ALL"
     };
