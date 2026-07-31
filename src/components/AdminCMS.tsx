@@ -191,10 +191,10 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
     async function loadCMSData() {
       if (!isSupabaseConfigured || !isAuthenticated) return;
 
+      // 1. Fetch Promo Codes
       try {
-        // Fetch Promo Codes
-        const { data: dbPromos } = await supabase.from('promo_codes').select('*').order('created_at', { ascending: false });
-        if (dbPromos) {
+        const { data: dbPromos, error } = await supabase.from('promo_codes').select('*').order('created_at', { ascending: false });
+        if (!error && dbPromos) {
           const mapped = dbPromos.map((p: any) => ({
             code: p.code,
             discountPercentage: Number(p.discount_percentage),
@@ -206,16 +206,24 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
           }));
           setPromoCodes(mapped);
         }
+      } catch (err) {
+        console.warn('Failed to sync promo codes from Supabase:', err);
+      }
 
-        // Fetch Subscribers
-        const { data: dbSubscribers } = await supabase.from('subscribers').select('*').order('created_at', { ascending: false });
-        if (dbSubscribers) {
+      // 2. Fetch Subscribers
+      try {
+        const { data: dbSubscribers, error } = await supabase.from('subscribers').select('*').order('created_at', { ascending: false });
+        if (!error && dbSubscribers) {
           setSubscribers(dbSubscribers);
         }
+      } catch (err) {
+        console.warn('Failed to sync subscribers from Supabase:', err);
+      }
 
-        // Fetch Audit Logs
-        const { data: dbLogs } = await supabase.from('audit_logs').select('*').order('timestamp', { ascending: false });
-        if (dbLogs) {
+      // 3. Fetch Audit Logs
+      try {
+        const { data: dbLogs, error } = await supabase.from('audit_logs').select('*').order('timestamp', { ascending: false });
+        if (!error && dbLogs) {
           setAuditLogs(dbLogs.map((l: any) => ({
             id: l.id,
             action: l.action,
@@ -224,8 +232,12 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
             timestamp: l.timestamp.replace('T', ' ').substring(0, 19)
           })));
         }
+      } catch (err) {
+        console.warn('Failed to sync audit logs from Supabase:', err);
+      }
 
-        // Fetch Media library
+      // 4. Fetch Media library
+      try {
         const { data: dbMedia, error: mediaError } = await supabase.storage.from('media').list();
         if (!mediaError && dbMedia) {
           const mapped = dbMedia.map(file => {
@@ -240,7 +252,7 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
           setMediaList(mapped);
         }
       } catch (err) {
-        console.error('Failed to sync CMS data from Supabase live database:', err);
+        console.warn('Failed to sync media from Supabase:', err);
       }
     }
 
@@ -314,7 +326,14 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
       if (error) throw error;
       setAnalyticsEvents(data || []);
     } catch (err) {
-      console.error('Failed to fetch analytics events:', err);
+      console.warn('Failed to fetch live analytics events, falling back to local storage:', err);
+      try {
+        const stored = JSON.parse(localStorage.getItem('GHL_ANALYTICS_EVENTS') || '[]');
+        stored.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        setAnalyticsEvents(stored);
+      } catch (e) {
+        console.error('Failed to parse local analytics events fallback', e);
+      }
     } finally {
       setLoadingAnalytics(false);
     }
@@ -478,25 +497,27 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
+
+    const fallbackEmail = import.meta.env.VITE_LOCAL_ADMIN_EMAIL || 'admin@gohardluxury.com';
+    const fallbackPassword = import.meta.env.VITE_LOCAL_ADMIN_PASSWORD || 'GOHARDLUX@123';
+
+    // Prioritize local fallback credentials first to allow offline dashboard logins
+    if (adminEmail === fallbackEmail && adminPassword === fallbackPassword) {
+      setIsAuthenticated(true);
+      localStorage.setItem('GHL_ADMIN_AUTH', 'true');
+      addAuditLog(`Logged in successfully as ${adminRole} (Local fallback)`);
+      return;
+    }
+
     if (isSupabaseConfigured) {
       try {
         const { data, error } = await supabase.auth.signInWithPassword({
           email: adminEmail,
           password: adminPassword
         });
-        const fallbackEmail = import.meta.env.VITE_LOCAL_ADMIN_EMAIL || 'admin@gohardluxury.com';
-        const fallbackPassword = import.meta.env.VITE_LOCAL_ADMIN_PASSWORD || 'GOHARDLUX@123';
 
-        if (error) {
-          // Fallback credentials check
-          if (adminEmail === fallbackEmail && adminPassword === fallbackPassword) {
-            setIsAuthenticated(true);
-            localStorage.setItem('GHL_ADMIN_AUTH', 'true');
-            addAuditLog(`Logged in successfully as ${adminRole} (Local fallback)`);
-            return;
-          }
-          throw error;
-        }
+        if (error) throw error;
+
         if (data?.user) {
           setIsAuthenticated(true);
           const role = data.user.user_metadata?.role || adminRole;
@@ -507,16 +528,7 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
         setAuthError(err.message || 'INVALID ADMINISTRATIVE COORDINATES (Email/Password mismatch).');
       }
     } else {
-      const fallbackEmail = import.meta.env.VITE_LOCAL_ADMIN_EMAIL || 'admin@gohardluxury.com';
-      const fallbackPassword = import.meta.env.VITE_LOCAL_ADMIN_PASSWORD || 'GOHARDLUX@123';
-
-      if (adminEmail === fallbackEmail && adminPassword === fallbackPassword) {
-        setIsAuthenticated(true);
-        localStorage.setItem('GHL_ADMIN_AUTH', 'true');
-        addAuditLog(`Logged in successfully as ${adminRole}`);
-      } else {
-        setAuthError('INVALID ADMINISTRATIVE COORDINATES (Email/Password mismatch).');
-      }
+      setAuthError('INVALID ADMINISTRATIVE COORDINATES (Email/Password mismatch).');
     }
   };
 

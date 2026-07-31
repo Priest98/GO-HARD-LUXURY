@@ -544,6 +544,23 @@ export default function App() {
         });
       }
 
+      // Always log to local storage to ensure local fallback data is available on dashboard offline
+      try {
+        const localEvents = JSON.parse(localStorage.getItem('GHL_ANALYTICS_EVENTS') || '[]');
+        localEvents.push({
+          event_name: eventName,
+          product_id: metadata.productId || null,
+          product_name: metadata.productName || null,
+          session_id: sessionId,
+          referrer: referrer,
+          path: path,
+          created_at: new Date().toISOString()
+        });
+        localStorage.setItem('GHL_ANALYTICS_EVENTS', JSON.stringify(localEvents.slice(-100)));
+      } catch (e) {
+        console.error('Local analytics logging error:', e);
+      }
+
       // Supabase tracking
       if (isSupabaseConfigured) {
         try {
@@ -558,23 +575,6 @@ export default function App() {
           if (error) console.error('Database analytics insert error:', error);
         } catch (err) {
           console.error('Failed to log event to Supabase:', err);
-        }
-      } else {
-        // Local fallback
-        try {
-          const localEvents = JSON.parse(localStorage.getItem('GHL_ANALYTICS_EVENTS') || '[]');
-          localEvents.push({
-            event_name: eventName,
-            product_id: metadata.productId || null,
-            product_name: metadata.productName || null,
-            session_id: sessionId,
-            referrer: referrer,
-            path: path,
-            created_at: new Date().toISOString()
-          });
-          localStorage.setItem('GHL_ANALYTICS_EVENTS', JSON.stringify(localEvents.slice(-100)));
-        } catch (e) {
-          console.error('Local analytics logging error:', e);
         }
       }
     };
