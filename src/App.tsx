@@ -1192,7 +1192,7 @@ export default function App() {
             <div className="lg:col-span-8 border border-brand-midgray/25 relative min-h-[350px] md:min-h-[450px] bg-black overflow-hidden flex flex-col justify-end">
               {/* Map iframe */}
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3964.7323869273627!2d3.472199!3d6.428489!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x103bf44dc018ff9f%3A0xb3de8dfdf16110f0!2sYL%20Collectives!5e0!3m2!1sen!2sng!4v1722428400000!5m2!1sen!2sng"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3946.066750013994!2d4.5152523!3d8.4929871!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x10364d1f278eb045%3A0x6e2df48677c77c6!2sAtiku%20Rd%2C%20Adewole%2C%20Ilorin%2C%20Kwara!5e0!3m2!1sen!2sng!4v1722430000000!5m2!1sen!2sng"
                 className="absolute inset-0 w-full h-full border-none transition-all duration-300"
                 style={{ 
                   filter: theme === 'night' ? 'invert(90%) hue-rotate(180deg) grayscale(90%) contrast(100%)' : 'none' 
@@ -1204,7 +1204,7 @@ export default function App() {
               {/* Open in Maps Overlay button */}
               <div className="absolute top-4 left-4 z-10">
                 <a
-                  href="https://maps.google.com/?q=YL%20Collectives,%20Lekki%20Phase%201,%20Lagos"
+                  href="https://maps.google.com/?q=Atiku+Road,+Adewole,+Ilorin,+Kwara+State,+Nigeria"
                   target="_blank"
                   rel="noreferrer"
                   className="bg-black/90 hover:bg-white hover:text-black border border-white/20 text-white font-mono text-[9px] font-black uppercase tracking-widest px-4 py-2.5 transition-all duration-300 inline-flex items-center gap-2 rounded-none shadow-xl"
@@ -1221,11 +1221,11 @@ export default function App() {
                 <div className="space-y-1.5">
                   <span className="font-mono text-[8px] text-brand-lightgray uppercase tracking-widest block">HQ Coordinates_</span>
                   <h4 className="font-display font-black text-lg text-brand-offwhite uppercase tracking-tight leading-none">
-                    GO HARD LUXURY LAGOS
+                    GO HARD LUXURY ILORIN
                   </h4>
                   <p className="text-xs font-sans text-brand-lightgray uppercase font-bold tracking-wider leading-relaxed">
-                    Plot 14, Hunponu-Wusu Road,<br />
-                    Lekki Phase 1, Lagos, Nigeria
+                    Atiku Road, Adewole,<br />
+                    Ilorin, Kwara State, Nigeria
                   </p>
                 </div>
 
@@ -1253,7 +1253,7 @@ export default function App() {
               </div>
 
               <a
-                href="https://maps.google.com/?q=YL%20Collectives,%20Lekki%20Phase%201,%20Lagos"
+                href="https://maps.google.com/?q=Atiku+Road,+Adewole,+Ilorin,+Kwara+State,+Nigeria"
                 target="_blank"
                 rel="noreferrer"
                 className="w-full bg-brand-offwhite text-brand-matte hover:bg-brand-lightgray text-[10px] font-mono font-black tracking-widest uppercase py-3.5 text-center transition-all duration-300 cursor-pointer block"
@@ -1266,131 +1266,45 @@ export default function App() {
       </section>
 
       {/* Redesigned Premium Footer */}
-      <footer id="store-main-footer" className="bg-brand-darkgray border-t border-brand-midgray/25 pt-16 pb-12 px-4 md:px-8 mt-12 text-xs font-mono">
-        <div className="max-w-7xl mx-auto space-y-12">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12">
-            
-            {/* Newsletter Column */}
-            <div className="lg:col-span-5 space-y-4">
-              <h5 className="font-display font-black text-sm text-brand-offwhite uppercase tracking-wider leading-none">
-                Sign Up For Exclusive Drops & Updates
-              </h5>
-              <p className="text-[10px] text-brand-lightgray uppercase tracking-wide leading-relaxed max-w-sm">
-                Get priority access to limited edition drops, secret archives, and custom releases.
-              </p>
-              <form onSubmit={handleSubscribeNewsletter} className="flex border-b border-brand-midgray/40 focus-within:border-brand-offwhite transition-colors duration-300 py-1.5 max-w-sm">
-                <input
-                  type="email"
-                  value={newsletterEmail}
-                  onChange={(e) => setNewsletterEmail(e.target.value)}
-                  placeholder="ENTER YOUR EMAIL COORDINATES_"
-                  className="bg-transparent border-none outline-none text-xs font-mono w-full pr-4 text-brand-offwhite placeholder-brand-lightgray/40 rounded-none"
-                  required
-                />
-                <button
-                  type="submit"
-                  className="text-brand-offwhite hover:text-brand-lightgray transition-colors duration-300 cursor-pointer"
-                  title="Subscribe to updates"
-                >
-                  ➔
-                </button>
-              </form>
-            </div>
-
-            {/* Quick Links Column */}
-            <div className="lg:col-span-2.5 space-y-4">
-              <h6 className="text-[10px] font-black text-brand-offwhite uppercase tracking-[0.2em]">
-                Quick_Links
-              </h6>
-              <ul className="space-y-2 text-[10px] text-brand-lightgray uppercase font-bold tracking-wider">
-                <li>
-                  <a href="#" className="hover:text-brand-offwhite transition-colors duration-200">Home</a>
-                </li>
-                <li>
-                  <a href="#collection-rack" className="hover:text-brand-offwhite transition-colors duration-200">Shop</a>
-                </li>
-                <li>
-                  <a href="#collection-rack" className="hover:text-brand-offwhite transition-colors duration-200">Collections</a>
-                </li>
-                <li>
-                  <a href="#store-location" className="hover:text-brand-offwhite transition-colors duration-200">About Us</a>
-                </li>
-                <li>
-                  <a href="#store-location" className="hover:text-brand-offwhite transition-colors duration-200">Contact</a>
-                </li>
-              </ul>
-            </div>
-
-            {/* Policies Column */}
-            <div className="lg:col-span-2.5 space-y-4">
-              <h6 className="text-[10px] font-black text-brand-offwhite uppercase tracking-[0.2em]">
-                Policies
-              </h6>
-              <ul className="space-y-2 text-[10px] text-brand-lightgray uppercase font-bold tracking-wider">
-                <li>
-                  <button onClick={() => setActivePolicy('shipping')} className="hover:text-brand-offwhite transition-colors duration-200 text-left uppercase cursor-pointer">Shipping Policy</button>
-                </li>
-                <li>
-                  <button onClick={() => setActivePolicy('refund')} className="hover:text-brand-offwhite transition-colors duration-200 text-left uppercase cursor-pointer">Refund Policy</button>
-                </li>
-                <li>
-                  <button onClick={() => setActivePolicy('privacy')} className="hover:text-brand-offwhite transition-colors duration-200 text-left uppercase cursor-pointer">Privacy Policy</button>
-                </li>
-                <li>
-                  <button onClick={() => setActivePolicy('terms')} className="hover:text-brand-offwhite transition-colors duration-200 text-left uppercase cursor-pointer">Terms & Conditions</button>
-                </li>
-              </ul>
-            </div>
-
-            {/* Region / Currency & Socials Column */}
-            <div className="lg:col-span-2 space-y-6">
-              <div className="space-y-3.5">
-                <h6 className="text-[10px] font-black text-brand-offwhite uppercase tracking-[0.2em] block">
-                  Region_Config
-                </h6>
-                <select className="bg-brand-matte border border-brand-midgray/40 text-brand-offwhite text-[10px] font-mono px-3 py-2 rounded-none outline-none focus:border-brand-offwhite cursor-pointer uppercase w-full max-w-[150px]">
-                  <option value="NGN">NG (₦) NGN</option>
-                  <option value="USD">US ($) USD</option>
-                  <option value="GBP">UK (£) GBP</option>
-                </select>
-              </div>
-
-              <div className="space-y-3">
-                <h6 className="text-[10px] font-black text-brand-offwhite uppercase tracking-[0.2em] block">
-                  Social_Uplinks
-                </h6>
-                <div className="flex items-center gap-4 text-brand-lightgray">
-                  <a href="https://instagram.com/gohxrdluxury_" target="_blank" rel="noreferrer" className="hover:text-brand-offwhite transition-colors duration-200" title="Instagram">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                      <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
-                      <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37zM17.5 6.5h.01" />
-                    </svg>
-                  </a>
-                  <a href="https://www.tiktok.com/@gohardluxury" target="_blank" rel="noreferrer" className="hover:text-brand-offwhite transition-colors duration-200" title="TikTok">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.02 1.59 4.23.95 1.15 2.27 1.95 3.71 2.26v3.83c-1.39-.08-2.74-.61-3.84-1.49-.66-.51-1.2-1.16-1.59-1.9v8.66c0 3.75-2.54 6.77-6.24 6.77-3.69 0-6.68-2.92-6.68-6.68 0-3.75 3.01-6.79 6.79-6.79.44.02.88.08 1.3.19v3.81a2.91 2.91 0 00-1.3-.3c-1.62 0-2.94 1.32-2.94 2.94 0 1.62 1.32 2.94 2.94 2.94 1.62 0 2.94-1.32 2.94-2.94v-16.2z"/>
-                    </svg>
-                  </a>
-                  <a href="https://wa.me/2349038499673" target="_blank" rel="noreferrer" className="hover:text-brand-offwhite transition-colors duration-200" title="WhatsApp">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 11.966.01c3.182.001 6.176 1.24 8.424 3.492 2.25 2.25 3.486 5.244 3.487 8.425-.004 6.618-5.34 11.955-11.91 11.955-2.005-.002-3.973-.505-5.717-1.46L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.725 1.451 5.436 0 9.86-4.42 9.863-9.864.001-2.63-1.023-5.101-2.884-6.963-1.86-1.862-4.33-2.884-6.962-2.886-5.442 0-9.87 4.423-9.874 9.868-.001 1.748.461 3.454 1.336 4.978L1.7 22.287l4.947-1.133zm11.517-5.606c-.292-.146-1.73-.854-1.997-.951-.267-.097-.461-.146-.656.146-.195.292-.756.951-.926 1.146-.17.195-.341.219-.633.073-.292-.146-1.236-.456-2.355-1.453-.872-.778-1.46-1.74-1.631-2.03-.17-.29-.018-.447.128-.592.132-.132.292-.341.439-.512.146-.17.195-.292.292-.487.097-.195.049-.365-.024-.512-.073-.146-.656-1.583-.9-2.17-.238-.574-.479-.497-.656-.506-.17-.008-.365-.008-.56-.008s-.512.073-.78.365c-.267.292-1.022 1-.998-1.022 2.508 0 4.912 2.508 5.717s1.388 1.096 1.631.17c.29-.024.56-.268.68-.464.12-.195.244-.317.073-.464z"/>
-                    </svg>
-                  </a>
-                </div>
-              </div>
-            </div>
-
+      <footer id="store-main-footer" className="bg-brand-darkgray border-t border-brand-midgray/25 py-12 px-4 md:px-8 mt-12 text-xs font-mono">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+          
+          {/* Quick Links Column */}
+          <div className="space-y-3">
+            <h6 className="text-[10px] font-black text-brand-offwhite uppercase tracking-[0.2em]">
+              Navigation_
+            </h6>
+            <ul className="space-y-1.5 text-[10px] text-brand-lightgray uppercase font-bold tracking-wider">
+              <li>
+                <a href="#" className="hover:text-brand-offwhite transition-colors duration-200">Home</a>
+              </li>
+            </ul>
           </div>
 
-          {/* Bottom Copyright and Address Block */}
-          <div className="pt-8 border-t border-brand-midgray/20 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-[10px] text-brand-lightgray font-mono uppercase font-bold tracking-widest">
-            <div className="space-y-1">
-              <span>© {new Date().getFullYear()} Go Hard Luxury. All Rights Reserved.</span>
-            </div>
-            <div className="text-left md:text-right font-medium">
-              <span>STORE HQ: Plot 14, Hunponu-Wusu Road, Lekki Phase 1, Lagos, Nigeria</span>
-            </div>
+          {/* Contact and Location Column */}
+          <div className="space-y-3 md:max-w-md">
+            <h6 className="text-[10px] font-black text-brand-offwhite uppercase tracking-[0.2em]">
+              Contact Us_
+            </h6>
+            <ul className="space-y-1.5 text-[10px] text-brand-lightgray uppercase font-bold tracking-wider">
+              <li className="flex items-center gap-1.5">
+                <span>PH:</span>
+                <a href="tel:09038499673" className="text-brand-offwhite hover:underline hover:text-brand-neon transition-colors duration-200">09038499673</a>
+              </li>
+              <li className="flex flex-col gap-0.5">
+                <span>LOC:</span>
+                <span className="text-brand-offwhite normal-case font-sans font-bold tracking-normal leading-relaxed">
+                  Atiku Road, Adewole, Ilorin, Kwara State, Nigeria
+                </span>
+              </li>
+            </ul>
           </div>
+
+          {/* Bottom Copyright */}
+          <div className="text-[10px] text-brand-lightgray/80 font-bold uppercase tracking-widest self-end md:self-center">
+            <span>© {new Date().getFullYear()} Go Hard Luxury. All Rights Reserved.</span>
+          </div>
+
         </div>
       </footer>
 
