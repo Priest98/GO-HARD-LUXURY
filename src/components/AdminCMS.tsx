@@ -706,23 +706,23 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
     }
 
     if (isSupabaseConfigured) {
-      try {
-        const dbProductRow = {
-          id: productForm.id,
-          name: productForm.name,
-          price: productForm.price,
-          former_price: productForm.formerPrice,
-          category: productForm.category,
-          description: productForm.description,
-          details: productForm.details,
-          sizes: productForm.sizes,
-          images: productForm.images,
-          sold_out: !!productForm.soldOut,
-          badge: productForm.badge,
-          quotes: productForm.quotes,
-          release_date: productForm.releaseDate
-        };
+      const dbProductRow = {
+        id: productForm.id,
+        name: productForm.name,
+        price: productForm.price,
+        former_price: productForm.formerPrice,
+        category: productForm.category,
+        description: productForm.description,
+        details: productForm.details,
+        sizes: productForm.sizes,
+        images: productForm.images,
+        sold_out: !!productForm.soldOut,
+        badge: productForm.badge,
+        quotes: productForm.quotes,
+        release_date: productForm.releaseDate
+      };
 
+      try {
         if (isCreatingProduct) {
           if (products.some(p => p.id === productForm.id)) {
             alert('Product ID already exists. Please make it unique.');
@@ -741,8 +741,21 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
           addNotification(`Product "${productForm.name}" updated successfully.`, 'success');
         }
       } catch (err: any) {
-        alert('Failed to save product in database: ' + err.message);
-        return;
+        console.warn('Failed to save product in database, falling back to local storage:', err);
+        // Fallback local save
+        if (isCreatingProduct) {
+          if (products.some(p => p.id === productForm.id)) {
+            alert('Product ID already exists. Please make it unique.');
+            return;
+          }
+          setProducts(prev => [productForm, ...prev]);
+          addAuditLog(`Created product specimen locally (offline): ${productForm.name}`);
+          addNotification(`Product "${productForm.name}" saved locally (failed to sync with database).`, 'warning');
+        } else {
+          setProducts(prev => prev.map(p => p.id === productForm.id ? productForm : p));
+          addAuditLog(`Updated product coordinates locally (offline): ${productForm.name}`);
+          addNotification(`Product "${productForm.name}" updated locally (failed to sync with database).`, 'warning');
+        }
       }
     } else {
       if (isCreatingProduct) {
@@ -783,7 +796,10 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
           addAuditLog(`Deleted product specimen: ${productName} (${productId})`);
           addNotification(`Product "${productName}" deleted.`, 'warning');
         } catch (err: any) {
-          alert('Failed to delete product: ' + err.message);
+          console.warn('Failed to delete product from database, falling back to local:', err);
+          setProducts(prev => prev.filter(p => p.id !== productId));
+          addAuditLog(`Deleted product specimen locally (offline): ${productName}`);
+          addNotification(`Product "${productName}" deleted locally (offline).`, 'warning');
         }
       } else {
         setProducts(prev => prev.filter(p => p.id !== productId));
@@ -822,7 +838,10 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
         addAuditLog(`Duplicated product specimen: ${product.name} to ${duplicated.name}`);
         addNotification(`Duplicated "${product.name}" as "${duplicated.name}".`, 'success');
       } catch (err: any) {
-        alert('Failed to duplicate product: ' + err.message);
+        console.warn('Failed to duplicate product in database, falling back to local:', err);
+        setProducts(prev => [duplicated, ...prev]);
+        addAuditLog(`Duplicated product specimen locally (offline): ${product.name} to ${duplicated.name}`);
+        addNotification(`Duplicated "${product.name}" as "${duplicated.name}" locally (offline).`, 'warning');
       }
     } else {
       setProducts(prev => [duplicated, ...prev]);
