@@ -189,7 +189,11 @@ export default function App() {
     const stored = localStorage.getItem('GHL_HOMEPAGE_CONFIG');
     if (stored) {
       try {
-        return JSON.parse(stored);
+        const parsed = JSON.parse(stored);
+        if (parsed.heroVideoUrl === "/video/SaveClip.App_AQMNLLCOZx9fTFK3FwpUwBbLXY_YghRBoOy3hXzNcIETEuC6RS3rLLlRf25T3rHV7gddLaq6yVC83NKbvLi672p_CxBwfD3450dxLQs.mp4" || !parsed.heroVideoUrl) {
+          parsed.heroVideoUrl = "/video/hero.MOV";
+        }
+        return parsed;
       } catch (e) {
         console.error('Failed to parse stored homepage config', e);
       }
@@ -200,7 +204,7 @@ export default function App() {
       heroHeadline: "GO HARD LUX.",
       heroSubheadline: "FEATURED ARCHIVE_",
       heroDescription: "Curating the intersection of street culture and technical precision. Designed for the unseen.",
-      heroVideoUrl: "/video/SaveClip.App_AQMNLLCOZx9fTFK3FwpUwBbLXY_YghRBoOy3hXzNcIETEuC6RS3rLLlRf25T3rHV7gddLaq6yVC83NKbvLi672p_CxBwfD3450dxLQs.mp4",
+      heroVideoUrl: "/video/hero.MOV",
       ctaText: "View Lookbook",
       featuredCollectionCategory: "ALL"
     };
@@ -1103,7 +1107,14 @@ export default function App() {
           playsInline
           className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none opacity-40"
         >
-          <source src={homepageConfig.heroVideoUrl} type="video/mp4" />
+          <source 
+            src={homepageConfig.heroVideoUrl} 
+            type={
+              homepageConfig.heroVideoUrl.toLowerCase().endsWith('.mov') 
+                ? 'video/quicktime' 
+                : 'video/mp4'
+            } 
+          />
         </video>
 
         {/* Ambient top dark shade overlay */}
