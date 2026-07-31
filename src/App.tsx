@@ -44,14 +44,14 @@ function groupProductVariants(sortedProducts: Product[]): Product[] {
     if (isShorts) {
       return 'shorts';
     }
-    // Standardize other hats
-    if (name.includes('hat') || name.includes('cap') || name.includes('visor')) {
+    // Standardize other hats (including GHL CAMO FC)
+    if (name.includes('hat') || name.includes('cap') || name.includes('visor') || name.includes('camo fc')) {
       return 'headwear';
     }
     
     // Strip colors and qualifiers
     name = name.replace(/\b(black|white|grey|gray|red|green|blue|camo|yellow|purple|orange|pink|brown|beige|sand)\b/g, '');
-    name = name.replace(/\b(original|archive|collection|design|vneck|silky|v-neck|members|only)\b/g, '');
+    name = name.replace(/\b(original|archive|collection|design|vneck|silky|v-neck|members|only|logo|color|colour)\b/g, '');
     return name.trim();
   };
 
