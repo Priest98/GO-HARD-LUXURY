@@ -43,8 +43,8 @@ export const GHL_PRODUCTS: Product[] = [
   {
     id: 'ghl-woven-polo',
     name: 'UP&DOWN',
-    price: 160600,
-    formerPrice: 180000,
+    price: 100000,
+    formerPrice: 160600,
     category: 'Tracksuits',
     description: 'Premium technical streetwear tracksuit set featuring matching zip-up jacket and relaxed utility track pants. Finished with signature GHL metal custom hardware and dynamic piping details.',
     details: [
@@ -63,7 +63,8 @@ export const GHL_PRODUCTS: Product[] = [
   {
     id: 'ghl-423-tracksuit',
     name: 'UP&DOWN 423',
-    price: 46000,
+    price: 105000,
+    formerPrice: 120000,
     category: 'Tracksuits',
     description: "Premium technical grey and black tracksuit set featuring matching full-zip jacket and utility track pants. Detailed with a custom '423' branding design at the back.",
     details: [
