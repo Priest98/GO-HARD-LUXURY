@@ -173,13 +173,19 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         loadUserSessionAndRole(session);
+      } else if (navigator.onLine) {
+        setIsAuthenticated(false);
+        localStorage.removeItem('GHL_ADMIN_AUTH');
       }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      loadUserSessionAndRole(session);
       if (session) {
+        loadUserSessionAndRole(session);
         localStorage.setItem('GHL_ADMIN_AUTH', 'true');
+      } else if (navigator.onLine) {
+        setIsAuthenticated(false);
+        localStorage.removeItem('GHL_ADMIN_AUTH');
       }
     });
 
@@ -501,14 +507,6 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
     const fallbackEmail = import.meta.env.VITE_LOCAL_ADMIN_EMAIL || 'admin@gohardluxury.com';
     const fallbackPassword = import.meta.env.VITE_LOCAL_ADMIN_PASSWORD || 'GOHARDLUX@123';
 
-    // Prioritize local fallback credentials first to allow offline dashboard logins
-    if (adminEmail === fallbackEmail && adminPassword === fallbackPassword) {
-      setIsAuthenticated(true);
-      localStorage.setItem('GHL_ADMIN_AUTH', 'true');
-      addAuditLog(`Logged in successfully as ${adminRole} (Local fallback)`);
-      return;
-    }
-
     if (isSupabaseConfigured) {
       try {
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -516,7 +514,21 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
           password: adminPassword
         });
 
-        if (error) throw error;
+        if (error) {
+          // If offline or network error, fall back to offline credentials
+          const isNetworkError = !navigator.onLine || 
+                                 error.status === 0 || 
+                                 error.message?.toLowerCase().includes('network') ||
+                                 error.message?.toLowerCase().includes('load failed');
+          
+          if (isNetworkError && adminEmail === fallbackEmail && adminPassword === fallbackPassword) {
+            setIsAuthenticated(true);
+            localStorage.setItem('GHL_ADMIN_AUTH', 'true');
+            addAuditLog(`Logged in successfully as ${adminRole} (Local fallback - Offline)`);
+            return;
+          }
+          throw error;
+        }
 
         if (data?.user) {
           setIsAuthenticated(true);
@@ -525,9 +537,24 @@ export const AdminCMS: React.FC<AdminCMSProps> = ({
           addAuditLog(`Logged in successfully as ${role}`);
         }
       } catch (err: any) {
+        // If credentials match fallback but DB account check failed (e.g., account doesn't exist yet or other auth issue),
+        // log in locally but warn that data won't sync to the live database.
+        if (adminEmail === fallbackEmail && adminPassword === fallbackPassword) {
+          setIsAuthenticated(true);
+          localStorage.setItem('GHL_ADMIN_AUTH', 'true');
+          addAuditLog(`Logged in successfully as ${adminRole} (Local fallback - DB mismatch)`);
+          addNotification('Logged in locally. Database is online but admin account is not verified. Changes will not sync to the live database.', 'warning');
+          return;
+        }
         setAuthError(err.message || 'INVALID ADMINISTRATIVE COORDINATES (Email/Password mismatch).');
       }
     } else {
+      if (adminEmail === fallbackEmail && adminPassword === fallbackPassword) {
+        setIsAuthenticated(true);
+        localStorage.setItem('GHL_ADMIN_AUTH', 'true');
+        addAuditLog(`Logged in successfully as ${adminRole} (Local fallback - No Supabase)`);
+        return;
+      }
       setAuthError('INVALID ADMINISTRATIVE COORDINATES (Email/Password mismatch).');
     }
   };
